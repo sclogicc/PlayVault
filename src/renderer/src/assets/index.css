@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-archive-900 text-archive-100 antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0b131a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #313f4d;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4e5a66;
+  }
+}
+
+@layer components {
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-2.5 text-archive-300
+           hover:text-archive-100 hover:bg-archive-800
+           rounded-archive transition-colors duration-150;
+  }
+  .sidebar-link.active {
+    @apply text-accent-teal bg-archive-800/80 border-l-2 border-accent-teal;
+  }
+
+  .card {
+    @apply bg-archive-800 border border-archive-700/50 rounded-lg p-4;
+  }
+
+  .btn-primary {
+    @apply bg-accent-teal/20 text-accent-teal border border-accent-teal/30
+           hover:bg-accent-teal/30 px-4 py-2 rounded-archive
+           transition-colors duration-150 font-medium text-sm;
+  }
+
+  .btn-danger {
+    @apply bg-accent-red/20 text-accent-red border border-accent-red/30
+           hover:bg-accent-red/30 px-4 py-2 rounded-archive
+           transition-colors duration-150 font-medium text-sm;
+  }
+
+  .btn-secondary {
+    @apply bg-archive-700 text-archive-200 border border-archive-600/50
+           hover:bg-archive-600 px-4 py-2 rounded-archive
+           transition-colors duration-150 font-medium text-sm;
+  }
+
+  .input-field {
+    @apply bg-archive-800 border border-archive-600 rounded-archive
+           px-3 py-2 text-archive-100 placeholder-archive-500
+           focus:outline-none focus:border-accent-teal/50 focus:ring-1 focus:ring-accent-teal/20
+           transition-colors duration-150 text-sm;
+  }
+
+  .table-header {
+    @apply text-left text-archive-400 text-xs uppercase tracking-wider font-medium px-4 py-3;
+  }
+
+  .table-cell {
+    @apply px-4 py-3 text-sm text-archive-200 border-b border-archive-700/50;
+  }
+}
