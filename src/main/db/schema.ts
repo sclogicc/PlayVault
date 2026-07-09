@@ -67,6 +67,45 @@ const MIGRATIONS: Record<number, string[]> = {
       value TEXT NOT NULL DEFAULT ''
     )`,
   ],
+
+  // v2: scan roots, discovered executables, session/enhanced fields
+  2: [
+    `CREATE TABLE IF NOT EXISTS scan_roots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      path TEXT NOT NULL,
+      is_enabled INTEGER NOT NULL DEFAULT 1,
+      last_scanned_at TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS discovered_executables (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      scan_root_id INTEGER NOT NULL,
+      file_path TEXT NOT NULL,
+      file_name TEXT NOT NULL,
+      folder_name TEXT NOT NULL DEFAULT '',
+      file_size INTEGER NOT NULL DEFAULT 0,
+      modified_at TEXT,
+      score INTEGER NOT NULL DEFAULT 0,
+      match_reasons TEXT NOT NULL DEFAULT '[]',
+      status TEXT NOT NULL DEFAULT 'pending',
+      linked_game_id INTEGER,
+      created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+      FOREIGN KEY (scan_root_id) REFERENCES scan_roots(id) ON DELETE CASCADE,
+      FOREIGN KEY (linked_game_id) REFERENCES games(id) ON DELETE SET NULL
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_dex_status ON discovered_executables(status)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_dex_path ON discovered_executables(file_path)`,
+
+    `ALTER TABLE game_executables ADD COLUMN is_primary INTEGER NOT NULL DEFAULT 0`,
+
+    `ALTER TABLE sessions ADD COLUMN end_reason TEXT NOT NULL DEFAULT 'normal'`,
+    `ALTER TABLE sessions ADD COLUMN process_path TEXT NOT NULL DEFAULT ''`,
+    `ALTER TABLE sessions ADD COLUMN created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))`,
+    `ALTER TABLE sessions ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))`,
+  ],
 }
 
 export function runMigrations(db: Database): void {

@@ -3,6 +3,9 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { initDatabase, closeDatabase } from './db'
 import { registerAllIpcHandlers } from './ipc'
+import * as sessionRepo from './db/repositories/sessionRepository'
+import { startMonitor, stopMonitor } from './services/processMonitor'
+import { startScreenshotWatcher, stopScreenshotWatcher } from './services/screenshotWatcher'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -49,6 +52,23 @@ app.whenReady().then(async () => {
   const db = await initDatabase()
   registerAllIpcHandlers(ipcMain, db)
 
+  // Recover orphaned sessions from previous abnormal exit
+  const recovered = sessionRepo.recoverOrphanedSessions(db)
+  if (recovered > 0) {
+    console.log(`[Main] Recovered ${recovered} orphaned session(s)`)
+  }
+
+  // Start process monitor for auto session tracking
+  startMonitor(db, 2000)
+
+  // Start screenshot watcher if a source directory is configured
+  const screenshotDirRow = db
+    .prepare("SELECT value FROM app_settings WHERE key = 'screenshot_dir'")
+    .get() as unknown as { value: string } | undefined
+  if (screenshotDirRow?.value) {
+    startScreenshotWatcher(db, screenshotDirRow.value)
+  }
+
   createWindow()
 
   app.on('activate', () => {
@@ -57,6 +77,8 @@ app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
+  stopMonitor()
+  stopScreenshotWatcher()
   closeDatabase()
   if (process.platform !== 'darwin') {
     app.quit()

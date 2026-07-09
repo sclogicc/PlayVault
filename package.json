@@ -13,6 +13,7 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web"
   },
   "dependencies": {
+    "ps-list": "^9.0.0",
     "sql.js": "^1.12.0"
   },
   "devDependencies": {

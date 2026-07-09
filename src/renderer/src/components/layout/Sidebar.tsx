@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard,
   Gamepad2,
+  Search,
   Image,
   Clock,
   Settings,
@@ -10,6 +11,7 @@ import {
 const navItems = [
   { to: '/', label: '总览', icon: LayoutDashboard },
   { to: '/games', label: '游戏库', icon: Gamepad2 },
+  { to: '/discover', label: '发现候选', icon: Search },
   { to: '/screenshots', label: '截图箱', icon: Image },
   { to: '/timeline', label: '时间线', icon: Clock },
   { to: '/settings', label: '设置', icon: Settings },
