@@ -4,6 +4,7 @@ import type {
   SessionSource,
   DiscoveredStatus,
   SessionEndReason,
+  InstallStatus,
 } from './constants'
 
 // ========== Game ==========
@@ -20,6 +21,8 @@ export interface Game {
   screenshot_folder_name: string
   notes: string
   is_enabled: 0 | 1
+  install_status: InstallStatus
+  completed_at: string | null
   created_at: string
   updated_at: string
 }
@@ -39,6 +42,7 @@ export interface GameExecutable {
   game_id: number
   exe_name: string
   install_path_hint: string
+  file_path: string
   is_ignored: 0 | 1
   is_primary: 0 | 1
 }
@@ -54,6 +58,15 @@ export interface Session {
   duration_seconds: number
   source: SessionSource
   notes: string
+  end_reason: SessionEndReason
+  process_path: string
+  created_at: string
+  updated_at: string
+}
+
+// Sessions returned by the timeline include the archive label to avoid extra lookups.
+export interface SessionWithGame extends Session {
+  game_display_name: string
 }
 
 // ========== Screenshot ==========
@@ -70,6 +83,8 @@ export interface Screenshot {
   archive_path: string
   hash: string
   created_at: string
+  deleted_at: string | null
+  updated_at: string
 }
 
 // ========== AppSetting ==========
@@ -109,15 +124,6 @@ export interface DiscoveredExecutable {
   updated_at: string
 }
 
-// ========== Session (updated v2) ==========
-
-export interface SessionV2 extends Session {
-  end_reason: SessionEndReason
-  process_path: string
-  created_at: string
-  updated_at: string
-}
-
 // ========== Form Data for creating/updating games ==========
 
 export interface GameFormData {
@@ -130,4 +136,11 @@ export interface GameFormData {
   screenshot_folder_name: string
   notes: string
   is_enabled: 0 | 1
+}
+
+// ========== Game Launch Result ==========
+
+export interface GameLaunchResult {
+  success: boolean
+  error?: string
 }

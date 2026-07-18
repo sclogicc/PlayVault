@@ -135,7 +135,7 @@ export function registerScanHandlers(ipcMain: IpcMain, db: Database): void {
       const gameResult = gameRepo.createGame(db, {
         name: gameName,
         display_name: gameName,
-        status: '未开始',
+        status: 'not_started',
       })
 
       // Create executable binding

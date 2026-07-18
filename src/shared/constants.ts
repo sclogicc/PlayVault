@@ -1,40 +1,45 @@
 // ========== Game Status ==========
 
-export type GameStatus =
-  | '未开始'
-  | '游玩中'
-  | '已通关'
-  | '搁置'
-  | '弃坑'
-  | '已全成就'
+export type GameStatus = 'not_started' | 'in_progress' | 'completed'
 
 export const GAME_STATUSES: GameStatus[] = [
-  '未开始',
-  '游玩中',
-  '已通关',
-  '搁置',
-  '弃坑',
-  '已全成就',
+  'not_started',
+  'in_progress',
+  'completed',
 ]
 
 export const GAME_STATUS_LABELS: Record<GameStatus, string> = {
-  '未开始': '未开始',
-  '游玩中': '游玩中',
-  '已通关': '已通关',
-  '搁置': '搁置',
-  '弃坑': '弃坑',
-  '已全成就': '已全成就',
+  not_started: '未开始',
+  in_progress: '游玩中',
+  completed: '已通关',
+}
+
+// ========== Install Status ==========
+
+export type InstallStatus = 'installed' | 'missing'
+
+export const INSTALL_STATUS_LABELS: Record<InstallStatus, string> = {
+  installed: '已安装',
+  missing: '未安装',
 }
 
 // ========== Screenshot Status ==========
 
-export type ScreenshotStatus = 'pending' | 'classified' | 'ignored'
+export type ScreenshotStatus = 'pending' | 'classified' | 'trashed' | 'deleted'
 
 export const SCREENSHOT_STATUSES: ScreenshotStatus[] = [
   'pending',
   'classified',
-  'ignored',
+  'trashed',
+  'deleted',
 ]
+
+export const SCREENSHOT_STATUS_LABELS: Record<ScreenshotStatus, string> = {
+  pending: '待整理',
+  classified: '已归类',
+  trashed: '回收站',
+  deleted: '已删除',
+}
 
 // ========== Session Source ==========
 

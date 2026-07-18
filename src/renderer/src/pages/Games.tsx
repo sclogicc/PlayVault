@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   Plus,
   Search,
@@ -8,9 +8,16 @@ import {
   Clock,
   Image,
   Gamepad2,
+  HardDrive,
 } from 'lucide-react'
 import type { GameWithStats, GameFormData } from '@shared/types'
-import { GAME_STATUSES, type GameStatus } from '@shared/constants'
+import {
+  GAME_STATUSES,
+  GAME_STATUS_LABELS,
+  INSTALL_STATUS_LABELS,
+  type GameStatus,
+  type InstallStatus,
+} from '@shared/constants'
 import Button from '../components/ui/Button'
 import StatusBadge from '../components/ui/StatusBadge'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -21,6 +28,8 @@ import {
 } from '../hooks/useGames'
 
 export default function Games(): React.ReactElement {
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const {
     games,
     isLoading,
@@ -29,7 +38,16 @@ export default function Games(): React.ReactElement {
     statusFilter,
     setStatusFilter,
   } = useGames()
-  const { createGame, updateGame, deleteGame, toggleGame } = useGameMutations()
+
+  // Sync status from URL params
+  useEffect(() => {
+    const statusParam = searchParams.get('status')
+    if (statusParam && statusParam !== statusFilter) {
+      setStatusFilter(statusParam)
+    }
+  }, [searchParams])
+
+  const { createGame, updateGame, deleteGame } = useGameMutations()
 
   const [formOpen, setFormOpen] = useState(false)
   const [editingGame, setEditingGame] = useState<GameWithStats | null>(null)
@@ -37,7 +55,7 @@ export default function Games(): React.ReactElement {
 
   const statusFilterOptions = [
     { value: '全部', label: '全部' },
-    ...GAME_STATUSES.map((s) => ({ value: s, label: s })),
+    ...GAME_STATUSES.map((s) => ({ value: s, label: GAME_STATUS_LABELS[s] })),
   ]
 
   const handleCreate = (): void => {
@@ -68,6 +86,12 @@ export default function Games(): React.ReactElement {
     }
   }
 
+  // Dynamic page title based on filter
+  const pageTitle =
+    statusFilter === '全部'
+      ? '全部游戏'
+      : GAME_STATUS_LABELS[statusFilter as GameStatus] ?? '游戏库'
+
   const formatDuration = (seconds: number): string => {
     if (seconds === 0) return '—'
     const h = Math.floor(seconds / 3600)
@@ -94,7 +118,7 @@ export default function Games(): React.ReactElement {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-archive-100">游戏库</h2>
+          <h2 className="text-xl font-semibold text-archive-100">{pageTitle}</h2>
           <p className="text-sm text-archive-500 mt-0.5">
             {games.length} 个游戏
           </p>
@@ -124,7 +148,14 @@ export default function Games(): React.ReactElement {
           {statusFilterOptions.map((opt) => (
             <button
               key={opt.value}
-              onClick={() => setStatusFilter(opt.value)}
+              onClick={() => {
+                setStatusFilter(opt.value)
+                if (opt.value === '全部') {
+                  setSearchParams({})
+                } else {
+                  setSearchParams({ status: opt.value })
+                }
+              }}
               className={`px-3 py-1.5 text-xs rounded-archive border transition-colors ${
                 statusFilter === opt.value
                   ? 'bg-accent-teal/20 text-accent-teal border-accent-teal/30'
@@ -179,7 +210,12 @@ export default function Games(): React.ReactElement {
                     截图
                   </div>
                 </th>
-                <th className="table-header w-[80px]">监控</th>
+                <th className="table-header w-[80px]">
+                  <div className="flex items-center gap-1">
+                    <HardDrive size={12} />
+                    安装
+                  </div>
+                </th>
                 <th className="table-header w-[100px]">操作</th>
               </tr>
             </thead>
@@ -226,23 +262,19 @@ export default function Games(): React.ReactElement {
                     {game.screenshot_count}
                   </td>
 
-                  {/* Toggle */}
+                  {/* Install Status */}
                   <td className="table-cell">
-                    <button
-                      onClick={() => toggleGame.mutate(game.id)}
-                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                        game.is_enabled ? 'bg-accent-teal/60' : 'bg-archive-600'
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded-full ${
+                        ((game as unknown as Record<string, string>).install_status ?? 'installed') === 'installed'
+                          ? 'bg-accent-teal/15 text-accent-teal'
+                          : 'bg-accent-red/10 text-accent-red'
                       }`}
-                      title={game.is_enabled ? '已启用监控' : '已停用监控'}
                     >
-                      <span
-                        className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${
-                          game.is_enabled
-                            ? 'translate-x-4'
-                            : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
+                      {INSTALL_STATUS_LABELS[
+                        ((game as unknown as Record<string, string>).install_status ?? 'installed') as InstallStatus
+                      ] ?? '已安装'}
+                    </span>
                   </td>
 
                   {/* Actions */}

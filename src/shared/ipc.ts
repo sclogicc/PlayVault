@@ -9,10 +9,16 @@ export const IPC_CHANNELS = {
   GAME_DELETE: 'game:delete',
   GAME_TOGGLE: 'game:toggleEnabled',
 
+  // Game actions
+  GAME_LAUNCH: 'game:launch',
+  GAME_CHECK_INSTALL: 'game:checkInstall',
+  GAME_COMPLETE: 'game:complete',
+
   // GameExecutable
   EXE_ADD: 'exe:add',
   EXE_REMOVE: 'exe:remove',
   EXE_GET_BY_GAME: 'exe:getByGame',
+  EXE_UPDATE: 'exe:update',
 
   // Session
   SESSION_GET_BY_GAME: 'session:getByGame',
@@ -27,6 +33,9 @@ export const IPC_CHANNELS = {
   SCREENSHOT_BATCH_UPDATE: 'screenshot:batchUpdate',
   SCREENSHOT_GET_PENDING_COUNT: 'screenshot:getPendingCount',
   SCREENSHOT_REMATCH: 'screenshot:rematch',
+  SCREENSHOT_TRASH: 'screenshot:trash',
+  SCREENSHOT_RESTORE: 'screenshot:restore',
+  SCREENSHOT_PERMANENT_DELETE: 'screenshot:permanentDelete',
 
   // AppSetting
   SETTING_GET: 'setting:get',
@@ -55,4 +64,8 @@ export const IPC_CHANNELS = {
   SESSION_GET_BY_ID: 'session:getById',
   SESSION_GET_ALL_ACTIVE: 'session:getAllActive',
   SESSION_RECOVER: 'session:recover',
+
+  // File operations
+  FILE_OPEN_LOCATION: 'file:openLocation',
+  DIALOG_OPEN_EXECUTABLE: 'dialog:openExecutable',
 } as const

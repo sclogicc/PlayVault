@@ -6,6 +6,7 @@ import { registerScanHandlers } from './scanHandlers'
 import { registerSessionHandlers } from './sessionHandlers'
 import { registerScreenshotHandlers } from './screenshotHandlers'
 import { registerSettingHandlers } from './settingHandlers'
+import { registerFileHandlers } from './fileHandlers'
 
 export function registerAllIpcHandlers(
   ipcMain: IpcMain,
@@ -17,4 +18,5 @@ export function registerAllIpcHandlers(
   registerSessionHandlers(ipcMain, db)
   registerScreenshotHandlers(ipcMain, db)
   registerSettingHandlers(ipcMain, db)
+  registerFileHandlers(ipcMain)
 }

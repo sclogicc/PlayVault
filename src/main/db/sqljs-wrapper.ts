@@ -9,6 +9,7 @@ import path from 'path'
 export class Database {
   private db: SqlJsDatabase
   private filePath: string
+  private transactionDepth = 0
 
   private constructor(_sql: SqlJsStatic, db: SqlJsDatabase, filePath: string) {
     this.db = db
@@ -40,11 +41,11 @@ export class Database {
 
   exec(sql: string): void {
     this.db.run(sql)
-    this.save()
+    this.saveIfNotInTransaction()
   }
 
   prepare(sql: string): WrappedStatement {
-    return new WrappedStatement(this.db, sql, () => this.save())
+    return new WrappedStatement(this.db, sql, () => this.saveIfNotInTransaction())
   }
 
   save(): void {
@@ -59,13 +60,27 @@ export class Database {
   }
 
   transaction(fn: () => void): void {
+    this.db.run('BEGIN')
+    this.transactionDepth++
     try {
-      this.exec('BEGIN')
       fn()
-      this.exec('COMMIT')
+      this.db.run('COMMIT')
+      this.transactionDepth--
+      this.save()
     } catch (e) {
-      this.exec('ROLLBACK')
+      try {
+        this.db.run('ROLLBACK')
+      } catch {
+        // Rollback may fail if transaction already invalid — ignore
+      }
+      this.transactionDepth = Math.max(0, this.transactionDepth - 1)
       throw e
+    }
+  }
+
+  private saveIfNotInTransaction(): void {
+    if (this.transactionDepth === 0) {
+      this.save()
     }
   }
 }

@@ -1,5 +1,5 @@
 import type { Database } from '../sqljs-wrapper'
-import type { Session } from '../../../shared/types'
+import type { Session, SessionWithGame } from '../../../shared/types'
 import type { SessionEndReason } from '../../../shared/constants'
 
 export function getByGameId(
@@ -25,7 +25,7 @@ export function getByDateRange(
   db: Database,
   startDate: string,
   endDate: string,
-): Session[] {
+): SessionWithGame[] {
   return db
     .prepare(
       `SELECT s.*, g.display_name as game_display_name
@@ -34,7 +34,7 @@ export function getByDateRange(
        WHERE s.started_at >= ? AND s.started_at < ?
        ORDER BY s.started_at DESC`,
     )
-    .all(startDate, endDate) as unknown as Session[]
+    .all(startDate, endDate) as unknown as SessionWithGame[]
 }
 
 export function create(
@@ -147,6 +147,36 @@ export function recoverOrphanedSessions(db: Database): number {
      WHERE ended_at IS NULL`,
   ).run(now)
   return result.changes
+}
+
+/**
+ * Get total play duration for a game.
+ */
+export function getTotalDurationForGame(
+  db: Database,
+  gameId: number,
+): number {
+  const row = db
+    .prepare(
+      'SELECT COALESCE(SUM(duration_seconds), 0) as total FROM sessions WHERE game_id = ?',
+    )
+    .get(gameId) as unknown as { total: number }
+  return row.total
+}
+
+/**
+ * Get the most recent sessions for a game.
+ */
+export function getRecentSessionsForGame(
+  db: Database,
+  gameId: number,
+  limit: number = 20,
+): Session[] {
+  return db
+    .prepare(
+      'SELECT * FROM sessions WHERE game_id = ? ORDER BY started_at DESC LIMIT ?',
+    )
+    .all(gameId, limit) as unknown as Session[]
 }
 
 /**

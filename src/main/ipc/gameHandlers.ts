@@ -1,6 +1,8 @@
 import type { IpcMain } from 'electron'
 import type { Database } from '../db/sqljs-wrapper'
 import * as gameRepo from '../db/repositories/gameRepository'
+import { launchGame } from '../services/gameLauncher'
+import { checkInstallStatus } from '../services/installChecker'
 import { IPC_CHANNELS } from '../../shared/ipc'
 
 export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
@@ -60,5 +62,21 @@ export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
 
   ipcMain.handle(IPC_CHANNELS.GAME_TOGGLE, (_event, id: number) => {
     gameRepo.toggleEnabled(db, id)
+  })
+
+  // ========== New handlers for v3 ==========
+
+  ipcMain.handle(IPC_CHANNELS.GAME_LAUNCH, (_event, gameId: number) => {
+    return launchGame(db, gameId)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.GAME_CHECK_INSTALL, (_event, gameId: number) => {
+    const installStatus = checkInstallStatus(db, gameId)
+    gameRepo.updateInstallStatus(db, gameId, installStatus)
+    return installStatus
+  })
+
+  ipcMain.handle(IPC_CHANNELS.GAME_COMPLETE, (_event, gameId: number) => {
+    gameRepo.updateGameStatus(db, gameId, 'completed')
   })
 }

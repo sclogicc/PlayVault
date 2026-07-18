@@ -35,14 +35,32 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.GAME_DELETE, id),
     toggleEnabled: (id: number) =>
       ipcRenderer.invoke(IPC_CHANNELS.GAME_TOGGLE, id),
+    launch: (gameId: number) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GAME_LAUNCH, gameId),
+    checkInstall: (gameId: number) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GAME_CHECK_INSTALL, gameId),
+    complete: (gameId: number) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GAME_COMPLETE, gameId),
   },
   executable: {
     getByGameId: (gameId: number) =>
       ipcRenderer.invoke(IPC_CHANNELS.EXE_GET_BY_GAME, gameId),
-    add: (data: { game_id: number; exe_name: string; install_path_hint?: string }) =>
-      ipcRenderer.invoke(IPC_CHANNELS.EXE_ADD, data),
+    add: (data: {
+      game_id: number
+      exe_name: string
+      install_path_hint?: string
+      file_path?: string
+      is_primary?: number
+    }) => ipcRenderer.invoke(IPC_CHANNELS.EXE_ADD, data),
     remove: (id: number) =>
       ipcRenderer.invoke(IPC_CHANNELS.EXE_REMOVE, id),
+    update: (id: number, data: {
+      exe_name?: string
+      file_path?: string
+      install_path_hint?: string
+      is_primary?: number
+      is_ignored?: number
+    }) => ipcRenderer.invoke(IPC_CHANNELS.EXE_UPDATE, id, data),
   },
   scanRoot: {
     getAll: () =>
@@ -98,6 +116,8 @@ const api = {
   dialog: {
     openDirectory: () =>
       ipcRenderer.invoke('dialog:openDirectory'),
+    openExecutable: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.DIALOG_OPEN_EXECUTABLE),
   },
   discover: {
     accept: (data: { candidateId: number; displayName?: string }) =>
@@ -148,6 +168,16 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_GET_PENDING_COUNT),
     rematch: () =>
       ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_REMATCH),
+    trash: (id: number) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_TRASH, id),
+    restore: (id: number) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_RESTORE, id),
+    permanentDelete: (id: number) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_PERMANENT_DELETE, id),
+  },
+  file: {
+    openLocation: (filePath: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.FILE_OPEN_LOCATION, filePath),
   },
 }
 

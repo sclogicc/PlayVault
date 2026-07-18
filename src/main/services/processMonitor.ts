@@ -131,6 +131,15 @@ async function poll(db: Database): Promise<void> {
             console.log(
               `[ProcessMonitor] Session started: game=${tracked.gameId} exe=${tracked.exeName} session=${tracked.sessionId}`,
             )
+
+            // Auto-transition game status: not_started → in_progress
+            const game = gameRepo.getGameById(db, tracked.gameId)
+            if (game && (game as unknown as { status: string }).status === 'not_started') {
+              gameRepo.updateGameStatus(db, tracked.gameId, 'in_progress')
+              console.log(
+                `[ProcessMonitor] Game status auto-transitioned: game=${tracked.gameId} not_started → in_progress`,
+              )
+            }
           }
         } else {
           // Process disappeared during warmup — discard

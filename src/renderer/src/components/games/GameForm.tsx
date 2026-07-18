@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import type { Game, GameFormData } from '@shared/types'
 import type { GameStatus } from '@shared/constants'
-import { GAME_STATUSES } from '@shared/constants'
+import { GAME_STATUSES, GAME_STATUS_LABELS } from '@shared/constants'
 import Modal from '../ui/Modal'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
@@ -36,7 +36,7 @@ export default function GameForm({
   const [name, setName] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [aliases, setAliases] = useState('')
-  const [status, setStatus] = useState<GameStatus>('游玩中')
+  const [status, setStatus] = useState<GameStatus>('not_started')
   const [platform, setPlatform] = useState('PC')
   const [tags, setTags] = useState('')
   const [screenshotFolderName, setScreenshotFolderName] = useState('')
@@ -62,7 +62,7 @@ export default function GameForm({
       setName('')
       setDisplayName('')
       setAliases('')
-      setStatus('游玩中')
+      setStatus('not_started')
       setPlatform('PC')
       setTags('')
       setScreenshotFolderName('')
@@ -107,7 +107,7 @@ export default function GameForm({
     }
   }
 
-  const statusOptions = GAME_STATUSES.map((s) => ({ value: s, label: s }))
+  const statusOptions = GAME_STATUSES.map((s) => ({ value: s, label: GAME_STATUS_LABELS[s] }))
 
   return (
     <Modal

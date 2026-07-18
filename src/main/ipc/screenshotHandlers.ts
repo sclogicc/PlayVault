@@ -63,4 +63,20 @@ export function registerScreenshotHandlers(
   ipcMain.handle(IPC_CHANNELS.SCREENSHOT_REMATCH, () => {
     return rematchPending(db)
   })
+
+  // Trash / Restore / Permanent Delete
+  ipcMain.handle(IPC_CHANNELS.SCREENSHOT_TRASH, (_event, id: number) => {
+    screenshotRepo.trashScreenshot(db, id)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.SCREENSHOT_RESTORE, (_event, id: number) => {
+    screenshotRepo.restoreScreenshot(db, id)
+  })
+
+  ipcMain.handle(
+    IPC_CHANNELS.SCREENSHOT_PERMANENT_DELETE,
+    (_event, id: number) => {
+      screenshotRepo.permanentDelete(db, id)
+    },
+  )
 }

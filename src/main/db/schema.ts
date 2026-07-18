@@ -103,9 +103,48 @@ const MIGRATIONS: Record<number, string[]> = {
 
     `ALTER TABLE sessions ADD COLUMN end_reason TEXT NOT NULL DEFAULT 'normal'`,
     `ALTER TABLE sessions ADD COLUMN process_path TEXT NOT NULL DEFAULT ''`,
-    `ALTER TABLE sessions ADD COLUMN created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))`,
-    `ALTER TABLE sessions ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))`,
+    `ALTER TABLE sessions ADD COLUMN created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP`,
+    `ALTER TABLE sessions ADD COLUMN updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP`,
   ],
+
+  // v3: status consolidation (6→3), install status, file_path, completed_at
+  3: [
+    // games: new columns
+    "ALTER TABLE games ADD COLUMN install_status TEXT NOT NULL DEFAULT 'installed'",
+    'ALTER TABLE games ADD COLUMN completed_at TEXT',
+
+    // Migrate Chinese status values to English machine values
+    "UPDATE games SET status = 'not_started' WHERE status = '未开始'",
+    "UPDATE games SET status = 'in_progress' WHERE status IN ('游玩中', '搁置', '弃坑')",
+    "UPDATE games SET status = 'completed' WHERE status IN ('已通关', '已全成就')",
+
+    // game_executables: file_path for full exe path
+    "ALTER TABLE game_executables ADD COLUMN file_path TEXT NOT NULL DEFAULT ''",
+
+    // Migrate install_path_hint to file_path where it looks like a full .exe path (contains backslash)
+    "UPDATE game_executables SET file_path = install_path_hint WHERE install_path_hint LIKE '%.exe' AND install_path_hint LIKE '%\\%'",
+
+    // Auto-set first exe per game as primary where none is set
+    'UPDATE game_executables SET is_primary = 1 WHERE id IN (SELECT MIN(id) FROM game_executables GROUP BY game_id) AND is_primary = 0',
+  ],
+
+  // v4: screenshot status overhaul — ignored→trashed, deleted state, timestamps
+  4: [
+    // New columns for screenshot lifecycle tracking
+    "ALTER TABLE screenshots ADD COLUMN deleted_at TEXT",
+    "ALTER TABLE screenshots ADD COLUMN updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP",
+
+    // Migrate 'ignored' status to 'trashed'
+    "UPDATE screenshots SET status = 'trashed' WHERE status = 'ignored'",
+  ],
+}
+
+/**
+ * Check if a column exists in a table.
+ */
+function columnExists(db: Database, table: string, column: string): boolean {
+  const rows = db.prepare(`PRAGMA table_info(${table})`).all() as unknown as Array<{ name: string }>
+  return rows.some((r) => r.name === column)
 }
 
 export function runMigrations(db: Database): void {
@@ -125,11 +164,22 @@ export function runMigrations(db: Database): void {
   for (const version of versions) {
     if (version <= currentVersion) continue
     const statements = MIGRATIONS[version]
-    db.transaction(() => {
-      for (const sql of statements) {
-        db.exec(sql)
+
+    // Execute each statement individually (no transaction).
+    // DDL (CREATE TABLE / ALTER TABLE) auto-commits in SQLite,
+    // making explicit transactions unreliable for migrations.
+    // All statements are idempotent — safe to re-run.
+    for (const sql of statements) {
+      const alterMatch = sql.match(/ALTER TABLE (\w+) ADD COLUMN (\w+)/i)
+      if (alterMatch) {
+        if (columnExists(db, alterMatch[1], alterMatch[2])) {
+          continue
+        }
       }
-      db.prepare('INSERT INTO _migrations (version) VALUES (?)').run(version)
-    })
+      db.exec(sql)
+    }
+    db.exec(
+      `INSERT INTO _migrations (version) VALUES (${version})`,
+    )
   }
 }

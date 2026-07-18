@@ -6,6 +6,7 @@ import { registerAllIpcHandlers } from './ipc'
 import * as sessionRepo from './db/repositories/sessionRepository'
 import { startMonitor, stopMonitor } from './services/processMonitor'
 import { startScreenshotWatcher, stopScreenshotWatcher } from './services/screenshotWatcher'
+import { refreshAllInstallStatus } from './services/installChecker'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -58,6 +59,9 @@ app.whenReady().then(async () => {
     console.log(`[Main] Recovered ${recovered} orphaned session(s)`)
   }
 
+  // Refresh install status for all games
+  refreshAllInstallStatus(db)
+
   // Start process monitor for auto session tracking
   startMonitor(db, 2000)
 
@@ -74,6 +78,12 @@ app.whenReady().then(async () => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+}).catch((err) => {
+  console.error('[Main] Fatal error during startup:', err)
+  // Show error dialog to user since there's no window yet
+  const { dialog } = require('electron')
+  dialog.showErrorBox('启动失败', `PlayVault 启动时发生致命错误:\n${err?.message ?? String(err)}`)
+  app.quit()
 })
 
 app.on('window-all-closed', () => {

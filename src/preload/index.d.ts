@@ -6,6 +6,8 @@ import type {
   Screenshot,
   ScanRoot,
   DiscoveredExecutable,
+  GameLaunchResult,
+  SessionWithGame,
 } from '../shared/types'
 import type { DiscoveredStatus, SessionEndReason, ScreenshotStatus } from '../shared/constants'
 
@@ -42,6 +44,9 @@ declare global {
         ) => Promise<void>
         delete: (id: number) => Promise<void>
         toggleEnabled: (id: number) => Promise<void>
+        launch: (gameId: number) => Promise<GameLaunchResult>
+        checkInstall: (gameId: number) => Promise<string>
+        complete: (gameId: number) => Promise<void>
       }
       executable: {
         getByGameId: (gameId: number) => Promise<GameExecutable[]>
@@ -49,8 +54,20 @@ declare global {
           game_id: number
           exe_name: string
           install_path_hint?: string
+          file_path?: string
+          is_primary?: number
         }) => Promise<{ lastInsertRowid: number }>
         remove: (id: number) => Promise<void>
+        update: (
+          id: number,
+          data: {
+            exe_name?: string
+            file_path?: string
+            install_path_hint?: string
+            is_primary?: number
+            is_ignored?: number
+          },
+        ) => Promise<void>
       }
       scanRoot: {
         getAll: () => Promise<ScanRoot[]>
@@ -86,7 +103,7 @@ declare global {
         getByDateRange: (
           startDate: string,
           endDate: string,
-        ) => Promise<Session[]>
+        ) => Promise<SessionWithGame[]>
         delete: (id: number) => Promise<void>
         endManually: (id: number) => Promise<void>
         updateTime: (
@@ -104,6 +121,7 @@ declare global {
       }
       dialog: {
         openDirectory: () => Promise<string | null>
+        openExecutable: () => Promise<string | null>
       }
       discover: {
         accept: (data: {
@@ -134,6 +152,12 @@ declare global {
         ) => Promise<void>
         getPendingCount: () => Promise<number>
         rematch: () => Promise<number>
+        trash: (id: number) => Promise<void>
+        restore: (id: number) => Promise<void>
+        permanentDelete: (id: number) => Promise<void>
+      }
+      file: {
+        openLocation: (filePath: string) => Promise<void>
       }
     }
   }

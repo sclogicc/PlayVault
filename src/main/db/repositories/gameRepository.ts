@@ -1,5 +1,6 @@
 import type { Database } from '../sqljs-wrapper'
 import type { Game, GameWithStats } from '../../../shared/types'
+import type { GameStatus, InstallStatus } from '../../../shared/constants'
 
 export function getAllGames(
   db: Database,
@@ -10,7 +11,7 @@ export function getAllGames(
       g.*,
       (SELECT COUNT(*) FROM game_executables WHERE game_id = g.id) as exe_count,
       (SELECT COALESCE(SUM(duration_seconds), 0) FROM sessions WHERE game_id = g.id) as total_duration,
-      (SELECT COUNT(*) FROM screenshots WHERE game_id = g.id) as screenshot_count,
+      (SELECT COUNT(*) FROM screenshots WHERE game_id = g.id AND status = 'classified') as screenshot_count,
       (SELECT MAX(ended_at) FROM sessions WHERE game_id = g.id) as last_played_at
     FROM games g
     WHERE 1=1
@@ -70,7 +71,7 @@ export function createGame(
       data.name,
       data.display_name ?? data.name,
       data.aliases ?? '[]',
-      data.status ?? '游玩中',
+      data.status ?? 'not_started',
       data.platform ?? 'PC',
       data.tags ?? '[]',
       data.screenshot_folder_name ?? '',
@@ -129,4 +130,64 @@ export function toggleEnabled(db: Database, id: number): void {
   db.prepare(
     "UPDATE games SET is_enabled = CASE WHEN is_enabled = 1 THEN 0 ELSE 1 END, updated_at = datetime('now','localtime') WHERE id = ?",
   ).run(id)
+}
+
+// ========== New methods for v3 ==========
+
+/**
+ * Update game status with optional completed_at timestamp.
+ * Used for auto-transition (not_started → in_progress) and manual completion.
+ */
+export function updateGameStatus(
+  db: Database,
+  id: number,
+  status: GameStatus,
+): void {
+  if (status === 'completed') {
+    db.prepare(
+      "UPDATE games SET status = ?, completed_at = datetime('now','localtime'), updated_at = datetime('now','localtime') WHERE id = ?",
+    ).run(status, id)
+  } else {
+    db.prepare(
+      "UPDATE games SET status = ?, updated_at = datetime('now','localtime') WHERE id = ?",
+    ).run(status, id)
+  }
+}
+
+/**
+ * Update install status (installed / missing).
+ */
+export function updateInstallStatus(
+  db: Database,
+  id: number,
+  installStatus: InstallStatus,
+): void {
+  db.prepare(
+    "UPDATE games SET install_status = ?, updated_at = datetime('now','localtime') WHERE id = ?",
+  ).run(installStatus, id)
+}
+
+/**
+ * Get single-game statistics for the detail page.
+ */
+export function getGameStats(
+  db: Database,
+  id: number,
+): { total_duration: number; session_count: number; screenshot_count: number; last_played_at: string | null } {
+  const row = db
+    .prepare(
+      `SELECT
+        COALESCE(SUM(duration_seconds), 0) as total_duration,
+        COUNT(*) as session_count,
+        (SELECT COUNT(*) FROM screenshots WHERE game_id = ? AND status = 'classified') as screenshot_count,
+        MAX(ended_at) as last_played_at
+      FROM sessions WHERE game_id = ?`,
+    )
+    .get(id, id) as unknown as {
+      total_duration: number
+      session_count: number
+      screenshot_count: number
+      last_played_at: string | null
+    }
+  return row
 }

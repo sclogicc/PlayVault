@@ -91,10 +91,10 @@ function processScreenshot(
   const capturedAt = extractCapturedAt(filePath)
   const hash = computeHash(filePath)
 
-  // Check for duplicate
+  // Check for duplicate (including deleted — don't re-import)
   const existing = db
-    .prepare('SELECT id FROM screenshots WHERE hash = ?')
-    .get(hash) as unknown as { id: number } | undefined
+    .prepare('SELECT id, status FROM screenshots WHERE hash = ?')
+    .get(hash) as unknown as { id: number; status: string } | undefined
   if (existing) return
 
   // Insert as pending
