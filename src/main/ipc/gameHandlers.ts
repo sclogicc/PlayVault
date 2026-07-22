@@ -30,6 +30,9 @@ export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
         tags?: string
         screenshot_folder_name?: string
         notes?: string
+        cover_path?: string
+        cover_crop?: string
+        banner_crop?: string
       },
     ) => {
       return gameRepo.createGame(db, data)
@@ -50,6 +53,9 @@ export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
         tags?: string
         screenshot_folder_name?: string
         notes?: string
+        cover_path?: string
+        cover_crop?: string
+        banner_crop?: string
       },
     ) => {
       gameRepo.updateGame(db, id, data)

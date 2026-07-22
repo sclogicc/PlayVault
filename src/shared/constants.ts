@@ -10,7 +10,7 @@ export const GAME_STATUSES: GameStatus[] = [
 
 export const GAME_STATUS_LABELS: Record<GameStatus, string> = {
   not_started: '未开始',
-  in_progress: '游玩中',
+  in_progress: '未通关',
   completed: '已通关',
 }
 

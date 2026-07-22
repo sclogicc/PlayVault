@@ -17,7 +17,7 @@ function toSqliteDate(date: Date): string {
 function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
-  return hours > 0 ? hours + " h " + minutes + " min" : minutes + " min"
+  return hours > 0 ? hours + " 小时 " + minutes + " 分钟" : minutes + " 分钟"
 }
 
 function formatTime(date: string): string {
@@ -47,8 +47,8 @@ export default function Timeline(): React.ReactElement {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-xl font-semibold text-archive-100">Timeline</h2>
-          <p className="text-sm text-archive-500 mt-0.5">Review each recorded play session by date.</p>
+          <h2 className="text-xl font-semibold text-archive-100">时间线</h2>
+          <p className="text-sm text-archive-500 mt-0.5">按日期回顾每一次已记录的游玩。</p>
         </div>
         <div className="flex gap-1.5">
           {RANGE_OPTIONS.map((option) => (
@@ -57,18 +57,18 @@ export default function Timeline(): React.ReactElement {
               onClick={() => setDays(option)}
               className={"px-3 py-1.5 text-xs rounded-archive border " + (days === option ? "bg-accent-teal/20 text-accent-teal border-accent-teal/30" : "bg-archive-800 text-archive-400 border-archive-700/50")}
             >
-              Last {option} days
+              近 {option} 天
             </button>
           ))}
         </div>
       </div>
 
       {isLoading ? (
-        <div className="card text-center py-12 text-archive-500">Loading...</div>
+        <div className="card text-center py-12 text-archive-500">加载中...</div>
       ) : Object.keys(groups).length === 0 ? (
         <div className="card text-center py-16">
           <CalendarDays size={44} className="text-archive-700 mx-auto mb-3" />
-          <p className="text-archive-400">No play history in this period.</p>
+          <p className="text-archive-400">这个时间段内没有游玩记录。</p>
         </div>
       ) : (
         <div className="space-y-5">
@@ -81,7 +81,7 @@ export default function Timeline(): React.ReactElement {
                     <CalendarDays size={15} className="text-accent-teal" />
                     <h3 className="text-sm font-medium text-archive-200">{new Date(date + "T00:00:00").toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}</h3>
                   </div>
-                  <span className="text-xs text-archive-400">Total {formatDuration(total)}</span>
+                  <span className="text-xs text-archive-400">合计 {formatDuration(total)}</span>
                 </div>
                 <div className="space-y-2">
                   {daySessions.map((session) => (
@@ -89,8 +89,8 @@ export default function Timeline(): React.ReactElement {
                       <div className="flex items-center gap-3 min-w-0">
                         <Gamepad2 size={15} className="text-archive-500 shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-sm text-archive-200 truncate">{session.game_display_name || "Unknown game"}</p>
-                          <p className="text-xs text-archive-500 mt-0.5">{formatTime(session.started_at)}{session.ended_at ? " - " + formatTime(session.ended_at) : " - active"} ? {session.exe_name}</p>
+                          <p className="text-sm text-archive-200 truncate">{session.game_display_name || "未知游戏"}</p>
+                          <p className="text-xs text-archive-500 mt-0.5">{formatTime(session.started_at)}{session.ended_at ? " - " + formatTime(session.ended_at) : " - 进行中"} · {session.exe_name}</p>
                         </div>
                       </div>
                       <div className="text-right shrink-0">

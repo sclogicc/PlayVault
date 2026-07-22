@@ -29,12 +29,14 @@ const STATUS_STYLES: Record<
 export default function StatusBadge({
   status,
 }: StatusBadgeProps): React.ReactElement {
-  const style = STATUS_STYLES[status]
+  // Existing databases can temporarily contain legacy values until migrations run.
+  const style = STATUS_STYLES[status] ?? STATUS_STYLES.not_started
+  const label = GAME_STATUS_LABELS[status] ?? GAME_STATUS_LABELS.not_started
   return (
     <span
       className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded border ${style.bg} ${style.text} ${style.border}`}
     >
-      {GAME_STATUS_LABELS[status]}
+      {label}
     </span>
   )
 }

@@ -52,6 +52,9 @@ export function useGameMutations() {
       tags?: string
       screenshot_folder_name?: string
       notes?: string
+      cover_path?: string
+      cover_crop?: string
+      banner_crop?: string
     }) => window.api.game.create(data),
     onSuccess: invalidate,
   })
@@ -71,6 +74,9 @@ export function useGameMutations() {
         tags?: string
         screenshot_folder_name?: string
         notes?: string
+        cover_path?: string
+        cover_crop?: string
+        banner_crop?: string
       }
     }) => window.api.game.update(id, data),
     onSuccess: invalidate,

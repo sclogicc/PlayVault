@@ -12,9 +12,23 @@ export function registerFileHandlers(ipcMain: IpcMain): void {
 
   ipcMain.handle(IPC_CHANNELS.DIALOG_OPEN_EXECUTABLE, async () => {
     const result = await dialog.showOpenDialog({
-      title: "Select game executable",
+      title: "选择游戏可执行文件",
       properties: ['openFile'],
-      filters: [{ name: "Executable files", extensions: ["exe"] }],
+      filters: [{ name: "可执行文件", extensions: ["exe"] }],
+    })
+    return result.canceled ? null : (result.filePaths[0] ?? null)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.DIALOG_OPEN_IMAGE, async () => {
+    const result = await dialog.showOpenDialog({
+      title: '选择游戏封面图片',
+      properties: ['openFile'],
+      filters: [
+        {
+          name: '图片文件',
+          extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'avif'],
+        },
+      ],
     })
     return result.canceled ? null : (result.filePaths[0] ?? null)
   })

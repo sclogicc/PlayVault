@@ -11,6 +11,7 @@ const MIGRATIONS: Record<number, string[]> = {
       platform TEXT NOT NULL DEFAULT 'PC',
       tags TEXT NOT NULL DEFAULT '[]',
       cover_path TEXT NOT NULL DEFAULT '',
+      cover_crop TEXT NOT NULL DEFAULT '',
       screenshot_folder_name TEXT NOT NULL DEFAULT '',
       notes TEXT NOT NULL DEFAULT '',
       is_enabled INTEGER NOT NULL DEFAULT 1,
@@ -136,6 +137,38 @@ const MIGRATIONS: Record<number, string[]> = {
 
     // Migrate 'ignored' status to 'trashed'
     "UPDATE screenshots SET status = 'trashed' WHERE status = 'ignored'",
+  ],
+
+  // v5: repair legacy status values that predate the machine-readable state model
+  5: [
+    "UPDATE games SET status = 'not_started' WHERE status = '\u672a\u5f00\u59cb'",
+    "UPDATE games SET status = 'in_progress' WHERE status IN ('\u6e38\u73a9\u4e2d', '\u6401\u7f6e', '\u5f03\u5751')",
+    "UPDATE games SET status = 'completed' WHERE status IN ('\u5df2\u901a\u5173', '\u5df2\u5168\u6210\u5c31')",
+    "UPDATE games SET status = 'not_started' WHERE status NOT IN ('not_started', 'in_progress', 'completed')",
+  ],
+
+  // v6: repair sessions ended manually before duration calculation was implemented
+  6: [
+    `UPDATE sessions
+     SET duration_seconds = MAX(0, CAST(
+       (julianday(ended_at) - julianday(started_at)) * 86400 AS INTEGER
+     ))
+     WHERE ended_at IS NOT NULL AND duration_seconds = 0`,
+  ],
+
+  // v7: optimize media protocol lookups by screenshot file path
+  7: [
+    'CREATE INDEX IF NOT EXISTS idx_shot_file_path ON screenshots(file_path)',
+  ],
+
+  // v8: persist per-game display crop without modifying the original cover image
+  8: [
+    "ALTER TABLE games ADD COLUMN cover_crop TEXT NOT NULL DEFAULT ''",
+  ],
+
+  // v9: keep the detail-page banner crop independent from the library cover crop
+  9: [
+    "ALTER TABLE games ADD COLUMN banner_crop TEXT NOT NULL DEFAULT ''",
   ],
 }
 

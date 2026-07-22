@@ -4,7 +4,7 @@ import type { DiscoveredStatus } from '../../../shared/constants'
 
 export function getAll(db: Database): DiscoveredExecutable[] {
   return db
-    .prepare('SELECT * FROM discovered_executables ORDER BY score DESC, file_name ASC')
+    .prepare("SELECT * FROM discovered_executables WHERE status != 'ignored' ORDER BY score DESC, file_name ASC")
     .all() as unknown as DiscoveredExecutable[]
 }
 

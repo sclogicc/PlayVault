@@ -1,7 +1,9 @@
-import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Screenshot, GameLaunchResult } from '@shared/types'
+import type { CoverCrop } from '@shared/coverCrop'
+import { getCoverImageStyle, parseCoverCrop, serializeCoverCrop } from '@shared/coverCrop'
 import {
   Monitor,
   Clock,
@@ -27,6 +29,8 @@ import {
 import StatusBadge from '../components/ui/StatusBadge'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Button from '../components/ui/Button'
+import ImageViewer from '../components/ui/ImageViewer'
+import CoverCropEditor from '../components/games/CoverCropEditor'
 import { useGame, useGameExecutables } from '../hooks/useGames'
 import { useSessions, useSessionMutations } from '../hooks/useSessions'
 import { toFileUrl } from '../lib/fileUrl'
@@ -34,6 +38,7 @@ import { toFileUrl } from '../lib/fileUrl'
 export default function GameDetail(): React.ReactElement {
   const { gameId } = useParams<{ gameId: string }>()
   const id = gameId ? parseInt(gameId) : null
+  const navigate = useNavigate()
   const qc = useQueryClient()
 
   const { data: game, isLoading: gameLoading } = useGame(id)
@@ -46,9 +51,23 @@ export default function GameDetail(): React.ReactElement {
     enabled: id !== null && id > 0,
   })
 
+  const activeSession = sessions.find((session) => !session.ended_at)
+  const [clockNow, setClockNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!activeSession) return
+
+    setClockNow(Date.now())
+    const timer = window.setInterval(() => setClockNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [activeSession?.id])
+
   const [deletingSessionId, setDeletingSessionId] = useState<number | null>(null)
+  const [deletingGame, setDeletingGame] = useState(false)
   const [completingGame, setCompletingGame] = useState(false)
   const [launchStatus, setLaunchStatus] = useState<string | null>(null)
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null)
+  const [coverCropEditorMode, setCoverCropEditorMode] = useState<'library' | 'banner' | null>(null)
+  const [coverCropPath, setCoverCropPath] = useState('')
 
   if (gameLoading) {
     return (
@@ -77,8 +96,8 @@ export default function GameDetail(): React.ReactElement {
     if (seconds === 0) return '—'
     const h = Math.floor(seconds / 3600)
     const m = Math.floor((seconds % 3600) / 60)
-    if (h === 0) return `${m}m`
-    return `${h}h ${m}m`
+    if (h === 0) return `${m} 分钟`
+    return `${h} 小时 ${m} 分钟`
   }
 
   const formatDate = (dateStr: string | null): string => {
@@ -127,6 +146,51 @@ export default function GameDetail(): React.ReactElement {
     window.api.file.openLocation(filePath)
   }
 
+  const handleSetCover = async (): Promise<void> => {
+    const coverPath = await window.api.dialog.openImage()
+    if (!coverPath) return
+
+    await window.api.game.update(game.id, {
+      cover_path: coverPath,
+      cover_crop: '',
+      banner_crop: '',
+    })
+    await qc.invalidateQueries({ queryKey: ['games'] })
+    setCoverCropPath(coverPath)
+    setCoverCropEditorMode('library')
+  }
+
+  const handleRemoveCover = async (): Promise<void> => {
+    await window.api.game.update(game.id, {
+      cover_path: '',
+      cover_crop: '',
+      banner_crop: '',
+    })
+    await qc.invalidateQueries({ queryKey: ['games'] })
+  }
+
+  const handleAdjustCover = (mode: 'library' | 'banner'): void => {
+    setCoverCropPath(game.cover_path)
+    setCoverCropEditorMode(mode)
+  }
+
+  const handleSaveCoverCrop = async (crop: CoverCrop): Promise<void> => {
+    if (!coverCropEditorMode) return
+
+    await window.api.game.update(game.id, {
+      [coverCropEditorMode === 'library' ? 'cover_crop' : 'banner_crop']:
+        serializeCoverCrop(crop),
+    })
+    await qc.invalidateQueries({ queryKey: ['games'] })
+    setCoverCropEditorMode(null)
+  }
+
+  const handleDeleteGame = async (): Promise<void> => {
+    await window.api.game.delete(game.id)
+    await qc.invalidateQueries({ queryKey: ['games'] })
+    navigate('/games')
+  }
+
   const handleRelink = async (): Promise<void> => {
     const filePath = await window.api.dialog.openExecutable()
     if (!filePath) return
@@ -154,11 +218,29 @@ export default function GameDetail(): React.ReactElement {
     await window.api.game.checkInstall(game.id)
     await qc.invalidateQueries({ queryKey: ["executables", game.id] })
     await qc.invalidateQueries({ queryKey: ["games"] })
-    setLaunchStatus("Executable path updated")
+    setLaunchStatus("可执行文件路径已更新")
     setTimeout(() => setLaunchStatus(null), 4000)
   }
 
-  const totalDuration = sessions.reduce((sum, s) => sum + s.duration_seconds, 0)
+  const getSessionDuration = (startedAt: string, endedAt: string | null, storedSeconds: number): number => {
+    if (storedSeconds > 0) return storedSeconds
+
+    const startedMs = new Date(startedAt.replace(' ', 'T')).getTime()
+    const endedMs = endedAt
+      ? new Date(endedAt.replace(' ', 'T')).getTime()
+      : clockNow
+    if (Number.isNaN(startedMs) || Number.isNaN(endedMs)) return 0
+    return Math.max(0, Math.floor((endedMs - startedMs) / 1000))
+  }
+
+  const totalDuration = sessions.reduce(
+    (sum, session) => sum + getSessionDuration(
+      session.started_at,
+      session.ended_at,
+      session.duration_seconds,
+    ),
+    0,
+  )
   const installStatus = (game as unknown as Record<string, unknown>).install_status as string ?? 'installed'
   const isInstalled = installStatus === 'installed'
   const isCompleted = game.status === 'completed'
@@ -183,11 +265,33 @@ export default function GameDetail(): React.ReactElement {
           {game.cover_path ? (
             <CoverImage
               coverPath={game.cover_path}
+              coverCrop={parseCoverCrop(game.banner_crop)}
               displayName={game.display_name}
             />
           ) : (
             <Gamepad2 size={64} className="text-archive-700" />
           )}
+          <div className="absolute right-3 top-3 flex gap-2">
+            <Button variant="secondary" size="sm" onClick={handleSetCover}>
+              <Image size={14} />
+              {game.cover_path ? '更换封面' : '设置封面'}
+            </Button>
+            {game.cover_path && (
+              <Button variant="secondary" size="sm" onClick={() => handleAdjustCover('library')}>
+                调整库封面
+              </Button>
+            )}
+            {game.cover_path && (
+              <Button variant="secondary" size="sm" onClick={() => handleAdjustCover('banner')}>
+                调整详情横幅
+              </Button>
+            )}
+            {game.cover_path && (
+              <Button variant="ghost" size="sm" onClick={handleRemoveCover}>
+                移除封面
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Info + actions */}
@@ -256,10 +360,23 @@ export default function GameDetail(): React.ReactElement {
                 <Play size={16} />
                 启动游戏
               </Button>
+              {activeSession && (
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    endManually.mutate({ id: activeSession.id, gameId: game.id })
+                  }
+                  disabled={endManually.isPending}
+                  title="停止 PlayVault 对当前这次游玩的计时，不会关闭游戏"
+                >
+                  <Square size={16} />
+                  结束本次游玩
+                </Button>
+              )}
               {!isInstalled && (
                 <Button variant="secondary" onClick={handleRelink}>
                   <FolderSearch size={16} />
-                  Relink executable
+                  重新绑定可执行文件
                 </Button>
               )}
               {!isCompleted ? (
@@ -281,6 +398,10 @@ export default function GameDetail(): React.ReactElement {
                   )}
                 </span>
               )}
+              <Button variant="danger" onClick={() => setDeletingGame(true)}>
+                <Trash2 size={16} />
+                删除游戏
+              </Button>
             </div>
           </div>
 
@@ -361,7 +482,7 @@ export default function GameDetail(): React.ReactElement {
                         </span>
                       )}
                       <span className="text-archive-300 font-mono">
-                        {formatDuration(s.duration_seconds)}
+                        {formatDuration(getSessionDuration(s.started_at, s.ended_at, s.duration_seconds))}
                       </span>
                       {endLabel && (
                         <span className="text-archive-600 text-[10px]">
@@ -406,11 +527,11 @@ export default function GameDetail(): React.ReactElement {
             <p className="text-xs text-archive-500">暂无截图</p>
           ) : (
             <div className="grid grid-cols-6 gap-2">
-              {gameScreenshots.slice(0, 24).map((shot) => (
+              {gameScreenshots.slice(0, 24).map((shot, index) => (
                 <ScreenshotThumb
                   key={shot.id}
                   shot={shot}
-                  onOpenLocation={handleOpenFileLocation}
+                  onPreview={() => setPreviewIndex(index)}
                 />
               ))}
             </div>
@@ -544,6 +665,38 @@ export default function GameDetail(): React.ReactElement {
         confirmLabel="确认已通关"
         variant="primary"
       />
+
+      <ConfirmDialog
+        open={deletingGame}
+        onClose={() => setDeletingGame(false)}
+        onConfirm={handleDeleteGame}
+        title="确认删除游戏"
+        message={`确定要删除「${game.display_name}」的 PlayVault 档案吗？可执行文件绑定和游玩记录会一并删除；截图会保留在截图箱中，但会取消归类。不会删除硬盘中的游戏文件。`}
+        confirmLabel="删除游戏"
+        variant="danger"
+      />
+
+      <ImageViewer
+        open={previewIndex !== null}
+        items={gameScreenshots.map((shot) => ({
+          filePath: shot.file_path,
+          fileName: shot.file_name,
+        }))}
+        activeIndex={previewIndex ?? 0}
+        onIndexChange={setPreviewIndex}
+        onClose={() => setPreviewIndex(null)}
+      />
+      <CoverCropEditor
+        open={coverCropEditorMode !== null}
+        filePath={coverCropPath}
+        initialCrop={parseCoverCrop(
+          coverCropEditorMode === 'library' ? game.cover_crop : game.banner_crop,
+        )}
+        aspectRatio={coverCropEditorMode === 'library' ? '2 / 3' : '16 / 9'}
+        title={coverCropEditorMode === 'library' ? '调整游戏库封面' : '调整详情页横幅'}
+        onClose={() => setCoverCropEditorMode(null)}
+        onSave={handleSaveCoverCrop}
+      />
     </div>
   )
 }
@@ -552,12 +705,18 @@ export default function GameDetail(): React.ReactElement {
 
 function CoverImage({
   coverPath,
+  coverCrop,
   displayName,
 }: {
   coverPath: string
+  coverCrop: CoverCrop
   displayName: string
 }): React.ReactElement {
   const [error, setError] = useState(false)
+
+  useEffect(() => {
+    setError(false)
+  }, [coverPath])
 
   if (error) {
     return <Gamepad2 size={64} className="text-archive-700" />
@@ -568,6 +727,7 @@ function CoverImage({
       src={toFileUrl(coverPath)}
       alt={displayName}
       className="w-full h-full object-cover"
+      style={getCoverImageStyle(coverCrop)}
       onError={() => setError(true)}
     />
   )
@@ -575,10 +735,10 @@ function CoverImage({
 
 function ScreenshotThumb({
   shot,
-  onOpenLocation,
+  onPreview,
 }: {
   shot: Screenshot
-  onOpenLocation: (path: string) => void
+  onPreview: () => void
 }): React.ReactElement {
   const [imgError, setImgError] = useState(false)
 
@@ -586,7 +746,7 @@ function ScreenshotThumb({
     <div
       className="aspect-video bg-archive-850 rounded overflow-hidden relative group cursor-pointer"
       title={shot.file_name}
-      onClick={() => onOpenLocation(shot.file_path)}
+      onClick={onPreview}
     >
       {!imgError ? (
         <img

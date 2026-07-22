@@ -28,6 +28,9 @@ declare global {
           tags?: string
           screenshot_folder_name?: string
           notes?: string
+          cover_path?: string
+          cover_crop?: string
+          banner_crop?: string
         }) => Promise<{ lastInsertRowid: number }>
         update: (
           id: number,
@@ -40,6 +43,9 @@ declare global {
             tags?: string
             screenshot_folder_name?: string
             notes?: string
+            cover_path?: string
+            cover_crop?: string
+            banner_crop?: string
           },
         ) => Promise<void>
         delete: (id: number) => Promise<void>
@@ -122,6 +128,7 @@ declare global {
       dialog: {
         openDirectory: () => Promise<string | null>
         openExecutable: () => Promise<string | null>
+        openImage: () => Promise<string | null>
       }
       discover: {
         accept: (data: {
@@ -155,6 +162,7 @@ declare global {
         trash: (id: number) => Promise<void>
         restore: (id: number) => Promise<void>
         permanentDelete: (id: number) => Promise<void>
+        permanentDeleteMany: (ids: number[]) => Promise<void>
       }
       file: {
         openLocation: (filePath: string) => Promise<void>

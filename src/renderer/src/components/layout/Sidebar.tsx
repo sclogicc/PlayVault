@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { NavLink, useParams, useLocation } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import type { GameWithStats } from '@shared/types'
 import type { GameStatus } from '@shared/constants'
+import { isLibraryCategoryActive } from '../../lib/libraryNavigation'
 import {
   LayoutDashboard,
   Gamepad2,
@@ -23,9 +24,7 @@ interface CategoryDef {
 }
 
 const LIBRARY_CATEGORIES: CategoryDef[] = [
-  { key: 'all', label: '全部游戏' },
-  { key: 'not_started', label: '未开始', status: 'not_started' },
-  { key: 'in_progress', label: '游玩中', status: 'in_progress' },
+  { key: 'in_progress', label: '未通关', status: 'in_progress' },
   { key: 'completed', label: '已通关', status: 'completed' },
 ]
 
@@ -38,13 +37,14 @@ interface NavItem {
   end?: boolean
 }
 
+const DASHBOARD_NAV_ITEM: NavItem = {
+  to: '/',
+  icon: <LayoutDashboard size={18} />,
+  label: '总览',
+  end: true,
+}
+
 const NAV_ITEMS: NavItem[] = [
-  {
-    to: '/',
-    icon: <LayoutDashboard size={18} />,
-    label: '总览',
-    end: true,
-  },
   {
     to: '/discover',
     icon: <Search size={18} />,
@@ -70,13 +70,11 @@ const NAV_ITEMS: NavItem[] = [
 // ========== Component ==========
 
 export default function Sidebar(): React.ReactElement {
-  const { gameId } = useParams<{ gameId: string }>()
   const location = useLocation()
-  const currentGameId = gameId ? parseInt(gameId) : null
 
   const [libraryOpen, setLibraryOpen] = useState(true)
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(['all']),
+    new Set(['in_progress']),
   )
 
   // Load all games (lightweight: just name + status)
@@ -106,8 +104,6 @@ export default function Sidebar(): React.ReactElement {
     })
   }
 
-  const isLibraryActive = location.pathname.startsWith('/games')
-
   return (
     <aside className="w-[220px] min-w-[220px] h-screen bg-archive-950 border-r border-archive-700/40 flex flex-col select-none">
       {/* Brand */}
@@ -120,27 +116,24 @@ export default function Sidebar(): React.ReactElement {
 
       {/* Navigation */}
       <nav className="flex-1 py-3 px-3 overflow-y-auto space-y-0.5">
-        {/* Static nav items */}
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            className={({ isActive }) =>
-              `sidebar-link ${isActive ? 'active' : ''}`
-            }
-          >
-            {item.icon}
-            <span className="text-sm">{item.label}</span>
-          </NavLink>
-        ))}
+        {/* Dashboard stays first; the library is the primary daily entry. */}
+        <NavLink
+          to={DASHBOARD_NAV_ITEM.to}
+          end={DASHBOARD_NAV_ITEM.end}
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? 'active' : ''}`
+          }
+        >
+          {DASHBOARD_NAV_ITEM.icon}
+          <span className="text-sm">{DASHBOARD_NAV_ITEM.label}</span>
+        </NavLink>
 
-        {/* ====== Library Section ====== */}
+        {/* Library follows the dashboard. */}
         <div className="mt-2 pt-2 border-t border-archive-700/30">
           {/* Library header (expandable) */}
           <button
             onClick={() => setLibraryOpen(!libraryOpen)}
-            className={`sidebar-link w-full ${isLibraryActive && !currentGameId ? 'active' : ''}`}
+            className="sidebar-link w-full"
           >
             <Gamepad2 size={18} />
             <span className="text-sm flex-1 text-left">游戏库</span>
@@ -181,9 +174,13 @@ export default function Sidebar(): React.ReactElement {
                       <NavLink
                         to={categoryPath}
                         end
-                        className={({ isActive }) =>
+                        className={() =>
                           `flex-1 flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
-                            isActive
+                            isLibraryCategoryActive(
+                              cat.key,
+                              location.pathname,
+                              location.search,
+                            )
                               ? 'text-accent-teal bg-accent-teal/10'
                               : 'text-archive-400 hover:text-archive-200 hover:bg-archive-800/50'
                           }`
@@ -229,6 +226,22 @@ export default function Sidebar(): React.ReactElement {
             </div>
           )}
         </div>
+
+        {/* Secondary nav items */}
+        {NAV_ITEMS.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              `sidebar-link ${isActive ? 'active' : ''}`
+            }
+          >
+            {item.icon}
+            <span className="text-sm">{item.label}</span>
+          </NavLink>
+        ))}
+
       </nav>
 
       {/* Footer */}

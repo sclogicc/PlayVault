@@ -145,6 +145,19 @@ export function permanentDelete(db: Database, id: number): void {
   ).run(id)
 }
 
+export function permanentDeleteMany(db: Database, ids: number[]): void {
+  if (ids.length === 0) return
+
+  const placeholders = ids.map(() => '?').join(',')
+  db.prepare(
+    `UPDATE screenshots
+     SET status = 'deleted',
+         deleted_at = datetime('now','localtime'),
+         updated_at = datetime('now','localtime')
+     WHERE id IN (${placeholders})`,
+  ).run(...ids)
+}
+
 /**
  * Check if a hash already exists with status 'deleted' (to skip re-import).
  */

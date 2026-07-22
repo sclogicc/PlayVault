@@ -1,4 +1,5 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron'
+import { readFile } from 'node:fs/promises'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { initDatabase, closeDatabase } from './db'
@@ -7,6 +8,52 @@ import * as sessionRepo from './db/repositories/sessionRepository'
 import { startMonitor, stopMonitor } from './services/processMonitor'
 import { startScreenshotWatcher, stopScreenshotWatcher } from './services/screenshotWatcher'
 import { refreshAllInstallStatus } from './services/installChecker'
+import { getImageMimeType } from './services/localImage'
+import { LOCAL_MEDIA_PROTOCOL, parseLocalMediaUrl } from '../shared/localMedia'
+import type { Database } from './db/sqljs-wrapper'
+
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: LOCAL_MEDIA_PROTOCOL,
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+    },
+  },
+])
+
+function isRegisteredMediaPath(db: Database, filePath: string): boolean {
+  return Boolean(
+    db
+      .prepare(
+        `SELECT 1 FROM games WHERE cover_path = ?
+         UNION ALL
+         SELECT 1 FROM screenshots WHERE file_path = ? AND status != 'deleted'
+         LIMIT 1`,
+      )
+      .get(filePath, filePath),
+  )
+}
+
+function registerLocalMediaProtocol(db: Database): void {
+  protocol.handle(LOCAL_MEDIA_PROTOCOL, async (request) => {
+    const filePath = parseLocalMediaUrl(request.url)
+    const mimeType = filePath ? getImageMimeType(filePath) : null
+    if (!filePath || !mimeType || !isRegisteredMediaPath(db, filePath)) {
+      return new Response(null, { status: 400 })
+    }
+
+    try {
+      const file = await readFile(filePath)
+      return new Response(file, {
+        headers: { 'Content-Type': mimeType },
+      })
+    } catch {
+      return new Response(null, { status: 404 })
+    }
+  })
+}
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -51,6 +98,7 @@ app.whenReady().then(async () => {
 
   // Initialize database and register IPC handlers
   const db = await initDatabase()
+  registerLocalMediaProtocol(db)
   registerAllIpcHandlers(ipcMain, db)
 
   // Recover orphaned sessions from previous abnormal exit

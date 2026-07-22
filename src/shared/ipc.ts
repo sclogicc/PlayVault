@@ -36,6 +36,7 @@ export const IPC_CHANNELS = {
   SCREENSHOT_TRASH: 'screenshot:trash',
   SCREENSHOT_RESTORE: 'screenshot:restore',
   SCREENSHOT_PERMANENT_DELETE: 'screenshot:permanentDelete',
+  SCREENSHOT_BATCH_PERMANENT_DELETE: 'screenshot:batchPermanentDelete',
 
   // AppSetting
   SETTING_GET: 'setting:get',
@@ -68,4 +69,5 @@ export const IPC_CHANNELS = {
   // File operations
   FILE_OPEN_LOCATION: 'file:openLocation',
   DIALOG_OPEN_EXECUTABLE: 'dialog:openExecutable',
+  DIALOG_OPEN_IMAGE: 'dialog:openImage',
 } as const

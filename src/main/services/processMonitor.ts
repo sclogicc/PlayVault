@@ -20,7 +20,7 @@ interface TrackedExe {
   gameId: number
   exeName: string
   processPath: string
-  state: 'idle' | 'warming' | 'running' | 'cooling'
+  state: 'idle' | 'warming' | 'running' | 'cooling' | 'manually_stopped'
   hitStreak: number
   missStreak: number
   firstSeenAt: string | null
@@ -194,6 +194,19 @@ async function poll(db: Database): Promise<void> {
           }
         }
         break
+
+      case 'manually_stopped':
+        // Keep this process ignored until it exits, so a manual stop cannot
+        // immediately become a new automatic Session on the next poll.
+        if (!isRunning) {
+          tracked.state = 'idle'
+          tracked.hitStreak = 0
+          tracked.missStreak = 0
+          tracked.firstSeenAt = null
+          tracked.lastSeenAt = null
+          tracked.processPath = ''
+        }
+        break
     }
   }
 }
@@ -230,6 +243,24 @@ export function stopMonitor(): void {
     monitorTimer = null
     trackedExes.clear()
     console.log('[ProcessMonitor] Stopped')
+  }
+}
+
+/**
+ * Ends an active Session and pauses its tracked process until that process exits.
+ * This keeps a deliberate manual stop from being overwritten by the monitor.
+ */
+export function manuallyEndTrackedSession(db: Database, sessionId: number): void {
+  sessionRepo.manuallyEndSession(db, sessionId)
+
+  for (const tracked of trackedExes.values()) {
+    if (tracked.sessionId !== sessionId) continue
+
+    tracked.sessionId = null
+    tracked.state = 'manually_stopped'
+    tracked.hitStreak = 0
+    tracked.missStreak = 0
+    return
   }
 }
 

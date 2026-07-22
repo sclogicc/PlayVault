@@ -18,6 +18,8 @@ export interface Game {
   platform: string
   tags: string
   cover_path: string
+  cover_crop: string
+  banner_crop: string
   screenshot_folder_name: string
   notes: string
   is_enabled: 0 | 1

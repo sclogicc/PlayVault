@@ -79,4 +79,11 @@ export function registerScreenshotHandlers(
       screenshotRepo.permanentDelete(db, id)
     },
   )
+
+  ipcMain.handle(
+    IPC_CHANNELS.SCREENSHOT_BATCH_PERMANENT_DELETE,
+    (_event, ids: number[]) => {
+      screenshotRepo.permanentDeleteMany(db, ids)
+    },
+  )
 }

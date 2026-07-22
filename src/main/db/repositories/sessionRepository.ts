@@ -139,13 +139,17 @@ export function getAllActiveSessions(db: Database): Session[] {
  * with end_reason = 'recovered'. Called on app startup.
  */
 export function recoverOrphanedSessions(db: Database): number {
-  const now = new Date().toISOString().replace('T', ' ').slice(0, 19)
   const result = db.prepare(
     `UPDATE sessions
-     SET ended_at = ?, end_reason = 'recovered',
+     SET ended_at = datetime('now'),
+         duration_seconds = MAX(0, CAST(
+           (julianday(datetime('now')) - julianday(started_at)) * 86400
+           AS INTEGER
+         )),
+         end_reason = 'recovered',
          updated_at = datetime('now','localtime')
      WHERE ended_at IS NULL`,
-  ).run(now)
+  ).run()
   return result.changes
 }
 
@@ -183,11 +187,15 @@ export function getRecentSessionsForGame(
  * Manually end an active session.
  */
 export function manuallyEndSession(db: Database, id: number): void {
-  const now = new Date().toISOString().replace('T', ' ').slice(0, 19)
   db.prepare(
     `UPDATE sessions
-     SET ended_at = ?, end_reason = 'manual',
+     SET ended_at = datetime('now'),
+         duration_seconds = MAX(0, CAST(
+           (julianday(datetime('now')) - julianday(started_at)) * 86400
+           AS INTEGER
+         )),
+         end_reason = 'manual',
          updated_at = datetime('now','localtime')
      WHERE id = ? AND ended_at IS NULL`,
-  ).run(now, id)
+  ).run(id)
 }

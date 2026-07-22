@@ -1,6 +1,7 @@
 import type { IpcMain } from 'electron'
 import type { Database } from '../db/sqljs-wrapper'
 import * as sessionRepo from '../db/repositories/sessionRepository'
+import { manuallyEndTrackedSession } from '../services/processMonitor'
 import { IPC_CHANNELS } from '../../shared/ipc'
 import type { SessionEndReason } from '../../shared/constants'
 
@@ -28,7 +29,7 @@ export function registerSessionHandlers(ipcMain: IpcMain, db: Database): void {
   })
 
   ipcMain.handle(IPC_CHANNELS.SESSION_END_MANUALLY, (_event, id: number) => {
-    sessionRepo.manuallyEndSession(db, id)
+    manuallyEndTrackedSession(db, id)
   })
 
   ipcMain.handle(

@@ -17,6 +17,9 @@ const api = {
       tags?: string
       screenshot_folder_name?: string
       notes?: string
+      cover_path?: string
+      cover_crop?: string
+      banner_crop?: string
     }) => ipcRenderer.invoke(IPC_CHANNELS.GAME_CREATE, data),
     update: (
       id: number,
@@ -29,6 +32,9 @@ const api = {
         tags?: string
         screenshot_folder_name?: string
         notes?: string
+        cover_path?: string
+        cover_crop?: string
+        banner_crop?: string
       },
     ) => ipcRenderer.invoke(IPC_CHANNELS.GAME_UPDATE, id, data),
     delete: (id: number) =>
@@ -118,6 +124,8 @@ const api = {
       ipcRenderer.invoke('dialog:openDirectory'),
     openExecutable: () =>
       ipcRenderer.invoke(IPC_CHANNELS.DIALOG_OPEN_EXECUTABLE),
+    openImage: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.DIALOG_OPEN_IMAGE),
   },
   discover: {
     accept: (data: { candidateId: number; displayName?: string }) =>
@@ -174,6 +182,8 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_RESTORE, id),
     permanentDelete: (id: number) =>
       ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_PERMANENT_DELETE, id),
+    permanentDeleteMany: (ids: number[]) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_BATCH_PERMANENT_DELETE, ids),
   },
   file: {
     openLocation: (filePath: string) =>

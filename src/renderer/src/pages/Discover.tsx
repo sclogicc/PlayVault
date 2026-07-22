@@ -65,7 +65,7 @@ export default function Discover(): React.ReactElement {
 
   const statusFilterOptions = [
     { value: '全部', label: '全部' },
-    ...DISCOVERED_STATUSES.map((s) => ({
+    ...DISCOVERED_STATUSES.filter((s) => s !== 'ignored').map((s) => ({
       value: s,
       label: DISCOVERED_STATUS_LABELS[s],
     })),

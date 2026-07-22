@@ -58,14 +58,17 @@ export function createGame(
     tags?: string
     screenshot_folder_name?: string
     notes?: string
+    cover_path?: string
+    cover_crop?: string
+    banner_crop?: string
     is_enabled?: number
   },
 ): { lastInsertRowid: number } {
   const result = db
     .prepare(
       `INSERT INTO games (name, display_name, aliases, status, platform, tags,
-        screenshot_folder_name, notes, is_enabled)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        cover_path, cover_crop, banner_crop, screenshot_folder_name, notes, is_enabled)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       data.name,
@@ -74,6 +77,9 @@ export function createGame(
       data.status ?? 'not_started',
       data.platform ?? 'PC',
       data.tags ?? '[]',
+      data.cover_path ?? '',
+      data.cover_crop ?? '',
+      data.banner_crop ?? '',
       data.screenshot_folder_name ?? '',
       data.notes ?? '',
       data.is_enabled ?? 1,
@@ -94,6 +100,9 @@ export function updateGame(
     tags?: string
     screenshot_folder_name?: string
     notes?: string
+    cover_path?: string
+    cover_crop?: string
+    banner_crop?: string
     is_enabled?: number
   },
 ): void {
@@ -109,6 +118,9 @@ export function updateGame(
     'tags',
     'screenshot_folder_name',
     'notes',
+    'cover_path',
+    'cover_crop',
+    'banner_crop',
     'is_enabled',
   ]
   for (const key of allowed) {
@@ -123,7 +135,18 @@ export function updateGame(
 }
 
 export function deleteGame(db: Database, id: number): void {
-  db.prepare('DELETE FROM games WHERE id = ?').run(id)
+  db.transaction(() => {
+    // Keep the original screenshot files and return their records to the inbox.
+    db.prepare(
+      `UPDATE screenshots
+       SET game_id = NULL,
+           session_id = NULL,
+           status = CASE WHEN status = 'classified' THEN 'pending' ELSE status END,
+           updated_at = datetime('now','localtime')
+       WHERE game_id = ? AND status != 'deleted'`,
+    ).run(id)
+    db.prepare('DELETE FROM games WHERE id = ?').run(id)
+  })
 }
 
 export function toggleEnabled(db: Database, id: number): void {
