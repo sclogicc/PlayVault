@@ -4,7 +4,7 @@ import type { ArchiveStatus, GameStatus, InstallStatus } from '../../../shared/c
 
 export function getAllGames(
   db: Database,
-  filters?: { search?: string; status?: string; archiveStatus?: ArchiveStatus },
+  filters?: { search?: string; status?: string; archiveStatus?: ArchiveStatus; archiveSort?: 'asc' | 'desc' },
 ): GameWithStats[] {
   let sql = `
     SELECT
@@ -32,12 +32,24 @@ export function getAllGames(
     params.push(filters.status)
   }
 
-  sql += ' ORDER BY g.is_enabled DESC, g.updated_at DESC'
+  if (filters?.archiveStatus === 'archived') {
+    const direction = filters.archiveSort === 'asc' ? 'ASC' : 'DESC'
+    sql += ` ORDER BY COALESCE(g.archived_at, g.updated_at) ${direction}, g.id ${direction}`
+  } else {
+    sql += ' ORDER BY g.is_enabled DESC, g.updated_at DESC'
+  }
   return db.prepare(sql).all(...params) as unknown as GameWithStats[]
 }
 
-export function getArchivedGames(db: Database, filters?: { search?: string }): GameWithStats[] {
-  return getAllGames(db, { ...filters, archiveStatus: 'archived' })
+export function getArchivedGames(
+  db: Database,
+  filters?: { search?: string; sortOrder?: 'asc' | 'desc' },
+): GameWithStats[] {
+  return getAllGames(db, {
+    search: filters?.search,
+    archiveStatus: 'archived',
+    archiveSort: filters?.sortOrder ?? 'desc',
+  })
 }
 
 export function getGameById(db: Database, id: number): Game | undefined {

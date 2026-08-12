@@ -55,7 +55,7 @@ declare global {
         ) => Promise<void>
         delete: (id: number) => Promise<void>
         toggleEnabled: (id: number) => Promise<void>
-        getArchived: (filters?: { search?: string }) => Promise<GameWithStats[]>
+        getArchived: (filters?: { search?: string; sortOrder?: 'asc' | 'desc' }) => Promise<GameWithStats[]>
         archive: (data: { gameId: number; screenshotIds?: number[] }) => Promise<ArchiveGameResult>
         launch: (gameId: number) => Promise<GameLaunchResult>
         checkInstall: (gameId: number) => Promise<string>

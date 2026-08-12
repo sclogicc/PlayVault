@@ -20,7 +20,7 @@ export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
 
   ipcMain.handle(
     IPC_CHANNELS.GAME_GET_ARCHIVED,
-    (_event, filters?: { search?: string }) => gameRepo.getArchivedGames(db, filters),
+    (_event, filters?: { search?: string; sortOrder?: 'asc' | 'desc' }) => gameRepo.getArchivedGames(db, filters),
   )
 
   ipcMain.handle(
