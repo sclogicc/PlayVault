@@ -239,6 +239,13 @@ export default function GameDetail(): React.ReactElement {
       })
     }
 
+    // Explicitly update primary flag for others just in case
+    for (const e of exes) {
+      if (e.is_primary === 1 && (!executable || e.id !== executable.id)) {
+        await window.api.executable.update(e.id, { is_primary: 0 })
+      }
+    }
+
     await window.api.game.checkInstall(game.id)
     await qc.invalidateQueries({ queryKey: ["executables", game.id] })
     await qc.invalidateQueries({ queryKey: ["games"] })
@@ -365,13 +372,13 @@ export default function GameDetail(): React.ReactElement {
               <div className="flex items-center gap-3 text-sm">
                 <span className="flex items-center gap-1.5">
                   <HardDrive size={13} className="text-archive-500" />
-                  <span className={isInstalled ? 'text-accent-teal' : 'text-accent-red'}>
+                  <span className={isInstalled ? 'text-accent-teal font-medium' : 'text-accent-red font-medium'}>
                     {INSTALL_STATUS_LABELS[installStatus as keyof typeof INSTALL_STATUS_LABELS] ?? installStatus}
                   </span>
                 </span>
                 {primaryExe?.file_path && (
                   <span
-                    className="text-archive-500 truncate max-w-[300px] cursor-pointer hover:text-archive-300"
+                    className="text-archive-500 truncate max-w-[300px] cursor-pointer hover:text-archive-300 underline decoration-archive-700 underline-offset-4"
                     title={primaryExe.file_path}
                     onClick={() => handleOpenFileLocation(primaryExe.file_path)}
                   >
@@ -379,9 +386,9 @@ export default function GameDetail(): React.ReactElement {
                   </span>
                 )}
                 {!isInstalled && (
-                  <span className="flex items-center gap-1 text-accent-red text-xs">
+                  <span className="flex items-center gap-1 text-accent-red text-xs bg-accent-red/10 px-2 py-0.5 rounded border border-accent-red/20">
                     <AlertTriangle size={12} />
-                    游戏未安装或路径失效
+                    路径失效
                   </span>
                 )}
               </div>

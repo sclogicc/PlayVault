@@ -17,7 +17,14 @@ export function parseLocalMediaUrl(requestUrl: string): string | null {
     }
 
     const encodedPath = url.pathname.slice(1)
-    return encodedPath ? decodeURIComponent(encodedPath) : null
+    const decoded = decodeURIComponent(encodedPath)
+    // If it starts with / (Linux) or C: (Windows), return as is.
+    // In Chromium URL, hostname 'file' means protocol://file/path.
+    // url.pathname starts with /, so slice(1) might remove the leading / of a Linux path.
+    if (encodedPath.startsWith('%2F') || encodedPath.startsWith('/')) {
+      return decoded.startsWith('/') ? decoded : '/' + decoded
+    }
+    return decoded || null
   } catch {
     return null
   }

@@ -56,6 +56,8 @@ function processScreenshot(
   const existing = db
     .prepare('SELECT id, status FROM screenshots WHERE hash = ?')
     .get(hash) as unknown as { id: number; status: string } | undefined
+  
+  // If it exists, even if it's 'deleted', we don't re-import it.
   if (existing) return
 
   // Insert as pending
