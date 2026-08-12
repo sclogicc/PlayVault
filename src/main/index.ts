@@ -4,11 +4,11 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { initDatabase, closeDatabase } from './db'
 import { registerAllIpcHandlers } from './ipc'
-import * as sessionRepo from './db/repositories/sessionRepository'
-import { startMonitor, stopMonitor } from './services/processMonitor'
+import { resumeOrCloseTrackedSessions, startMonitor, stopMonitor } from './services/processMonitor'
 import { startScreenshotWatcher, stopScreenshotWatcher } from './services/screenshotWatcher'
 import { refreshAllInstallStatus } from './services/installChecker'
 import { getImageMimeType } from './services/localImage'
+import { isRegisteredMediaPath } from './services/mediaRegistry'
 import { LOCAL_MEDIA_PROTOCOL, parseLocalMediaUrl } from '../shared/localMedia'
 import type { Database } from './db/sqljs-wrapper'
 
@@ -22,19 +22,6 @@ protocol.registerSchemesAsPrivileged([
     },
   },
 ])
-
-function isRegisteredMediaPath(db: Database, filePath: string): boolean {
-  return Boolean(
-    db
-      .prepare(
-        `SELECT 1 FROM games WHERE cover_path = ?
-         UNION ALL
-         SELECT 1 FROM screenshots WHERE file_path = ? AND status != 'deleted'
-         LIMIT 1`,
-      )
-      .get(filePath, filePath),
-  )
-}
 
 function registerLocalMediaProtocol(db: Database): void {
   protocol.handle(LOCAL_MEDIA_PROTOCOL, async (request) => {
@@ -101,10 +88,10 @@ app.whenReady().then(async () => {
   registerLocalMediaProtocol(db)
   registerAllIpcHandlers(ipcMain, db)
 
-  // Recover orphaned sessions from previous abnormal exit
-  const recovered = sessionRepo.recoverOrphanedSessions(db)
-  if (recovered > 0) {
-    console.log(`[Main] Recovered ${recovered} orphaned session(s)`)
+  // Resume games that are still alive, otherwise close at their last verified heartbeat.
+  const resumed = await resumeOrCloseTrackedSessions(db)
+  if (resumed > 0) {
+    console.log(`[Main] Resumed ${resumed} active session(s)`)
   }
 
   // Refresh install status for all games

@@ -34,6 +34,11 @@ import CoverCropEditor from '../components/games/CoverCropEditor'
 import { useGame, useGameExecutables } from '../hooks/useGames'
 import { useSessions, useSessionMutations } from '../hooks/useSessions'
 import { toFileUrl } from '../lib/fileUrl'
+import {
+  SCREENSHOT_GRID_CLASS,
+  SCREENSHOT_PANEL_SCROLL_CLASS,
+  SESSION_PANEL_SCROLL_CLASS,
+} from '../lib/gameDetailPanelLayout'
 
 export default function GameDetail(): React.ReactElement {
   const { gameId } = useParams<{ gameId: string }>()
@@ -66,8 +71,8 @@ export default function GameDetail(): React.ReactElement {
   const [completingGame, setCompletingGame] = useState(false)
   const [launchStatus, setLaunchStatus] = useState<string | null>(null)
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
-  const [coverCropEditorMode, setCoverCropEditorMode] = useState<'library' | 'banner' | null>(null)
-  const [coverCropPath, setCoverCropPath] = useState('')
+  const [mediaEditorMode, setMediaEditorMode] = useState<'cover' | 'background' | null>(null)
+  const [mediaEditorPath, setMediaEditorPath] = useState('')
 
   if (gameLoading) {
     return (
@@ -153,36 +158,55 @@ export default function GameDetail(): React.ReactElement {
     await window.api.game.update(game.id, {
       cover_path: coverPath,
       cover_crop: '',
-      banner_crop: '',
     })
     await qc.invalidateQueries({ queryKey: ['games'] })
-    setCoverCropPath(coverPath)
-    setCoverCropEditorMode('library')
+    setMediaEditorPath(coverPath)
+    setMediaEditorMode('cover')
   }
 
   const handleRemoveCover = async (): Promise<void> => {
     await window.api.game.update(game.id, {
       cover_path: '',
       cover_crop: '',
-      banner_crop: '',
     })
     await qc.invalidateQueries({ queryKey: ['games'] })
   }
 
-  const handleAdjustCover = (mode: 'library' | 'banner'): void => {
-    setCoverCropPath(game.cover_path)
-    setCoverCropEditorMode(mode)
-  }
-
-  const handleSaveCoverCrop = async (crop: CoverCrop): Promise<void> => {
-    if (!coverCropEditorMode) return
+  const handleSetBackground = async (): Promise<void> => {
+    const backgroundPath = await window.api.dialog.openImage()
+    if (!backgroundPath) return
 
     await window.api.game.update(game.id, {
-      [coverCropEditorMode === 'library' ? 'cover_crop' : 'banner_crop']:
+      background_path: backgroundPath,
+      background_crop: '',
+    })
+    await qc.invalidateQueries({ queryKey: ['games'] })
+    setMediaEditorPath(backgroundPath)
+    setMediaEditorMode('background')
+  }
+
+  const handleRemoveBackground = async (): Promise<void> => {
+    await window.api.game.update(game.id, {
+      background_path: '',
+      background_crop: '',
+    })
+    await qc.invalidateQueries({ queryKey: ['games'] })
+  }
+
+  const handleAdjustMedia = (mode: 'cover' | 'background'): void => {
+    setMediaEditorPath(mode === 'cover' ? game.cover_path : game.background_path)
+    setMediaEditorMode(mode)
+  }
+
+  const handleSaveMediaCrop = async (crop: CoverCrop): Promise<void> => {
+    if (!mediaEditorMode) return
+
+    await window.api.game.update(game.id, {
+      [mediaEditorMode === 'cover' ? 'cover_crop' : 'background_crop']:
         serializeCoverCrop(crop),
     })
     await qc.invalidateQueries({ queryKey: ['games'] })
-    setCoverCropEditorMode(null)
+    setMediaEditorMode(null)
   }
 
   const handleDeleteGame = async (): Promise<void> => {
@@ -260,50 +284,75 @@ export default function GameDetail(): React.ReactElement {
 
       {/* ========== Hero Section ========== */}
       <div className="card overflow-hidden !p-0">
-        {/* Cover area */}
-        <div className="h-48 bg-gradient-to-br from-archive-800 via-archive-850 to-archive-900 flex items-center justify-center relative">
-          {game.cover_path ? (
+        {/* Background artwork is intentionally separate from the game cover. */}
+        <div className="h-[250px] sm:h-[300px] lg:h-[340px] bg-gradient-to-br from-archive-800 via-archive-850 to-archive-900 flex items-center justify-center relative overflow-hidden">
+          {game.background_path ? (
             <CoverImage
-              coverPath={game.cover_path}
-              coverCrop={parseCoverCrop(game.banner_crop)}
-              displayName={game.display_name}
+              coverPath={game.background_path}
+              coverCrop={parseCoverCrop(game.background_crop)}
+              displayName={`${game.display_name} 背景图`}
             />
           ) : (
             <Gamepad2 size={64} className="text-archive-700" />
           )}
           <div className="absolute right-3 top-3 flex gap-2">
-            <Button variant="secondary" size="sm" onClick={handleSetCover}>
+            <Button variant="secondary" size="sm" onClick={handleSetBackground}>
               <Image size={14} />
-              {game.cover_path ? '更换封面' : '设置封面'}
+              {game.background_path ? '更换背景图' : '设置背景图'}
             </Button>
-            {game.cover_path && (
-              <Button variant="secondary" size="sm" onClick={() => handleAdjustCover('library')}>
-                调整库封面
+            {game.background_path && (
+              <Button variant="secondary" size="sm" onClick={() => handleAdjustMedia('background')}>
+                调整背景图
               </Button>
             )}
-            {game.cover_path && (
-              <Button variant="secondary" size="sm" onClick={() => handleAdjustCover('banner')}>
-                调整详情横幅
-              </Button>
-            )}
-            {game.cover_path && (
-              <Button variant="ghost" size="sm" onClick={handleRemoveCover}>
-                移除封面
+            {game.background_path && (
+              <Button variant="ghost" size="sm" onClick={handleRemoveBackground}>
+                移除背景图
               </Button>
             )}
           </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-archive-900 via-archive-900/75 to-transparent" />
         </div>
 
-        {/* Info + actions */}
-        <div className="p-6">
+        {/* Steam-like transition: the game controls emerge from the background fade. */}
+        <div className="relative -mt-24 bg-gradient-to-b from-archive-900/0 via-archive-900 to-archive-900 px-6 pb-6 pt-12">
           <div className="flex items-start justify-between flex-wrap gap-4">
-            <div className="space-y-2 flex-1 min-w-0">
+            <div className="flex items-start gap-5 flex-1 min-w-0">
+              <div className="w-24 shrink-0 aspect-[2/3] overflow-hidden rounded border border-archive-700/60 bg-archive-900 flex items-center justify-center">
+                {game.cover_path ? (
+                  <CoverImage
+                    coverPath={game.cover_path}
+                    coverCrop={parseCoverCrop(game.cover_crop)}
+                    displayName={`${game.display_name} 封面`}
+                  />
+                ) : (
+                  <Gamepad2 size={30} className="text-archive-700" />
+                )}
+              </div>
+              <div className="space-y-2 flex-1 min-w-0">
               {/* Name + Status */}
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold text-archive-100">
                   {game.display_name}
                 </h2>
                 <StatusBadge status={game.status as GameStatus} />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" size="sm" onClick={handleSetCover}>
+                  <Image size={14} />
+                  {game.cover_path ? '更换封面' : '设置封面'}
+                </Button>
+                {game.cover_path && (
+                  <Button variant="secondary" size="sm" onClick={() => handleAdjustMedia('cover')}>
+                    调整封面
+                  </Button>
+                )}
+                {game.cover_path && (
+                  <Button variant="ghost" size="sm" onClick={handleRemoveCover}>
+                    移除封面
+                  </Button>
+                )}
               </div>
 
               {game.display_name !== game.name && (
@@ -337,6 +386,7 @@ export default function GameDetail(): React.ReactElement {
                 )}
               </div>
             </div>
+            </div>
 
             {/* Action buttons */}
             <div className="flex items-center gap-2 shrink-0">
@@ -351,6 +401,11 @@ export default function GameDetail(): React.ReactElement {
                   {launchStatus}
                 </span>
               )}
+              {activeSession && (
+                <span className="text-xs px-3 py-1.5 rounded-archive bg-accent-teal/15 text-accent-teal">
+                  正在自动记录
+                </span>
+              )}
               <Button
                 variant="primary"
                 onClick={handleLaunch}
@@ -362,15 +417,16 @@ export default function GameDetail(): React.ReactElement {
               </Button>
               {activeSession && (
                 <Button
-                  variant="secondary"
+                  variant="ghost"
+                  size="sm"
                   onClick={() =>
                     endManually.mutate({ id: activeSession.id, gameId: game.id })
                   }
                   disabled={endManually.isPending}
-                  title="停止 PlayVault 对当前这次游玩的计时，不会关闭游戏"
+                  title="异常兜底：正常退出游戏后，PlayVault 会自动结束计时"
                 >
                   <Square size={16} />
-                  结束本次游玩
+                  停止计时
                 </Button>
               )}
               {!isInstalled && (
@@ -448,8 +504,8 @@ export default function GameDetail(): React.ReactElement {
           ) : sessions.length === 0 ? (
             <p className="text-xs text-archive-500">暂无游玩记录</p>
           ) : (
-            <div className="space-y-1.5">
-              {sessions.slice(0, 20).map((s) => {
+            <div className={`${SESSION_PANEL_SCROLL_CLASS} space-y-1`}>
+              {sessions.map((s) => {
                 const endReason =
                   (s as unknown as Record<string, unknown>).end_reason as string | undefined
                 let endLabel = ''
@@ -462,10 +518,10 @@ export default function GameDetail(): React.ReactElement {
                 return (
                   <div
                     key={s.id}
-                    className="flex items-center justify-between py-2 px-3 bg-archive-850 rounded text-sm"
+                    className="flex items-center justify-between gap-2 py-1.5 px-2.5 bg-archive-850 rounded text-xs"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-archive-200 font-mono">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
+                      <span className="text-archive-200 font-mono shrink-0">
                         {s.exe_name}
                       </span>
                       <span className="text-archive-500 text-xs">
@@ -497,7 +553,7 @@ export default function GameDetail(): React.ReactElement {
                             endManually.mutate({ id: s.id, gameId: game.id })
                           }
                           className="p-1 text-archive-400 hover:text-accent-teal transition-colors rounded"
-                          title="手动结束"
+                          title="停止计时（正常退出游戏会自动结束）"
                         >
                           <Square size={12} />
                         </button>
@@ -526,14 +582,16 @@ export default function GameDetail(): React.ReactElement {
           {gameScreenshots.length === 0 ? (
             <p className="text-xs text-archive-500">暂无截图</p>
           ) : (
-            <div className="grid grid-cols-6 gap-2">
-              {gameScreenshots.slice(0, 24).map((shot, index) => (
-                <ScreenshotThumb
-                  key={shot.id}
-                  shot={shot}
-                  onPreview={() => setPreviewIndex(index)}
-                />
-              ))}
+            <div className={SCREENSHOT_PANEL_SCROLL_CLASS}>
+              <div className={SCREENSHOT_GRID_CLASS}>
+                {gameScreenshots.map((shot, index) => (
+                  <ScreenshotThumb
+                    key={shot.id}
+                    shot={shot}
+                    onPreview={() => setPreviewIndex(index)}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -687,15 +745,15 @@ export default function GameDetail(): React.ReactElement {
         onClose={() => setPreviewIndex(null)}
       />
       <CoverCropEditor
-        open={coverCropEditorMode !== null}
-        filePath={coverCropPath}
+        open={mediaEditorMode !== null}
+        filePath={mediaEditorPath}
         initialCrop={parseCoverCrop(
-          coverCropEditorMode === 'library' ? game.cover_crop : game.banner_crop,
+          mediaEditorMode === 'cover' ? game.cover_crop : game.background_crop,
         )}
-        aspectRatio={coverCropEditorMode === 'library' ? '2 / 3' : '16 / 9'}
-        title={coverCropEditorMode === 'library' ? '调整游戏库封面' : '调整详情页横幅'}
-        onClose={() => setCoverCropEditorMode(null)}
-        onSave={handleSaveCoverCrop}
+        aspectRatio={mediaEditorMode === 'cover' ? '2 / 3' : '16 / 9'}
+        title={mediaEditorMode === 'cover' ? '调整游戏封面' : '调整游戏背景图'}
+        onClose={() => setMediaEditorMode(null)}
+        onSave={handleSaveMediaCrop}
       />
     </div>
   )

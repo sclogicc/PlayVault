@@ -3,6 +3,8 @@ import fs from 'fs'
 import path from 'path'
 import type { Database } from '../db/sqljs-wrapper'
 import * as screenshotRepo from '../db/repositories/screenshotRepository'
+import * as sessionRepo from '../db/repositories/sessionRepository'
+import { getUniqueActiveSessionMatch } from './screenshotSessionMatcher'
 
 let watcher: chokidar.FSWatcher | null = null
 
@@ -37,55 +39,14 @@ function computeHash(filePath: string): string {
 }
 
 /**
- * Auto-match a screenshot to a game session based on capture time.
- * Returns { game_id, session_id } if a single session matches, or null otherwise.
- */
-function matchScreenshot(
-  db: Database,
-  capturedAt: string,
-): { game_id: number; session_id: number } | null {
-  // Find all sessions that overlap with the captured_at time
-  const sessions = db
-    .prepare(
-      `SELECT s.*, g.display_name as game_display_name
-       FROM sessions s
-       LEFT JOIN games g ON g.id = s.game_id
-       WHERE s.started_at <= ?
-         AND (s.ended_at >= ? OR s.ended_at IS NULL)
-       ORDER BY s.started_at DESC`,
-    )
-    .all(capturedAt, capturedAt) as unknown as Array<{
-      id: number
-      game_id: number
-      session_id?: number
-    }>
-
-  if (sessions.length === 0) return null
-  if (sessions.length === 1) {
-    return { game_id: sessions[0].game_id, session_id: sessions[0].id }
-  }
-
-  // Multiple sessions — check if they all belong to the same game
-  const gameIds = new Set(sessions.map((s) => s.game_id))
-  if (gameIds.size === 1) {
-    // All same game — pick the most recent session
-    return {
-      game_id: sessions[0].game_id,
-      session_id: sessions[0].id,
-    }
-  }
-
-  // Multiple games — can't auto-classify
-  return null
-}
-
-/**
- * Process a single new screenshot file: ingest into DB and attempt auto-matching.
+ * Process one screenshot file. Only files observed after the watcher starts are
+ * eligible for active-Session auto-classification; historical scans stay pending.
  */
 function processScreenshot(
   db: Database,
   filePath: string,
   sourceDir: string,
+  autoClassifyActiveSession: boolean,
 ): void {
   const fileName = path.basename(filePath)
   const capturedAt = extractCapturedAt(filePath)
@@ -107,8 +68,9 @@ function processScreenshot(
     hash,
   })
 
-  // Attempt auto-match
-  const match = matchScreenshot(db, capturedAt)
+  const match = autoClassifyActiveSession
+    ? getUniqueActiveSessionMatch(sessionRepo.getVerifiedActiveSessions(db))
+    : null
   if (match) {
     screenshotRepo.updateStatus(
       db,
@@ -150,7 +112,7 @@ export function startScreenshotWatcher(
           } else if (entry.isFile()) {
             const ext = path.extname(entry.name).toLowerCase()
             if (IMAGE_EXTS.includes(ext)) {
-              processScreenshot(db, fullPath, sourceDir)
+              processScreenshot(db, fullPath, sourceDir, false)
             }
           }
         }
@@ -169,8 +131,8 @@ export function startScreenshotWatcher(
     persistent: true,
     ignoreInitial: true, // already handled above
     awaitWriteFinish: {
-      stabilityThreshold: 2000, // wait 2s after last write before processing
-      pollInterval: 500,
+      stabilityThreshold: 500,
+      pollInterval: 100,
     },
   })
 
@@ -178,7 +140,7 @@ export function startScreenshotWatcher(
     const ext = path.extname(filePath).toLowerCase()
     if (IMAGE_EXTS.includes(ext)) {
       console.log(`[ScreenshotWatcher] New file: ${filePath}`)
-      processScreenshot(db, filePath, sourceDir)
+      processScreenshot(db, filePath, sourceDir, true)
     }
   })
 
@@ -208,26 +170,10 @@ export function isWatcherRunning(): boolean {
 }
 
 /**
- * Re-process all pending screenshots for matching.
- * Useful when new sessions are created or settings change.
+ * Historical screenshots are intentionally never guessed from elapsed time.
+ * They remain available for explicit user classification.
  */
 export function rematchPending(db: Database): number {
-  const pending = screenshotRepo.getByStatus(db, 'pending')
-  let matched = 0
-
-  for (const shot of pending) {
-    const match = matchScreenshot(db, shot.captured_at)
-    if (match) {
-      screenshotRepo.updateStatus(
-        db,
-        shot.id,
-        'classified',
-        match.game_id,
-        match.session_id,
-      )
-      matched++
-    }
-  }
-
-  return matched
+  void db
+  return 0
 }

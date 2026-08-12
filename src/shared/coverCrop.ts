@@ -36,6 +36,21 @@ export function serializeCoverCrop(crop: CoverCrop): string {
   return JSON.stringify(normalizeCoverCrop(crop))
 }
 
+export function getCoverCropResetKey(
+  filePath: string,
+  aspectRatio: string,
+  crop: CoverCrop,
+): string {
+  const normalized = normalizeCoverCrop(crop)
+  return [
+    filePath,
+    aspectRatio,
+    normalized.zoom,
+    normalized.x,
+    normalized.y,
+  ].join('|')
+}
+
 export function getCoverImageStyle(crop: CoverCrop): Record<string, string> {
   return {
     objectPosition: `${50 + crop.x / 2}% ${50 + crop.y / 2}%`,

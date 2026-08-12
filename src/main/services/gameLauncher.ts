@@ -1,9 +1,13 @@
 import { shell } from 'electron'
+import { spawn } from 'node:child_process'
 import fs from 'fs'
 import type { Database } from '../db/sqljs-wrapper'
 import * as exeRepo from '../db/repositories/executableRepository'
 import * as gameRepo from '../db/repositories/gameRepository'
 import type { GameLaunchResult } from '../../shared/types'
+import { trackLaunchedProcess } from './processMonitor'
+import { toLocalDateTime } from '../../shared/localDateTime'
+import { createGameSpawnOptions } from './gameLaunchOptions'
 
 /**
  * Launch a game by its primary executable.
@@ -42,15 +46,27 @@ export function launchGame(
     return { success: false, error: '无法访问可执行文件' }
   }
 
-  // 4. Launch via shell.openPath
-  shell.openPath(primaryExe.file_path).then((error) => {
-    if (error) {
-      console.error(`[GameLauncher] Failed to launch: ${error}`)
-    }
-  })
-
-  // Ensure install status is correct
-  gameRepo.updateInstallStatus(db, gameId, 'installed')
-
-  return { success: true }
+  // Start directly so PlayVault receives the root PID for process-tree tracking.
+  try {
+    const child = spawn(primaryExe.file_path, [], createGameSpawnOptions(primaryExe.file_path))
+    child.unref()
+    gameRepo.updateInstallStatus(db, gameId, 'installed')
+    trackLaunchedProcess(
+      db,
+      gameId,
+      child.pid,
+      primaryExe.file_path,
+      toLocalDateTime(),
+      child,
+    )
+    return { success: true, pid: child.pid, filePath: primaryExe.file_path }
+  } catch (error) {
+    // Preserve a compatibility fallback for uncommon executables that require ShellExecute.
+    void shell.openPath(primaryExe.file_path).then((shellError) => {
+      if (shellError) console.error(`[GameLauncher] Failed to launch: ${shellError}`)
+    })
+    console.warn(`[GameLauncher] Direct launch fell back to shell: ${String(error)}`)
+    gameRepo.updateInstallStatus(db, gameId, 'installed')
+    return { success: true, filePath: primaryExe.file_path }
+  }
 }

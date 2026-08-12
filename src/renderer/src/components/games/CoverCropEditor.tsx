@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { CoverCrop } from '@shared/coverCrop'
-import { getCoverImageStyle } from '@shared/coverCrop'
+import { getCoverCropResetKey, getCoverImageStyle } from '@shared/coverCrop'
 import Button from '../ui/Button'
 import Modal from '../ui/Modal'
 import { toFileUrl } from '../../lib/fileUrl'
@@ -25,10 +25,11 @@ export default function CoverCropEditor({
   onSave,
 }: CoverCropEditorProps): React.ReactElement {
   const [crop, setCrop] = useState<CoverCrop>(initialCrop)
+  const resetKey = getCoverCropResetKey(filePath, aspectRatio, initialCrop)
 
   useEffect(() => {
     if (open) setCrop(initialCrop)
-  }, [filePath, initialCrop, open])
+  }, [open, resetKey])
 
   const updateCrop = (key: keyof CoverCrop, value: number): void => {
     setCrop((previous) => ({ ...previous, [key]: value }))

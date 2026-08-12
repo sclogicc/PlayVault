@@ -20,6 +20,8 @@ export interface Game {
   cover_path: string
   cover_crop: string
   banner_crop: string
+  background_path: string
+  background_crop: string
   screenshot_folder_name: string
   notes: string
   is_enabled: 0 | 1
@@ -62,6 +64,11 @@ export interface Session {
   notes: string
   end_reason: SessionEndReason
   process_path: string
+  root_process_pid: number | null
+  tracked_process_pids: string
+  process_started_at: string | null
+  last_seen_at: string | null
+  tracking_mode: 'launch_tree' | 'external_path' | 'legacy'
   created_at: string
   updated_at: string
 }
@@ -144,5 +151,7 @@ export interface GameFormData {
 
 export interface GameLaunchResult {
   success: boolean
+  pid?: number
+  filePath?: string
   error?: string
 }

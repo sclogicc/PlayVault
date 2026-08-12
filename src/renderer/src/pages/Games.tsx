@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Gamepad2, Pencil, Plus, Search } from 'lucide-react'
 import type { GameLaunchResult, GameWithStats, GameFormData } from '@shared/types'
-import {
-  GAME_STATUSES,
-  GAME_STATUS_LABELS,
-  type GameStatus,
-  type InstallStatus,
-} from '@shared/constants'
+import type { InstallStatus } from '@shared/constants'
 import { getCoverImageStyle, parseCoverCrop } from '@shared/coverCrop'
 import Button from '../components/ui/Button'
 import GameForm from '../components/games/GameForm'
@@ -17,18 +12,16 @@ import { useGames, useGameMutations } from '../hooks/useGames'
 const OPEN_DELAY_MS = 220
 
 export default function Games(): React.ReactElement {
-  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const openTimer = useRef<number | null>(null)
   const [launchStatus, setLaunchStatus] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<'recent' | 'duration' | 'name' | 'added'>('recent')
 
   const {
     games,
     isLoading,
     search,
     setSearch,
-    statusFilter,
-    setStatusFilter,
   } = useGames()
   const { createGame, updateGame } = useGameMutations()
 
@@ -36,29 +29,17 @@ export default function Games(): React.ReactElement {
   const [editingGame, setEditingGame] = useState<GameWithStats | null>(null)
 
   useEffect(() => {
-    const statusParam = searchParams.get('status')
-    const nextStatus = statusParam ?? '全部'
-    if (nextStatus !== statusFilter) setStatusFilter(nextStatus)
-  }, [searchParams, setStatusFilter, statusFilter])
-
-  useEffect(() => {
     return () => {
       if (openTimer.current !== null) window.clearTimeout(openTimer.current)
     }
   }, [])
 
-  const statusFilterOptions = [
-    { value: '全部', label: '全部' },
-    ...GAME_STATUSES.filter((status) => status !== 'not_started').map((status) => ({
-      value: status,
-      label: GAME_STATUS_LABELS[status],
-    })),
-  ]
-
-  const pageTitle =
-    statusFilter === '全部'
-      ? '全部游戏'
-      : GAME_STATUS_LABELS[statusFilter as GameStatus] ?? '游戏库'
+  const sortedGames = [...games].sort((a, b) => {
+    if (sortBy === 'name') return a.display_name.localeCompare(b.display_name, 'zh-CN')
+    if (sortBy === 'duration') return b.total_duration - a.total_duration
+    if (sortBy === 'added') return b.created_at.localeCompare(a.created_at)
+    return (b.last_played_at ?? '').localeCompare(a.last_played_at ?? '')
+  })
 
   const formatDuration = (seconds: number): string => {
     if (seconds <= 0) return '尚未游玩'
@@ -122,7 +103,7 @@ export default function Games(): React.ReactElement {
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-xl font-semibold text-archive-100">{pageTitle}</h2>
+          <h2 className="text-xl font-semibold text-archive-100">全部游戏</h2>
           <p className="text-sm text-archive-500 mt-0.5">{games.length} 个游戏</p>
         </div>
         <Button variant="primary" onClick={handleCreate}>
@@ -145,24 +126,17 @@ export default function Games(): React.ReactElement {
             onChange={(event) => setSearch(event.target.value)}
           />
         </div>
-        <div className="flex gap-1.5 flex-wrap">
-          {statusFilterOptions.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => {
-                setStatusFilter(option.value)
-                setSearchParams(option.value === '全部' ? {} : { status: option.value })
-              }}
-              className={`px-3 py-1.5 text-xs rounded-archive border transition-colors ${
-                statusFilter === option.value
-                  ? 'bg-accent-teal/20 text-accent-teal border-accent-teal/30'
-                  : 'bg-archive-800 text-archive-400 border-archive-700/50 hover:text-archive-200'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+        <select
+          className="input-field w-auto text-sm"
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
+          aria-label="游戏排序方式"
+        >
+          <option value="recent">最近游玩</option>
+          <option value="duration">总游玩时长</option>
+          <option value="name">游戏名称</option>
+          <option value="added">添加时间</option>
+        </select>
       </div>
 
       {launchStatus && (
@@ -181,7 +155,7 @@ export default function Games(): React.ReactElement {
         </div>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-4 sm:grid-cols-[repeat(auto-fill,minmax(168px,1fr))]">
-          {games.map((game) => (
+          {sortedGames.map((game) => (
             <GameCard
               key={game.id}
               game={game}

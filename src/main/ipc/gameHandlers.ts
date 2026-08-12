@@ -33,6 +33,8 @@ export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
         cover_path?: string
         cover_crop?: string
         banner_crop?: string
+        background_path?: string
+        background_crop?: string
       },
     ) => {
       return gameRepo.createGame(db, data)
@@ -56,6 +58,8 @@ export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
         cover_path?: string
         cover_crop?: string
         banner_crop?: string
+        background_path?: string
+        background_crop?: string
       },
     ) => {
       gameRepo.updateGame(db, id, data)

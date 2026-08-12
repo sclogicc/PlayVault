@@ -99,9 +99,11 @@ class WrappedStatement {
   run(...params: unknown[]): { lastInsertRowid: number; changes: number } {
     try {
       this.db.run(this.sql, params as BindParams)
-      this.onSave()
       const lastId = this.db.exec('SELECT last_insert_rowid()')[0]
       const changes = this.db.getRowsModified()
+      // sql.js export() resets the connection-local last_insert_rowid value.
+      // Capture it before the wrapper persists the in-memory database to disk.
+      this.onSave()
       return {
         lastInsertRowid: lastId ? (lastId.values[0][0] as number) : 0,
         changes,

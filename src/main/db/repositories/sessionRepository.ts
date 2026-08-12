@@ -45,12 +45,20 @@ export function create(
     started_at: string
     source?: string
     process_path?: string
+    root_process_pid?: number | null
+    tracked_process_pids?: number[]
+    process_started_at?: string | null
+    last_seen_at?: string | null
+    tracking_mode?: 'launch_tree' | 'external_path' | 'legacy'
   },
 ): { lastInsertRowid: number } {
   return db
     .prepare(
-      `INSERT INTO sessions (game_id, exe_name, started_at, source, process_path)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO sessions (
+         game_id, exe_name, started_at, source, process_path,
+         root_process_pid, tracked_process_pids, process_started_at,
+         last_seen_at, tracking_mode
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       data.game_id,
@@ -58,7 +66,64 @@ export function create(
       data.started_at,
       data.source ?? 'auto',
       data.process_path ?? '',
+      data.root_process_pid ?? null,
+      JSON.stringify(data.tracked_process_pids ?? []),
+      data.process_started_at ?? null,
+      data.last_seen_at ?? data.started_at,
+      data.tracking_mode ?? 'external_path',
     )
+}
+
+export function heartbeatSession(
+  db: Database,
+  id: number,
+  trackedProcessPids: number[],
+  lastSeenAt: string,
+): void {
+  db.prepare(
+    `UPDATE sessions
+     SET tracked_process_pids = ?, last_seen_at = ?,
+         updated_at = datetime('now','localtime')
+     WHERE id = ? AND ended_at IS NULL`,
+  ).run(JSON.stringify(trackedProcessPids), lastSeenAt, id)
+}
+
+export function endSessionAtLastSeen(
+  db: Database,
+  id: number,
+  reason: Extract<SessionEndReason, 'normal' | 'recovered'>,
+): void {
+  db.prepare(
+    `UPDATE sessions
+     SET ended_at = COALESCE(last_seen_at, started_at),
+         duration_seconds = MAX(0, CAST(
+           (julianday(COALESCE(last_seen_at, started_at)) - julianday(started_at)) * 86400
+           AS INTEGER
+         )),
+         end_reason = ?,
+         updated_at = datetime('now','localtime')
+     WHERE id = ? AND ended_at IS NULL`,
+  ).run(reason, id)
+}
+
+/** End a Session at a known process-exit timestamp. */
+export function endSessionAt(
+  db: Database,
+  id: number,
+  endedAt: string,
+  reason: Extract<SessionEndReason, 'normal' | 'recovered'> = 'normal',
+): void {
+  db.prepare(
+    `UPDATE sessions
+     SET ended_at = ?,
+         duration_seconds = MAX(0, CAST(
+           (julianday(?) - julianday(started_at)) * 86400
+           AS INTEGER
+         )),
+         end_reason = ?,
+         updated_at = datetime('now','localtime')
+     WHERE id = ? AND ended_at IS NULL`,
+  ).run(endedAt, endedAt, reason, id)
 }
 
 export function endSession(
@@ -112,7 +177,7 @@ export function getActiveSessionByGameId(
   gameId: number,
 ): Session | undefined {
   return db
-    .prepare('SELECT * FROM sessions WHERE game_id = ? AND ended_at IS NULL')
+    .prepare('SELECT * FROM sessions WHERE game_id = ? AND ended_at IS NULL ORDER BY started_at DESC LIMIT 1')
     .get(gameId) as unknown as Session | undefined
 }
 
@@ -134,6 +199,18 @@ export function getAllActiveSessions(db: Database): Session[] {
     .all() as unknown as Session[]
 }
 
+/** Active Sessions whose backing process was confirmed by the current monitor. */
+export function getVerifiedActiveSessions(db: Database): Session[] {
+  return db
+    .prepare(
+      `SELECT * FROM sessions
+       WHERE ended_at IS NULL
+         AND last_seen_at IS NOT NULL
+         AND tracking_mode IN ('launch_tree', 'external_path')`,
+    )
+    .all() as unknown as Session[]
+}
+
 /**
  * Recover all orphaned sessions (ended_at IS NULL) by closing them
  * with end_reason = 'recovered'. Called on app startup.
@@ -141,9 +218,9 @@ export function getAllActiveSessions(db: Database): Session[] {
 export function recoverOrphanedSessions(db: Database): number {
   const result = db.prepare(
     `UPDATE sessions
-     SET ended_at = datetime('now'),
+     SET ended_at = COALESCE(last_seen_at, started_at),
          duration_seconds = MAX(0, CAST(
-           (julianday(datetime('now')) - julianday(started_at)) * 86400
+           (julianday(COALESCE(last_seen_at, started_at)) - julianday(started_at)) * 86400
            AS INTEGER
          )),
          end_reason = 'recovered',
@@ -189,9 +266,9 @@ export function getRecentSessionsForGame(
 export function manuallyEndSession(db: Database, id: number): void {
   db.prepare(
     `UPDATE sessions
-     SET ended_at = datetime('now'),
+     SET ended_at = datetime('now','localtime'),
          duration_seconds = MAX(0, CAST(
-           (julianday(datetime('now')) - julianday(started_at)) * 86400
+           (julianday(datetime('now','localtime')) - julianday(started_at)) * 86400
            AS INTEGER
          )),
          end_reason = 'manual',

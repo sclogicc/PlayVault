@@ -55,6 +55,8 @@ export function useGameMutations() {
       cover_path?: string
       cover_crop?: string
       banner_crop?: string
+      background_path?: string
+      background_crop?: string
     }) => window.api.game.create(data),
     onSuccess: invalidate,
   })
@@ -77,6 +79,8 @@ export function useGameMutations() {
         cover_path?: string
         cover_crop?: string
         banner_crop?: string
+        background_path?: string
+        background_crop?: string
       }
     }) => window.api.game.update(id, data),
     onSuccess: invalidate,

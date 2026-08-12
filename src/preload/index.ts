@@ -20,6 +20,8 @@ const api = {
       cover_path?: string
       cover_crop?: string
       banner_crop?: string
+      background_path?: string
+      background_crop?: string
     }) => ipcRenderer.invoke(IPC_CHANNELS.GAME_CREATE, data),
     update: (
       id: number,
@@ -35,6 +37,8 @@ const api = {
         cover_path?: string
         cover_crop?: string
         banner_crop?: string
+        background_path?: string
+        background_crop?: string
       },
     ) => ipcRenderer.invoke(IPC_CHANNELS.GAME_UPDATE, id, data),
     delete: (id: number) =>

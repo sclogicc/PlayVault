@@ -12,6 +12,8 @@ const MIGRATIONS: Record<number, string[]> = {
       tags TEXT NOT NULL DEFAULT '[]',
       cover_path TEXT NOT NULL DEFAULT '',
       cover_crop TEXT NOT NULL DEFAULT '',
+      background_path TEXT NOT NULL DEFAULT '',
+      background_crop TEXT NOT NULL DEFAULT '',
       screenshot_folder_name TEXT NOT NULL DEFAULT '',
       notes TEXT NOT NULL DEFAULT '',
       is_enabled INTEGER NOT NULL DEFAULT 1,
@@ -39,6 +41,11 @@ const MIGRATIONS: Record<number, string[]> = {
       duration_seconds INTEGER NOT NULL DEFAULT 0,
       source TEXT NOT NULL DEFAULT 'auto',
       notes TEXT NOT NULL DEFAULT '',
+      root_process_pid INTEGER,
+      tracked_process_pids TEXT NOT NULL DEFAULT '[]',
+      process_started_at TEXT,
+      last_seen_at TEXT,
+      tracking_mode TEXT NOT NULL DEFAULT 'external_path',
       FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
     )`,
     `CREATE INDEX IF NOT EXISTS idx_session_game_id ON sessions(game_id)`,
@@ -169,6 +176,33 @@ const MIGRATIONS: Record<number, string[]> = {
   // v9: keep the detail-page banner crop independent from the library cover crop
   9: [
     "ALTER TABLE games ADD COLUMN banner_crop TEXT NOT NULL DEFAULT ''",
+  ],
+
+  // v10: background artwork is independent from the library cover artwork
+  10: [
+    "ALTER TABLE games ADD COLUMN background_path TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE games ADD COLUMN background_crop TEXT NOT NULL DEFAULT ''",
+  ],
+
+  // v11: persist process identity and heartbeats for reliable automatic sessions
+  11: [
+    'ALTER TABLE sessions ADD COLUMN root_process_pid INTEGER',
+    "ALTER TABLE sessions ADD COLUMN tracked_process_pids TEXT NOT NULL DEFAULT '[]'",
+    'ALTER TABLE sessions ADD COLUMN process_started_at TEXT',
+    'ALTER TABLE sessions ADD COLUMN last_seen_at TEXT',
+    "ALTER TABLE sessions ADD COLUMN tracking_mode TEXT NOT NULL DEFAULT 'external_path'",
+    "UPDATE sessions SET tracking_mode = 'legacy', last_seen_at = started_at WHERE ended_at IS NULL",
+    'CREATE INDEX IF NOT EXISTS idx_session_active_game ON sessions(ended_at, game_id)',
+    'CREATE INDEX IF NOT EXISTS idx_session_root_pid ON sessions(root_process_pid)',
+  ],
+
+  // v12: legacy automatic Sessions stored UTC values without timezone metadata.
+  12: [
+    `UPDATE sessions
+     SET started_at = datetime(started_at, 'localtime'),
+         ended_at = CASE WHEN ended_at IS NULL THEN NULL ELSE datetime(ended_at, 'localtime') END,
+         last_seen_at = CASE WHEN last_seen_at IS NULL THEN NULL ELSE datetime(last_seen_at, 'localtime') END
+     WHERE source = 'auto'`,
   ],
 }
 

@@ -31,6 +31,8 @@ declare global {
           cover_path?: string
           cover_crop?: string
           banner_crop?: string
+          background_path?: string
+          background_crop?: string
         }) => Promise<{ lastInsertRowid: number }>
         update: (
           id: number,
@@ -46,6 +48,8 @@ declare global {
             cover_path?: string
             cover_crop?: string
             banner_crop?: string
+            background_path?: string
+            background_crop?: string
           },
         ) => Promise<void>
         delete: (id: number) => Promise<void>

@@ -61,14 +61,17 @@ export function createGame(
     cover_path?: string
     cover_crop?: string
     banner_crop?: string
+    background_path?: string
+    background_crop?: string
     is_enabled?: number
   },
 ): { lastInsertRowid: number } {
   const result = db
     .prepare(
       `INSERT INTO games (name, display_name, aliases, status, platform, tags,
-        cover_path, cover_crop, banner_crop, screenshot_folder_name, notes, is_enabled)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        cover_path, cover_crop, banner_crop, background_path, background_crop,
+        screenshot_folder_name, notes, is_enabled)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       data.name,
@@ -80,6 +83,8 @@ export function createGame(
       data.cover_path ?? '',
       data.cover_crop ?? '',
       data.banner_crop ?? '',
+      data.background_path ?? '',
+      data.background_crop ?? '',
       data.screenshot_folder_name ?? '',
       data.notes ?? '',
       data.is_enabled ?? 1,
@@ -103,6 +108,8 @@ export function updateGame(
     cover_path?: string
     cover_crop?: string
     banner_crop?: string
+    background_path?: string
+    background_crop?: string
     is_enabled?: number
   },
 ): void {
@@ -121,6 +128,8 @@ export function updateGame(
     'cover_path',
     'cover_crop',
     'banner_crop',
+    'background_path',
+    'background_crop',
     'is_enabled',
   ]
   for (const key of allowed) {
