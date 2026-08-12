@@ -290,9 +290,9 @@ export default function GameDetail(): React.ReactElement {
       </Link>
 
       {/* ========== Hero Section ========== */}
-      <div className="card overflow-hidden !p-0">
-        {/* Background artwork is intentionally separate from the game cover. */}
-        <div className="h-[250px] sm:h-[300px] lg:h-[340px] bg-gradient-to-br from-archive-800 via-archive-850 to-archive-900 flex items-center justify-center relative overflow-hidden">
+      <div className="relative overflow-hidden rounded-panel border border-white/[0.09] bg-archive-850 shadow-float">
+        {/* 背景图独立于游戏封面，用于营造详情页的沉浸式氛围。 */}
+        <div className="relative flex h-[280px] items-center justify-center overflow-hidden bg-gradient-to-br from-archive-800 via-archive-850 to-archive-900 sm:h-[330px] lg:h-[370px]">
           {game.background_path ? (
             <CoverImage
               coverPath={game.background_path}
@@ -302,7 +302,7 @@ export default function GameDetail(): React.ReactElement {
           ) : (
             <Gamepad2 size={64} className="text-archive-700" />
           )}
-          <div className="absolute right-3 top-3 flex gap-2">
+          <div className="absolute right-4 top-4 flex flex-wrap justify-end gap-2">
             <Button variant="secondary" size="sm" onClick={handleSetBackground}>
               <Image size={14} />
               {game.background_path ? '更换背景图' : '设置背景图'}
@@ -318,14 +318,15 @@ export default function GameDetail(): React.ReactElement {
               </Button>
             )}
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-archive-900 via-archive-900/75 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(8,14,22,0.22),transparent_48%,rgba(8,14,22,0.18))]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-archive-950 via-archive-900/80 to-transparent" />
         </div>
 
         {/* Steam-like transition: the game controls emerge from the background fade. */}
-        <div className="relative -mt-24 bg-gradient-to-b from-archive-900/0 via-archive-900 to-archive-900 px-6 pb-6 pt-12">
+        <div className="relative -mt-28 bg-gradient-to-b from-archive-950/0 via-archive-950/92 to-archive-950 px-6 pb-6 pt-16 sm:px-8">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div className="flex items-start gap-5 flex-1 min-w-0">
-              <div className="w-24 shrink-0 aspect-[2/3] overflow-hidden rounded border border-archive-700/60 bg-archive-900 flex items-center justify-center">
+              <div className="flex w-28 shrink-0 aspect-[2/3] items-center justify-center overflow-hidden rounded-[15px] border border-white/[0.16] bg-archive-900 shadow-[0_16px_30px_rgba(0,0,0,0.45)] sm:w-32">
                 {game.cover_path ? (
                   <CoverImage
                     coverPath={game.cover_path}
@@ -336,10 +337,11 @@ export default function GameDetail(): React.ReactElement {
                   <Gamepad2 size={30} className="text-archive-700" />
                 )}
               </div>
-              <div className="space-y-2 flex-1 min-w-0">
-              {/* Name + Status */}
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold text-archive-100">
+              <div className="min-w-0 flex-1 space-y-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-200">个人游戏档案</p>
+              {/* 名称与状态 */}
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-3xl font-bold tracking-tight text-archive-50">
                   {game.display_name}
                 </h2>
                 <StatusBadge status={game.status as GameStatus} />
@@ -396,20 +398,20 @@ export default function GameDetail(): React.ReactElement {
             </div>
 
             {/* Action buttons */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
               {launchStatus && (
                 <span
-                  className={`text-xs px-3 py-1.5 rounded-archive ${
+                  className={`rounded-full border px-3 py-1.5 text-xs ${
                     launchStatus === '游戏已启动'
-                      ? 'bg-accent-teal/15 text-accent-teal'
-                      : 'bg-accent-red/10 text-accent-red'
+                      ? 'border-teal-300/15 bg-teal-400/10 text-teal-200'
+                      : 'border-red-300/15 bg-red-400/10 text-red-200'
                   }`}
                 >
                   {launchStatus}
                 </span>
               )}
               {activeSession && (
-                <span className="text-xs px-3 py-1.5 rounded-archive bg-accent-teal/15 text-accent-teal">
+                <span className="rounded-full border border-teal-300/15 bg-teal-400/10 px-3 py-1.5 text-xs text-teal-200">
                   正在自动记录
                 </span>
               )}
@@ -451,7 +453,7 @@ export default function GameDetail(): React.ReactElement {
                   确认已通关
                 </Button>
               ) : (
-                <span className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-archive bg-emerald-900/30 text-emerald-300 border border-emerald-700/30">
+                <span className="flex items-center gap-1.5 rounded-full border border-emerald-300/15 bg-emerald-400/10 px-3 py-1.5 text-sm text-emerald-200">
                   <CheckCircle size={14} />
                   已通关
                   {game.completed_at && (
@@ -469,28 +471,28 @@ export default function GameDetail(): React.ReactElement {
           </div>
 
           {/* Stats bar */}
-          <div className="flex items-center gap-6 mt-5 pt-4 border-t border-archive-700/30 text-sm">
-            <div>
-              <span className="text-archive-500">总时长</span>
-              <p className="text-archive-200 font-mono mt-0.5">
+          <div className="mt-6 grid grid-cols-2 gap-3 border-t border-white/[0.07] pt-5 text-sm sm:grid-cols-4">
+            <div className="rounded-archive border border-white/[0.06] bg-white/[0.035] px-3.5 py-3">
+              <span className="text-[11px] font-medium text-archive-500">总时长</span>
+              <p className="mt-1 font-mono text-archive-100">
                 {formatDuration(totalDuration)}
               </p>
             </div>
-            <div>
-              <span className="text-archive-500">最近游玩</span>
-              <p className="text-archive-200 mt-0.5">
+            <div className="rounded-archive border border-white/[0.06] bg-white/[0.035] px-3.5 py-3">
+              <span className="text-[11px] font-medium text-archive-500">最近游玩</span>
+              <p className="mt-1 text-archive-100">
                 {formatRelativeDate(lastPlayedAt)}
               </p>
             </div>
-            <div>
-              <span className="text-archive-500">Session 数</span>
-              <p className="text-archive-200 font-mono mt-0.5">
+            <div className="rounded-archive border border-white/[0.06] bg-white/[0.035] px-3.5 py-3">
+              <span className="text-[11px] font-medium text-archive-500">游玩记录</span>
+              <p className="mt-1 font-mono text-archive-100">
                 {sessions.length}
               </p>
             </div>
-            <div>
-              <span className="text-archive-500">截图</span>
-              <p className="text-archive-200 font-mono mt-0.5">
+            <div className="rounded-archive border border-white/[0.06] bg-white/[0.035] px-3.5 py-3">
+              <span className="text-[11px] font-medium text-archive-500">截图收藏</span>
+              <p className="mt-1 font-mono text-archive-100">
                 {gameScreenshots.length}
               </p>
             </div>

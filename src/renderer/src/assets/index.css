@@ -3,69 +3,139 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    @apply border-archive-700/40;
+  }
+
+  html,
+  body,
+  #root {
+    @apply min-h-screen;
+  }
+
   body {
-    @apply bg-archive-900 text-archive-100 antialiased;
+    @apply bg-archive-950 text-archive-100 antialiased;
+    background-image:
+      radial-gradient(circle at 76% -12%, rgba(92, 63, 166, 0.2), transparent 34rem),
+      radial-gradient(circle at 13% 108%, rgba(23, 119, 124, 0.12), transparent 30rem),
+      linear-gradient(135deg, #080e16 0%, #0d1621 48%, #101927 100%);
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  a:focus-visible {
+    @apply outline-none ring-2 ring-accent-violet/70 ring-offset-2 ring-offset-archive-950;
+  }
+
+  ::selection {
+    @apply bg-accent-violet/40 text-archive-50;
   }
 
   ::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
+    height: 8px;
   }
+
   ::-webkit-scrollbar-track {
-    background: #0b131a;
+    background: rgba(8, 14, 22, 0.55);
   }
+
   ::-webkit-scrollbar-thumb {
-    background: #313f4d;
-    border-radius: 3px;
+    background: rgba(103, 117, 138, 0.55);
+    border: 2px solid rgba(8, 14, 22, 0.55);
+    border-radius: 999px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
-    background: #4e5a66;
+    background: rgba(170, 183, 199, 0.55);
   }
 }
 
 @layer components {
   .sidebar-link {
-    @apply flex items-center gap-3 px-4 py-2.5 text-archive-300
-           hover:text-archive-100 hover:bg-archive-800
-           rounded-archive transition-colors duration-150;
+    @apply relative flex items-center gap-3 px-3 py-2.5 text-archive-300
+           hover:text-archive-50 hover:bg-white/[0.055]
+           rounded-archive transition-all duration-200;
   }
+
   .sidebar-link.active {
-    @apply text-accent-teal bg-archive-800/80 border-l-2 border-accent-teal;
+    @apply text-archive-50 bg-gradient-to-r from-accent-violet/25 to-accent-violet/[0.06]
+           shadow-[inset_0_0_0_1px_rgba(167,139,250,0.16)];
+  }
+
+  .sidebar-link.active::before {
+    content: '';
+    @apply absolute left-0 h-5 w-0.5 rounded-r-full bg-accent-violet shadow-[0_0_12px_rgba(139,92,246,0.75)];
   }
 
   .card {
-    @apply bg-archive-800 border border-archive-700/50 rounded-lg p-4;
+    @apply rounded-panel border border-white/[0.075] bg-gradient-to-br from-white/[0.075] to-white/[0.025]
+           p-5 shadow-panel backdrop-blur-md;
+  }
+
+  .card-interactive {
+    @apply card transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.14] hover:shadow-float;
+  }
+
+  .section-title {
+    @apply text-sm font-semibold tracking-[0.01em] text-archive-100;
+  }
+
+  .section-description {
+    @apply mt-1 text-sm text-archive-400;
   }
 
   .btn-primary {
-    @apply bg-accent-teal/20 text-accent-teal border border-accent-teal/30
-           hover:bg-accent-teal/30 px-4 py-2 rounded-archive
-           transition-colors duration-150 font-medium text-sm;
+    @apply border border-accent-violet/30 bg-gradient-to-r from-violet-500 to-accent-violet
+           px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(109,40,217,0.28)]
+           transition-all duration-200 hover:-translate-y-px hover:from-violet-400 hover:to-violet-500
+           hover:shadow-[0_14px_30px_rgba(109,40,217,0.38)] active:translate-y-0;
   }
 
   .btn-danger {
-    @apply bg-accent-red/20 text-accent-red border border-accent-red/30
-           hover:bg-accent-red/30 px-4 py-2 rounded-archive
-           transition-colors duration-150 font-medium text-sm;
+    @apply border border-accent-red/25 bg-accent-red/10 px-4 py-2 text-sm font-medium text-accent-red
+           transition-all duration-200 hover:-translate-y-px hover:bg-accent-red/20 active:translate-y-0;
   }
 
   .btn-secondary {
-    @apply bg-archive-700 text-archive-200 border border-archive-600/50
-           hover:bg-archive-600 px-4 py-2 rounded-archive
-           transition-colors duration-150 font-medium text-sm;
+    @apply border border-white/[0.09] bg-white/[0.06] px-4 py-2 text-sm font-medium text-archive-200
+           transition-all duration-200 hover:-translate-y-px hover:border-white/[0.16] hover:bg-white/[0.1]
+           hover:text-archive-50 active:translate-y-0;
   }
 
   .input-field {
-    @apply bg-archive-800 border border-archive-600 rounded-archive
-           px-3 py-2 text-archive-100 placeholder-archive-500
-           focus:outline-none focus:border-accent-teal/50 focus:ring-1 focus:ring-accent-teal/20
-           transition-colors duration-150 text-sm;
+    @apply rounded-archive border border-white/[0.09] bg-black/20 px-3.5 py-2.5 text-sm text-archive-100
+           placeholder:text-archive-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]
+           transition-all duration-200 hover:border-white/[0.14]
+           focus:border-accent-violet/60 focus:bg-archive-900/70 focus:ring-2 focus:ring-accent-violet/15;
   }
 
   .table-header {
-    @apply text-left text-archive-400 text-xs uppercase tracking-wider font-medium px-4 py-3;
+    @apply px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-archive-500;
   }
 
   .table-cell {
-    @apply px-4 py-3 text-sm text-archive-200 border-b border-archive-700/50;
+    @apply border-b border-white/[0.055] px-4 py-3.5 text-sm text-archive-200;
+  }
+
+  .surface-toolbar {
+    @apply rounded-panel border border-white/[0.065] bg-black/[0.15] p-3 backdrop-blur-sm;
+  }
+
+  .empty-state {
+    @apply rounded-panel border border-dashed border-white/[0.1] bg-black/[0.12] px-6 py-14 text-center;
   }
 }

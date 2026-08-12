@@ -17,8 +17,8 @@ export default function Modal({
   width = 'max-w-lg',
 }: ModalProps): React.ReactElement | null {
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+    const handleKey = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') onClose()
     }
     if (open) document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
@@ -27,31 +27,36 @@ export default function Modal({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
       <div
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0 bg-archive-950/75 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
-      {/* Panel */}
-      <div
-        className={`relative w-full ${width} mx-4 bg-archive-800 border border-archive-700 rounded-lg shadow-2xl`}
+      <section
+        className={`relative w-full ${width} animate-soft-enter overflow-hidden rounded-panel border border-white/[0.12] bg-gradient-to-br from-archive-800/95 to-archive-900/95 shadow-[0_28px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-archive-700/50">
-          <h3 className="text-lg font-semibold text-archive-100">{title}</h3>
+        <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-5">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-violet">PlayVault</p>
+            <h3 id="modal-title" className="mt-1 text-lg font-semibold text-archive-50">{title}</h3>
+          </div>
           <button
+            type="button"
             onClick={onClose}
-            className="text-archive-400 hover:text-archive-200 transition-colors"
+            className="rounded-full p-2 text-archive-400 transition-colors hover:bg-white/[0.08] hover:text-archive-100"
+            aria-label="关闭弹窗"
           >
             <X size={18} />
           </button>
         </div>
-        {/* Body */}
-        <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
+        <div className="max-h-[70vh] overflow-y-auto px-6 py-5">
           {children}
         </div>
-      </div>
+      </section>
     </div>
   )
 }

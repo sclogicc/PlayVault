@@ -13,23 +13,23 @@ export default function Select({
   ...props
 }: SelectProps): React.ReactElement {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       {label && (
         <label
           htmlFor={id}
-          className="block text-sm text-archive-300 font-medium"
+          className="block text-sm font-medium text-archive-200"
         >
           {label}
         </label>
       )}
       <select
         id={id}
-        className={`input-field w-full cursor-pointer ${className}`}
+        className={`input-field w-full cursor-pointer appearance-none bg-[linear-gradient(45deg,transparent_50%,#8593a5_50%),linear-gradient(135deg,#8593a5_50%,transparent_50%)] bg-[position:calc(100%-16px)_calc(50%-2px),calc(100%-11px)_calc(50%-2px)] bg-[size:5px_5px,5px_5px] bg-no-repeat pr-9 ${className}`}
         {...props}
       >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
           </option>
         ))}
       </select>

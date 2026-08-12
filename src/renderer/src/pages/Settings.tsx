@@ -71,12 +71,14 @@ export default function Settings(): React.ReactElement {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-semibold text-archive-100">设置</h2>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-violet">本地配置</p>
+        <h2 className="mt-2 text-3xl font-bold tracking-tight text-archive-50">设置</h2>
+        <p className="mt-2 text-sm text-archive-400">管理本地扫描路径与截图监听目录，所有数据仍将保留在你的设备中。</p>
       </div>
 
       {/* Scan Directories Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
+      <section className="card space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h3 className="text-base font-medium text-archive-200">
               游戏扫描目录
@@ -108,7 +110,7 @@ export default function Settings(): React.ReactElement {
 
         {/* Scan result feedback */}
         {triggerScan.isSuccess && (
-          <div className="bg-accent-teal/10 border border-accent-teal/20 text-accent-teal text-sm px-4 py-2.5 rounded-archive">
+          <div className="rounded-archive border border-teal-300/15 bg-teal-400/10 px-4 py-3 text-sm text-teal-200">
             扫描完成，发现 {triggerScan.data?.totalFound ?? 0} 个可执行文件。前往「发现候选」查看。
           </div>
         )}
@@ -137,7 +139,7 @@ export default function Settings(): React.ReactElement {
             {roots.map((root) => (
               <div
                 key={root.id}
-                className="card flex items-center justify-between py-3 px-4"
+                className="flex items-center justify-between rounded-archive border border-white/[0.065] bg-black/[0.13] px-4 py-3.5 transition-colors hover:bg-white/[0.045]"
               >
                 <div className="flex-1 min-w-0 mr-4">
                   <p className="text-sm text-archive-200 truncate font-mono">
@@ -152,7 +154,7 @@ export default function Settings(): React.ReactElement {
                   {/* Enable/Disable toggle */}
                   <button
                     onClick={() => toggle.mutate(root.id)}
-                    className={`p-1.5 rounded transition-colors ${
+                    className={`rounded-lg p-1.5 transition-colors ${
                       root.is_enabled
                         ? 'text-accent-teal hover:bg-accent-teal/10'
                         : 'text-archive-600 hover:text-archive-400'
@@ -168,7 +170,7 @@ export default function Settings(): React.ReactElement {
                   {/* Delete button */}
                   <button
                     onClick={() => setDeletingId(root.id)}
-                    className="p-1.5 text-archive-500 hover:text-accent-red transition-colors rounded"
+                    className="rounded-lg p-1.5 text-archive-500 transition-colors hover:bg-accent-red/10 hover:text-accent-red"
                     title="删除"
                   >
                     <Trash2 size={14} />
@@ -178,10 +180,10 @@ export default function Settings(): React.ReactElement {
             ))}
           </div>
         )}
-      </div>
+      </section>
 
       {/* Screenshot Directory */}
-      <div className="space-y-4">
+      <section className="card space-y-5">
         <div>
           <h3 className="text-base font-medium text-archive-200 flex items-center gap-2">
             <Image size={16} />
@@ -194,7 +196,7 @@ export default function Settings(): React.ReactElement {
         {screenshotDirLoading ? (
           <p className="text-xs text-archive-500">加载中...</p>
         ) : screenshotDir ? (
-          <div className="card flex items-center justify-between py-3 px-4">
+          <div className="flex items-center justify-between rounded-archive border border-white/[0.065] bg-black/[0.13] px-4 py-3.5">
             <div className="flex-1 min-w-0 mr-4">
               <p className="text-sm text-archive-200 truncate font-mono">
                 {screenshotDir}
@@ -226,10 +228,10 @@ export default function Settings(): React.ReactElement {
             </Button>
           </div>
         )}
-      </div>
+      </section>
 
       {/* Placeholder for future settings */}
-      <div className="border-t border-archive-700/30 pt-6 space-y-4">
+      <section className="grid grid-cols-1 gap-4 border-t border-white/[0.07] pt-6 sm:grid-cols-2">
         <div>
           <h3 className="text-base font-medium text-archive-400">监听设置</h3>
           <p className="text-xs text-archive-600 mt-1">
@@ -242,7 +244,7 @@ export default function Settings(): React.ReactElement {
             应用启动时自动恢复未结束的游玩记录
           </p>
         </div>
-      </div>
+      </section>
 
       {/* Delete confirmation */}
       <ConfirmDialog

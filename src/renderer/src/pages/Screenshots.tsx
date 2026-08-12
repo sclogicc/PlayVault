@@ -135,11 +135,12 @@ export default function Screenshots(): React.ReactElement {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-archive-100">&#x622A;&#x56FE;&#x7BB1;</h2>
-          <p className="text-sm text-archive-500 mt-0.5">
-            {screenshots.length} 张截图
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-violet">图片资产</p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-archive-50">截图箱</h2>
+          <p className="mt-2 text-sm text-archive-400">
+            已显示 {screenshots.length} 张截图，用画面串联你的游戏记忆。
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -169,7 +170,7 @@ export default function Screenshots(): React.ReactElement {
         </div>
       </div>
 
-      <div className="flex gap-1.5 flex-wrap">
+      <div className="surface-toolbar flex flex-wrap gap-1.5">
         {TABS.map((tab) => (
           <button
             key={tab.key}
@@ -178,10 +179,10 @@ export default function Screenshots(): React.ReactElement {
               setSelectedIds(new Set())
             }}
             className={
-              'px-3 py-1.5 text-xs rounded-archive border transition-colors ' +
+              'rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ' +
               (activeTab === tab.key
-                ? 'bg-accent-teal/20 text-accent-teal border-accent-teal/30'
-                : 'bg-archive-800 text-archive-400 border-archive-700/50 hover:text-archive-200')
+                ? 'border-violet-300/20 bg-accent-violet text-white shadow-[0_6px_16px_rgba(109,40,217,0.28)]'
+                : 'border-transparent bg-transparent text-archive-400 hover:bg-white/[0.06] hover:text-archive-200')
             }
           >
             {tab.label}
@@ -204,7 +205,7 @@ export default function Screenshots(): React.ReactElement {
             />
             {selectedIds.size > 0 ? `已选择 ${selectedIds.size} 张` : '全选'}
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {screenshots.map((shot, index) => (
               <ScreenshotCard
                 key={shot.id}
@@ -345,11 +346,11 @@ function ScreenshotCard({
 
   return (
     <div
-      className={'card !p-0 overflow-hidden group relative ' + (selected ? 'ring-2 ring-accent-teal' : '')}
+      className={'group relative overflow-hidden rounded-[16px] border border-white/[0.075] bg-white/[0.035] shadow-[0_12px_28px_rgba(0,0,0,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300/30 hover:shadow-float ' + (selected ? 'ring-2 ring-accent-violet/80' : '')}
       onClick={onToggle}
     >
       <div
-        className="aspect-video bg-archive-850 flex items-center justify-center overflow-hidden cursor-zoom-in"
+        className="flex aspect-video cursor-zoom-in items-center justify-center overflow-hidden bg-archive-850"
         onClick={(event) => {
           event.stopPropagation()
           onPreview()
@@ -370,7 +371,7 @@ function ScreenshotCard({
           />
         )}
       </div>
-      <div className="p-2.5 space-y-1.5">
+      <div className="space-y-2 p-3.5">
         <p className="text-xs text-archive-300 truncate" title={shot.file_name}>{shot.file_name}</p>
         <div className="flex items-center justify-between gap-2">
           <span className="text-[10px] text-archive-500">{formatDate(shot.captured_at)}</span>

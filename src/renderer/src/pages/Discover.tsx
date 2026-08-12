@@ -82,25 +82,26 @@ export default function Discover(): React.ReactElement {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-archive-100">发现候选</h2>
-          <p className="text-sm text-archive-500 mt-0.5">
-            {candidates.length} 个候选可执行文件
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-violet">本地扫描</p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-archive-50">发现候选</h2>
+          <p className="mt-2 text-sm text-archive-400">
+            发现 {candidates.length} 个候选可执行文件，确认后即可建立游戏档案。
           </p>
         </div>
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex gap-1.5 flex-wrap">
+      <div className="surface-toolbar flex flex-wrap gap-1.5">
         {statusFilterOptions.map((opt) => (
           <button
             key={opt.value}
             onClick={() => setStatusFilter(opt.value as DiscoveredStatus | '全部')}
-            className={`px-3 py-1.5 text-xs rounded-archive border transition-colors ${
+            className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
               statusFilter === opt.value
-                ? 'bg-accent-teal/20 text-accent-teal border-accent-teal/30'
-                : 'bg-archive-800 text-archive-400 border-archive-700/50 hover:text-archive-200'
+                ? 'border-violet-300/20 bg-accent-violet text-white shadow-[0_6px_16px_rgba(109,40,217,0.28)]'
+                : 'border-transparent bg-transparent text-archive-400 hover:bg-white/[0.06] hover:text-archive-200'
             }`}
           >
             {opt.label}
@@ -125,10 +126,10 @@ export default function Discover(): React.ReactElement {
           </p>
         </div>
       ) : (
-        <div className="card overflow-hidden !p-0">
+        <div className="overflow-hidden rounded-panel border border-white/[0.075] bg-white/[0.035] shadow-panel">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-archive-700/50">
+              <tr className="border-b border-white/[0.07]">
                 <th className="table-header">文件</th>
                 <th className="table-header">目录</th>
                 <th className="table-header">路径</th>
@@ -143,7 +144,7 @@ export default function Discover(): React.ReactElement {
               {candidates.map((c) => (
                 <tr
                   key={c.id}
-                  className="hover:bg-archive-800/50 transition-colors"
+                  className="transition-colors hover:bg-white/[0.045]"
                 >
                   {/* File name */}
                   <td className="table-cell">
@@ -239,14 +240,14 @@ export default function Discover(): React.ReactElement {
                             onClick={() =>
                               openAccept(c.id, c.folder_name || c.file_name.replace(/\.exe$/i, ''))
                             }
-                            className="p-1.5 text-accent-teal hover:bg-accent-teal/10 rounded transition-colors"
+                            className="rounded-lg p-1.5 text-violet-200 transition-colors hover:bg-accent-violet/15"
                             title="加入游戏库"
                           >
                             <Plus size={14} />
                           </button>
                           <button
                             onClick={() => ignoreMutation.mutate(c.id)}
-                            className="p-1.5 text-archive-500 hover:text-archive-300 rounded transition-colors"
+                            className="rounded-lg p-1.5 text-archive-500 transition-colors hover:bg-white/[0.06] hover:text-archive-300"
                             title="忽略"
                           >
                             <EyeOff size={14} />
