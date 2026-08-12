@@ -46,7 +46,7 @@ export function getByStatus(
 export function getByGameId(db: Database, gameId: number): Screenshot[] {
   return db
     .prepare(
-      "SELECT * FROM screenshots WHERE game_id = ? AND status = 'classified' ORDER BY captured_at DESC",
+      "SELECT * FROM screenshots WHERE game_id = ? AND (status = 'classified' OR is_archived_highlight = 1) ORDER BY captured_at DESC",
     )
     .all(gameId) as unknown as Screenshot[]
 }

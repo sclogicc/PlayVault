@@ -8,6 +8,8 @@ export const IPC_CHANNELS = {
   GAME_UPDATE: 'game:update',
   GAME_DELETE: 'game:delete',
   GAME_TOGGLE: 'game:toggleEnabled',
+  GAME_GET_ARCHIVED: 'game:getArchived',
+  GAME_ARCHIVE: 'game:archive',
 
   // Game actions
   GAME_LAUNCH: 'game:launch',

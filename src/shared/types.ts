@@ -5,6 +5,7 @@ import type {
   DiscoveredStatus,
   SessionEndReason,
   InstallStatus,
+  ArchiveStatus,
 } from './constants'
 
 // ========== Game ==========
@@ -27,6 +28,10 @@ export interface Game {
   is_enabled: 0 | 1
   install_status: InstallStatus
   completed_at: string | null
+  archive_status: ArchiveStatus
+  archived_at: string | null
+  archive_cover_path: string
+  archive_background_path: string
   created_at: string
   updated_at: string
 }
@@ -37,6 +42,12 @@ export interface GameWithStats extends Game {
   total_duration: number
   screenshot_count: number
   last_played_at: string | null
+}
+
+export interface ArchiveGameResult {
+  game: Game
+  preservedScreenshotIds: number[]
+  skippedScreenshotIds: number[]
 }
 
 // ========== GameExecutable ==========
@@ -91,6 +102,8 @@ export interface Screenshot {
   source_directory: string
   archive_path: string
   hash: string
+  is_archived_highlight: 0 | 1
+  preserved_path: string
   created_at: string
   deleted_at: string | null
   updated_at: string

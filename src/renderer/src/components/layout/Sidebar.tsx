@@ -12,6 +12,7 @@ import {
   Settings,
   ChevronDown,
   Sparkles,
+  Archive,
 } from 'lucide-react'
 
 interface NavItem {
@@ -29,6 +30,7 @@ const DASHBOARD_NAV_ITEM: NavItem = {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { to: '/archives', icon: <Archive size={18} />, label: '历史档案' },
   { to: '/discover', icon: <Search size={18} />, label: '发现候选' },
   { to: '/screenshots', icon: <Image size={18} />, label: '截图箱' },
   { to: '/timeline', icon: <Clock3 size={18} />, label: '时间线' },

@@ -23,6 +23,15 @@ export const INSTALL_STATUS_LABELS: Record<InstallStatus, string> = {
   missing: '未安装',
 }
 
+// ========== Archive Status ==========
+
+export type ArchiveStatus = 'active' | 'archived'
+
+export const ARCHIVE_STATUS_LABELS: Record<ArchiveStatus, string> = {
+  active: '进行中档案',
+  archived: '已封存',
+}
+
 // ========== Screenshot Status ==========
 
 export type ScreenshotStatus = 'pending' | 'classified' | 'trashed' | 'deleted'

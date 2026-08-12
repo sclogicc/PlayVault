@@ -17,7 +17,14 @@ export function launchGame(
   db: Database,
   gameId: number,
 ): GameLaunchResult {
-  // 1. Get the primary exe
+  // 1. Archived experiences are intentionally read-only after local files are cleaned.
+  const game = gameRepo.getGameById(db, gameId)
+  if (!game) return { success: false, error: '游戏档案不存在' }
+  if (game.archive_status === 'archived') {
+    return { success: false, error: '该游戏已封存，仅保留历史档案，无法启动' }
+  }
+
+  // 2. Get the primary exe
   const primaryExe = exeRepo.getPrimaryExe(db, gameId)
 
   if (!primaryExe || !primaryExe.file_path) {
@@ -26,7 +33,7 @@ export function launchGame(
     return { success: false, error: '未配置主可执行文件路径' }
   }
 
-  // 2. Check file exists
+  // 3. Check file exists
   if (!fs.existsSync(primaryExe.file_path)) {
     gameRepo.updateInstallStatus(db, gameId, 'missing')
     return {
@@ -35,7 +42,7 @@ export function launchGame(
     }
   }
 
-  // 3. Check it's an .exe file
+  // 4. Check it's an .exe file
   try {
     const stat = fs.statSync(primaryExe.file_path)
     if (!stat.isFile()) {

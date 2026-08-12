@@ -204,6 +204,17 @@ const MIGRATIONS: Record<number, string[]> = {
          last_seen_at = CASE WHEN last_seen_at IS NULL THEN NULL ELSE datetime(last_seen_at, 'localtime') END
      WHERE source = 'auto'`,
   ],
+
+  // v13: archived game experiences and optionally preserved highlight screenshots.
+  13: [
+    "ALTER TABLE games ADD COLUMN archive_status TEXT NOT NULL DEFAULT 'active'",
+    'ALTER TABLE games ADD COLUMN archived_at TEXT',
+    "ALTER TABLE games ADD COLUMN archive_cover_path TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE games ADD COLUMN archive_background_path TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE screenshots ADD COLUMN is_archived_highlight INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE screenshots ADD COLUMN preserved_path TEXT NOT NULL DEFAULT ''",
+    "CREATE INDEX IF NOT EXISTS idx_games_archive_status ON games(archive_status)",
+  ],
 }
 
 /**

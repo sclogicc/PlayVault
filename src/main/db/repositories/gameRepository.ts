@@ -1,10 +1,10 @@
 import type { Database } from '../sqljs-wrapper'
 import type { Game, GameWithStats } from '../../../shared/types'
-import type { GameStatus, InstallStatus } from '../../../shared/constants'
+import type { ArchiveStatus, GameStatus, InstallStatus } from '../../../shared/constants'
 
 export function getAllGames(
   db: Database,
-  filters?: { search?: string; status?: string },
+  filters?: { search?: string; status?: string; archiveStatus?: ArchiveStatus },
 ): GameWithStats[] {
   let sql = `
     SELECT
@@ -18,14 +18,13 @@ export function getAllGames(
   `
   const params: unknown[] = []
 
+  // The normal library deliberately excludes archived games; history remains available through getArchivedGames.
+  sql += ' AND g.archive_status = ?'
+  params.push(filters?.archiveStatus ?? 'active')
+
   if (filters?.search) {
-    sql +=
-      ' AND (g.name LIKE ? OR g.display_name LIKE ? OR g.aliases LIKE ?)'
-    params.push(
-      `%${filters.search}%`,
-      `%${filters.search}%`,
-      `%${filters.search}%`,
-    )
+    sql += ' AND (g.name LIKE ? OR g.display_name LIKE ? OR g.aliases LIKE ?)'
+    params.push(`%${filters.search}%`, `%${filters.search}%`, `%${filters.search}%`)
   }
 
   if (filters?.status && filters.status !== '全部') {
@@ -34,17 +33,15 @@ export function getAllGames(
   }
 
   sql += ' ORDER BY g.is_enabled DESC, g.updated_at DESC'
-
   return db.prepare(sql).all(...params) as unknown as GameWithStats[]
 }
 
-export function getGameById(
-  db: Database,
-  id: number,
-): Game | undefined {
-  return db.prepare('SELECT * FROM games WHERE id = ?').get(id) as unknown as
-    | Game
-    | undefined
+export function getArchivedGames(db: Database, filters?: { search?: string }): GameWithStats[] {
+  return getAllGames(db, { ...filters, archiveStatus: 'archived' })
+}
+
+export function getGameById(db: Database, id: number): Game | undefined {
+  return db.prepare('SELECT * FROM games WHERE id = ?').get(id) as unknown as Game | undefined
 }
 
 export function createGame(
@@ -115,7 +112,6 @@ export function updateGame(
 ): void {
   const fields: string[] = ["updated_at = datetime('now','localtime')"]
   const params: unknown[] = []
-
   const allowed = [
     'name',
     'display_name',
@@ -132,6 +128,7 @@ export function updateGame(
     'background_crop',
     'is_enabled',
   ]
+
   for (const key of allowed) {
     if (data[key as keyof typeof data] !== undefined) {
       fields.push(`${key} = ?`)
@@ -164,17 +161,8 @@ export function toggleEnabled(db: Database, id: number): void {
   ).run(id)
 }
 
-// ========== New methods for v3 ==========
-
-/**
- * Update game status with optional completed_at timestamp.
- * Used for auto-transition (not_started → in_progress) and manual completion.
- */
-export function updateGameStatus(
-  db: Database,
-  id: number,
-  status: GameStatus,
-): void {
+/** Update game status with optional completed_at timestamp. */
+export function updateGameStatus(db: Database, id: number, status: GameStatus): void {
   if (status === 'completed') {
     db.prepare(
       "UPDATE games SET status = ?, completed_at = datetime('now','localtime'), updated_at = datetime('now','localtime') WHERE id = ?",
@@ -186,17 +174,56 @@ export function updateGameStatus(
   }
 }
 
-/**
- * Update install status (installed / missing).
- */
-export function updateInstallStatus(
-  db: Database,
-  id: number,
-  installStatus: InstallStatus,
-): void {
+/** Update install status (installed / missing). */
+export function updateInstallStatus(db: Database, id: number, installStatus: InstallStatus): void {
   db.prepare(
     "UPDATE games SET install_status = ?, updated_at = datetime('now','localtime') WHERE id = ?",
   ).run(installStatus, id)
+}
+
+/**
+ * Move a completed local game into the historical archive without deleting Game,
+ * Session or Screenshot rows. Archive media paths may point to stable copies
+ * created by the archive service.
+ */
+export function archiveGame(
+  db: Database,
+  data: {
+    gameId: number
+    archiveCoverPath: string
+    archiveBackgroundPath: string
+    highlights: Array<{ screenshotId: number; preservedPath: string }>
+  },
+): void {
+  db.transaction(() => {
+    db.prepare(
+      `UPDATE games
+       SET archive_status = 'archived',
+           archived_at = COALESCE(archived_at, datetime('now','localtime')),
+           archive_cover_path = ?,
+           archive_background_path = ?,
+           is_enabled = 0,
+           updated_at = datetime('now','localtime')
+       WHERE id = ?`,
+    ).run(data.archiveCoverPath, data.archiveBackgroundPath, data.gameId)
+
+    db.prepare(
+      `UPDATE screenshots
+       SET is_archived_highlight = 0,
+           updated_at = datetime('now','localtime')
+       WHERE game_id = ? AND status != 'deleted'`,
+    ).run(data.gameId)
+
+    for (const highlight of data.highlights) {
+      db.prepare(
+        `UPDATE screenshots
+         SET is_archived_highlight = 1,
+             preserved_path = ?,
+             updated_at = datetime('now','localtime')
+         WHERE id = ? AND game_id = ? AND status = 'classified'`,
+      ).run(highlight.preservedPath, highlight.screenshotId, data.gameId)
+    }
+  })
 }
 
 /**

@@ -8,6 +8,7 @@ import type {
   DiscoveredExecutable,
   GameLaunchResult,
   SessionWithGame,
+  ArchiveGameResult,
 } from '../shared/types'
 import type { DiscoveredStatus, SessionEndReason, ScreenshotStatus } from '../shared/constants'
 
@@ -54,6 +55,8 @@ declare global {
         ) => Promise<void>
         delete: (id: number) => Promise<void>
         toggleEnabled: (id: number) => Promise<void>
+        getArchived: (filters?: { search?: string }) => Promise<GameWithStats[]>
+        archive: (data: { gameId: number; screenshotIds?: number[] }) => Promise<ArchiveGameResult>
         launch: (gameId: number) => Promise<GameLaunchResult>
         checkInstall: (gameId: number) => Promise<string>
         complete: (gameId: number) => Promise<void>

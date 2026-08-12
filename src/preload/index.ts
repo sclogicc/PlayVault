@@ -45,6 +45,10 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.GAME_DELETE, id),
     toggleEnabled: (id: number) =>
       ipcRenderer.invoke(IPC_CHANNELS.GAME_TOGGLE, id),
+    getArchived: (filters?: { search?: string }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GAME_GET_ARCHIVED, filters),
+    archive: (data: { gameId: number; screenshotIds?: number[] }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GAME_ARCHIVE, data),
     launch: (gameId: number) =>
       ipcRenderer.invoke(IPC_CHANNELS.GAME_LAUNCH, gameId),
     checkInstall: (gameId: number) =>

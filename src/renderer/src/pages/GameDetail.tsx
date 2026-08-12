@@ -20,6 +20,9 @@ import {
   AlertTriangle,
   ExternalLink,
   FolderSearch,
+  Archive,
+  Check,
+  LockKeyhole,
 } from 'lucide-react'
 import type { GameStatus } from '@shared/constants'
 import {
@@ -28,6 +31,7 @@ import {
 } from '@shared/constants'
 import StatusBadge from '../components/ui/StatusBadge'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 import ImageViewer from '../components/ui/ImageViewer'
 import CoverCropEditor from '../components/games/CoverCropEditor'
@@ -73,6 +77,10 @@ export default function GameDetail(): React.ReactElement {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
   const [mediaEditorMode, setMediaEditorMode] = useState<'cover' | 'background' | null>(null)
   const [mediaEditorPath, setMediaEditorPath] = useState('')
+  const [archivingGame, setArchivingGame] = useState(false)
+  const [archiveHighlightIds, setArchiveHighlightIds] = useState<number[]>([])
+  const [archiveError, setArchiveError] = useState<string | null>(null)
+  const [isArchiving, setIsArchiving] = useState(false)
 
   if (gameLoading) {
     return (
@@ -215,6 +223,39 @@ export default function GameDetail(): React.ReactElement {
     navigate('/games')
   }
 
+  const toggleArchiveHighlight = (screenshotId: number): void => {
+    setArchiveHighlightIds((current) => {
+      if (current.includes(screenshotId)) return current.filter((id) => id !== screenshotId)
+      if (current.length >= 3) return current
+      return [...current, screenshotId]
+    })
+  }
+
+  const handleArchiveGame = async (): Promise<void> => {
+    if (activeSession) {
+      setArchiveError('请先结束正在进行的自动计时，再封存这段游戏经历。')
+      return
+    }
+
+    setArchiveError(null)
+    setIsArchiving(true)
+    try {
+      await window.api.game.archive({
+        gameId: game.id,
+        screenshotIds: archiveHighlightIds,
+      })
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['games'] }),
+        qc.invalidateQueries({ queryKey: ['screenshots', 'game', game.id] }),
+      ])
+      setArchivingGame(false)
+    } catch (error) {
+      setArchiveError(error instanceof Error ? error.message : '封存失败，请稍后重试。')
+    } finally {
+      setIsArchiving(false)
+    }
+  }
+
   const handleRelink = async (): Promise<void> => {
     const filePath = await window.api.dialog.openExecutable()
     if (!filePath) return
@@ -277,32 +318,45 @@ export default function GameDetail(): React.ReactElement {
   const isCompleted = game.status === 'completed'
   const primaryExe = exes.find((e) => e.is_primary === 1)
   const lastPlayedAt = sessions.length > 0 ? sessions[0].ended_at : null
+  const isArchived = game.archive_status === 'archived'
+  const archiveCoverPath = game.archive_cover_path || game.cover_path
+  const archiveBackgroundPath = game.archive_background_path || game.background_path
+  const archiveHighlights = gameScreenshots.filter((shot) => shot.is_archived_highlight === 1)
+  const firstPlayedAt = sessions.length > 0
+    ? sessions.reduce((earliest, session) => session.started_at < earliest ? session.started_at : earliest, sessions[0].started_at)
+    : null
+  const latestSessionAt = sessions.length > 0
+    ? sessions.reduce((latest, session) => {
+      const candidate = session.ended_at ?? session.started_at
+      return candidate > latest ? candidate : latest
+    }, sessions[0].ended_at ?? sessions[0].started_at)
+    : null
 
   return (
     <div className="space-y-6">
       {/* Back link */}
       <Link
-        to="/games"
+        to={isArchived ? '/archives' : '/games'}
         className="inline-flex items-center gap-1 text-sm text-archive-400 hover:text-archive-200 transition-colors"
       >
         <ChevronLeft size={14} />
-        返回游戏库
+        {isArchived ? '返回历史档案' : '返回游戏库'}
       </Link>
 
       {/* ========== Hero Section ========== */}
       <div className="relative overflow-hidden rounded-panel border border-white/[0.09] bg-archive-850 shadow-float">
         {/* 背景图独立于游戏封面，用于营造详情页的沉浸式氛围。 */}
         <div className="relative flex h-[280px] items-center justify-center overflow-hidden bg-gradient-to-br from-archive-800 via-archive-850 to-archive-900 sm:h-[330px] lg:h-[370px]">
-          {game.background_path ? (
+          {archiveBackgroundPath ? (
             <CoverImage
-              coverPath={game.background_path}
+              coverPath={archiveBackgroundPath}
               coverCrop={parseCoverCrop(game.background_crop)}
               displayName={`${game.display_name} 背景图`}
             />
           ) : (
             <Gamepad2 size={64} className="text-archive-700" />
           )}
-          <div className="absolute right-4 top-4 flex flex-wrap justify-end gap-2">
+          <div className={isArchived ? 'hidden' : 'absolute right-4 top-4 flex flex-wrap justify-end gap-2'}>
             <Button variant="secondary" size="sm" onClick={handleSetBackground}>
               <Image size={14} />
               {game.background_path ? '更换背景图' : '设置背景图'}
@@ -327,9 +381,9 @@ export default function GameDetail(): React.ReactElement {
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div className="flex items-start gap-5 flex-1 min-w-0">
               <div className="flex w-28 shrink-0 aspect-[2/3] items-center justify-center overflow-hidden rounded-[15px] border border-white/[0.16] bg-archive-900 shadow-[0_16px_30px_rgba(0,0,0,0.45)] sm:w-32">
-                {game.cover_path ? (
+                {archiveCoverPath ? (
                   <CoverImage
-                    coverPath={game.cover_path}
+                    coverPath={archiveCoverPath}
                     coverCrop={parseCoverCrop(game.cover_crop)}
                     displayName={`${game.display_name} 封面`}
                   />
@@ -338,16 +392,22 @@ export default function GameDetail(): React.ReactElement {
                 )}
               </div>
               <div className="min-w-0 flex-1 space-y-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-200">个人游戏档案</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-200">{isArchived ? '历史游戏档案' : '个人游戏档案'}</p>
               {/* 名称与状态 */}
               <div className="flex flex-wrap items-center gap-3">
                 <h2 className="text-3xl font-bold tracking-tight text-archive-50">
                   {game.display_name}
                 </h2>
                 <StatusBadge status={game.status as GameStatus} />
+                {isArchived && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-violet-300/20 bg-violet-400/10 px-2.5 py-1 text-xs font-medium text-violet-200">
+                    <Archive size={12} />
+                    已封存
+                  </span>
+                )}
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className={isArchived ? 'hidden' : 'flex flex-wrap gap-2'}>
                 <Button variant="secondary" size="sm" onClick={handleSetCover}>
                   <Image size={14} />
                   {game.cover_path ? '更换封面' : '设置封面'}
@@ -371,7 +431,7 @@ export default function GameDetail(): React.ReactElement {
               )}
 
               {/* Install + Path */}
-              <div className="flex items-center gap-3 text-sm">
+              <div className={isArchived ? 'hidden' : 'flex items-center gap-3 text-sm'}>
                 <span className="flex items-center gap-1.5">
                   <HardDrive size={13} className="text-archive-500" />
                   <span className={isInstalled ? 'text-accent-teal font-medium' : 'text-accent-red font-medium'}>
@@ -398,6 +458,22 @@ export default function GameDetail(): React.ReactElement {
             </div>
 
             {/* Action buttons */}
+            {isArchived ? (
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-300/15 bg-violet-400/10 px-3 py-1.5 text-xs text-violet-200">
+                  <LockKeyhole size={12} />
+                  封存于 {formatDate(game.archived_at)}
+                </span>
+                <Link to="/timeline" className="btn-secondary rounded-full px-4 py-2 text-sm">
+                  <Clock size={15} />
+                  查看时间线
+                </Link>
+                <Link to="/screenshots" className="btn-primary rounded-full px-4 py-2 text-sm">
+                  <Image size={15} />
+                  打开截图箱
+                </Link>
+              </div>
+            ) : (
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
               {launchStatus && (
                 <span
@@ -463,11 +539,22 @@ export default function GameDetail(): React.ReactElement {
                   )}
                 </span>
               )}
+              {!activeSession && (
+                <Button variant="secondary" onClick={() => {
+                  setArchiveError(null)
+                  setArchiveHighlightIds([])
+                  setArchivingGame(true)
+                }}>
+                  <Archive size={16} />
+                  封存游戏
+                </Button>
+              )}
               <Button variant="danger" onClick={() => setDeletingGame(true)}>
                 <Trash2 size={16} />
                 删除游戏
               </Button>
             </div>
+            )}
           </div>
 
           {/* Stats bar */}
@@ -479,7 +566,7 @@ export default function GameDetail(): React.ReactElement {
               </p>
             </div>
             <div className="rounded-archive border border-white/[0.06] bg-white/[0.035] px-3.5 py-3">
-              <span className="text-[11px] font-medium text-archive-500">最近游玩</span>
+              <span className="text-[11px] font-medium text-archive-500">{isArchived ? '最后游玩' : '最近游玩'}</span>
               <p className="mt-1 text-archive-100">
                 {formatRelativeDate(lastPlayedAt)}
               </p>
@@ -491,14 +578,70 @@ export default function GameDetail(): React.ReactElement {
               </p>
             </div>
             <div className="rounded-archive border border-white/[0.06] bg-white/[0.035] px-3.5 py-3">
-              <span className="text-[11px] font-medium text-archive-500">截图收藏</span>
+              <span className="text-[11px] font-medium text-archive-500">{isArchived ? '封存画面' : '截图收藏'}</span>
               <p className="mt-1 font-mono text-archive-100">
-                {gameScreenshots.length}
+                {isArchived ? archiveHighlights.length : gameScreenshots.length}
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {isArchived && (
+        <section className="relative overflow-hidden rounded-panel border border-violet-300/[0.12] bg-[linear-gradient(135deg,rgba(109,40,217,0.10),rgba(255,255,255,0.025)_38%,rgba(8,14,22,0.12))] p-5 shadow-panel sm:p-6">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-500/10 blur-3xl" />
+          <div className="relative flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-200">自动生成</p>
+              <h3 className="mt-2 flex items-center gap-2 text-xl font-semibold text-archive-50"><Archive size={18} className="text-violet-200" /> 这段游戏经历</h3>
+              <p className="mt-2 text-sm text-archive-400">无需填写总结；所有时间、游玩记录与画面均由 PlayVault 自动留存。</p>
+            </div>
+            <span className="rounded-full border border-violet-300/15 bg-violet-400/10 px-3 py-1.5 text-xs font-medium text-violet-200">个人历史档案</span>
+          </div>
+
+          <div className="relative mt-6 rounded-archive border border-white/[0.07] bg-black/[0.16] px-4 py-5 sm:px-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-archive-500">经历时间轴</p>
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-0">
+              {[
+                { label: '首次启动', value: formatDate(firstPlayedAt), icon: Play },
+                { label: '最后一次游玩', value: formatDate(latestSessionAt), icon: Clock },
+                { label: '完成封存', value: formatDate(game.archived_at), icon: LockKeyhole },
+              ].map(({ label, value, icon: Icon }, index) => (
+                <div key={label} className="relative flex items-center gap-3 sm:block sm:pr-5">
+                  {index < 2 && <span className="absolute left-[13px] top-7 hidden h-px w-[calc(100%-24px)] bg-gradient-to-r from-violet-300/45 to-white/[0.08] sm:block" />}
+                  <span className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-violet-300/25 bg-archive-900 text-violet-200"><Icon size={13} /></span>
+                  <div className="sm:mt-3">
+                    <p className="text-xs font-medium text-archive-200">{label}</p>
+                    <p className="mt-1 text-xs text-archive-500">{value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative mt-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-archive-100">封存画面</p>
+                <p className="mt-1 text-xs text-archive-500">已复制到 PlayVault 档案目录的精选截图，即使原文件被清理也能回看。</p>
+              </div>
+              <span className="rounded-full bg-white/[0.055] px-2.5 py-1 text-[11px] text-archive-400">{archiveHighlights.length} / 3 张</span>
+            </div>
+            {archiveHighlights.length === 0 ? (
+              <div className="mt-3 flex min-h-24 items-center justify-center rounded-archive border border-dashed border-white/[0.09] bg-black/[0.12] px-4 text-center text-xs text-archive-500">封存时未选择需要长期保留的截图；原截图仍可在截图箱中查看。</div>
+            ) : (
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {archiveHighlights.map((shot) => (
+                  <button key={shot.id} type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === shot.id))} className="group relative aspect-video overflow-hidden rounded-archive border border-violet-300/15 bg-archive-900 text-left">
+                    <img src={toFileUrl(shot.preserved_path || shot.file_path)} alt={shot.file_name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                    <span className="absolute right-2 top-2 rounded-full border border-white/20 bg-archive-950/75 p-1.5 text-violet-100 shadow-lg"><Star size={12} fill="currentColor" /></span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ========== Content Sections ========== */}
       <div className="grid grid-cols-1 gap-6">
@@ -506,7 +649,7 @@ export default function GameDetail(): React.ReactElement {
         <div className="card">
           <h3 className="text-sm font-medium text-archive-200 mb-3 flex items-center gap-2">
             <Clock size={14} />
-            最近游玩记录
+            {isArchived ? '完整游玩记录' : '最近游玩记录'}
           </h3>
           {sessionsLoading ? (
             <p className="text-xs text-archive-500">加载中...</p>
@@ -555,7 +698,7 @@ export default function GameDetail(): React.ReactElement {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className={isArchived ? 'hidden' : 'flex items-center gap-1 shrink-0'}>
                       {!s.ended_at && (
                         <button
                           onClick={() =>
@@ -586,7 +729,7 @@ export default function GameDetail(): React.ReactElement {
         <div className="card">
           <h3 className="text-sm font-medium text-archive-200 mb-3 flex items-center gap-2">
             <Image size={14} />
-            最近截图 ({gameScreenshots.length})
+            {isArchived ? `全部截图索引 (${gameScreenshots.length})` : `最近截图 (${gameScreenshots.length})`}
           </h3>
           {gameScreenshots.length === 0 ? (
             <p className="text-xs text-archive-500">暂无截图</p>
@@ -608,7 +751,7 @@ export default function GameDetail(): React.ReactElement {
         {/* Game Info + Notes */}
         <div className="card">
           <h3 className="text-sm font-medium text-archive-200 mb-3">
-            游戏信息
+            {isArchived ? '档案信息' : '游戏信息'}
           </h3>
           <div className="space-y-2 text-sm">
             {game.platform && (
@@ -650,7 +793,7 @@ export default function GameDetail(): React.ReactElement {
         </div>
 
         {/* Bound Executables */}
-        <div className="card">
+        <div className={isArchived ? 'hidden' : 'card'}>
           <h3 className="text-sm font-medium text-archive-200 mb-3 flex items-center gap-2">
             <Monitor size={14} />
             可执行文件
@@ -703,6 +846,68 @@ export default function GameDetail(): React.ReactElement {
         </div>
       </div>
 
+      <Modal
+        open={archivingGame}
+        onClose={() => {
+          if (!isArchiving) setArchivingGame(false)
+        }}
+        title="封存这段游戏经历"
+        width="max-w-3xl"
+      >
+        <div className="space-y-5">
+          <div className="rounded-archive border border-violet-300/15 bg-violet-400/[0.08] px-4 py-3.5">
+            <div className="flex items-start gap-3">
+              <span className="rounded-xl bg-violet-400/10 p-2 text-violet-200"><Archive size={17} /></span>
+              <div>
+                <p className="text-sm font-medium text-archive-100">游戏文件可以清理，PlayVault 档案不会删除。</p>
+                <p className="mt-1 text-xs leading-5 text-archive-400">封存后会自动固定累计时长、游玩记录、首次/最后游玩日期与背景封面；游戏将从默认游戏库移入历史档案。</p>
+              </div>
+            </div>
+          </div>
+
+          {gameScreenshots.length > 0 && (
+            <div>
+              <div className="flex flex-wrap items-end justify-between gap-2">
+                <div>
+                  <p className="text-sm font-medium text-archive-100">可选：保留关键画面</p>
+                  <p className="mt-1 text-xs text-archive-500">选择至多 3 张截图，PlayVault 会复制到自己的档案目录。可完全跳过。</p>
+                </div>
+                <span className="rounded-full bg-white/[0.055] px-2.5 py-1 text-[11px] text-archive-400">已选择 {archiveHighlightIds.length} / 3</span>
+              </div>
+              <div className="mt-3 grid max-h-[290px] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3">
+                {gameScreenshots.map((shot) => {
+                  const selected = archiveHighlightIds.includes(shot.id)
+                  const maxed = archiveHighlightIds.length >= 3 && !selected
+                  return (
+                    <button
+                      key={shot.id}
+                      type="button"
+                      onClick={() => toggleArchiveHighlight(shot.id)}
+                      disabled={maxed || isArchiving}
+                      className={`group relative aspect-video overflow-hidden rounded-archive border text-left transition-all ${selected ? 'border-violet-300/70 ring-2 ring-violet-300/35' : 'border-white/[0.08] hover:border-white/[0.22]'} ${maxed ? 'cursor-not-allowed opacity-40' : ''}`}
+                    >
+                      <img src={toFileUrl(shot.file_path)} alt={shot.file_name} className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" />
+                      <span className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border ${selected ? 'border-violet-200/60 bg-accent-violet text-white' : 'border-white/25 bg-archive-950/70 text-transparent'}`}><Check size={14} strokeWidth={3} /></span>
+                      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 pb-1.5 pt-6 text-[10px] text-archive-200 opacity-0 transition-opacity group-hover:opacity-100">{formatDate(shot.captured_at)}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {archiveError && <p className="rounded-archive border border-red-300/15 bg-red-400/10 px-3 py-2 text-xs text-red-200">{archiveError}</p>}
+
+          <div className="flex flex-wrap justify-end gap-3 border-t border-white/[0.07] pt-4">
+            <Button variant="secondary" onClick={() => setArchivingGame(false)} disabled={isArchiving}>暂不封存</Button>
+            <Button variant="primary" onClick={handleArchiveGame} disabled={isArchiving}>
+              {isArchiving ? <Loader2 size={15} className="animate-spin" /> : <Archive size={15} />}
+              确认封存
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       {/* Delete Session Confirmation */}
       <ConfirmDialog
         open={deletingSessionId !== null}
@@ -746,7 +951,7 @@ export default function GameDetail(): React.ReactElement {
       <ImageViewer
         open={previewIndex !== null}
         items={gameScreenshots.map((shot) => ({
-          filePath: shot.file_path,
+          filePath: isArchived && shot.is_archived_highlight === 1 ? (shot.preserved_path || shot.file_path) : shot.file_path,
           fileName: shot.file_name,
         }))}
         activeIndex={previewIndex ?? 0}
@@ -817,7 +1022,7 @@ function ScreenshotThumb({
     >
       {!imgError ? (
         <img
-          src={toFileUrl(shot.file_path)}
+          src={toFileUrl(shot.preserved_path || shot.file_path)}
           alt={shot.file_name}
           className="w-full h-full object-cover"
           loading="lazy"
