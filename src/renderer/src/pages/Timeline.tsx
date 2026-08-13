@@ -46,20 +46,20 @@ export default function Timeline(): React.ReactElement {
   const totalDuration = sessions.reduce((sum, session) => sum + session.duration_seconds, 0)
 
   return (
-    <div className="space-y-7">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+    <div className="min-h-full space-y-8 bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
+      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-white/[0.075] pb-7">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-violet">游玩足迹</p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-archive-50">时间线</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">游玩足迹</p>
+          <h2 className="mt-2 font-serif text-4xl tracking-[-0.025em] text-archive-50">时间线</h2>
           <p className="mt-2 text-sm text-archive-400">按日期回顾每一次由 PlayVault 保存的游玩记录。</p>
         </div>
-        <div className="surface-toolbar flex gap-1.5 p-1.5">
+        <div className="flex gap-4 border-b border-white/[0.075] pb-2">
           {RANGE_OPTIONS.map((option) => (
             <button
               key={option}
               type="button"
               onClick={() => setDays(option)}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${days === option ? 'bg-accent-violet text-white shadow-[0_6px_16px_rgba(109,40,217,0.28)]' : 'text-archive-400 hover:bg-white/[0.06] hover:text-archive-200'}`}
+              className={`border-b pb-1 text-xs font-medium transition-colors ${days === option ? 'border-[#c9a35a] text-[#ead7aa]' : 'border-transparent text-archive-500 hover:text-archive-200'}`}
             >
               近 {option} 天
             </button>
@@ -92,11 +92,11 @@ export default function Timeline(): React.ReactElement {
             const dailyDuration = daySessions.reduce((sum, session) => sum + session.duration_seconds, 0)
             return (
               <section key={date} className="relative pl-11">
-                <span className="absolute left-[15px] top-6 h-4 w-4 rounded-full border-4 border-archive-950 bg-accent-violet shadow-[0_0_0_1px_rgba(167,139,250,0.35)]" />
+                <span className="absolute left-[15px] top-6 h-4 w-4 rounded-full border-4 border-archive-950 bg-[#c9a35a] shadow-[0_0_0_1px_rgba(201,163,90,0.35)]" />
                 <div className="card">
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.065] pb-4">
                     <div className="flex items-center gap-2">
-                      <span className="rounded-xl border border-violet-300/15 bg-violet-400/10 p-2 text-violet-200"><CalendarDays size={15} /></span>
+                      <span className="rounded-xl border border-amber-300/15 bg-amber-400/10 p-2 text-amber-100"><CalendarDays size={15} /></span>
                       <div>
                         <h3 className="text-sm font-semibold text-archive-100">{new Date(`${date}T00:00:00`).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}</h3>
                         <p className="mt-0.5 text-xs text-archive-500">{daySessions.length} 条游玩记录</p>
@@ -108,7 +108,7 @@ export default function Timeline(): React.ReactElement {
                     {daySessions.map((session) => (
                       <Link key={session.id} to={`/games/${session.game_id}`} className="group flex items-center justify-between gap-4 rounded-archive border border-transparent bg-black/[0.13] p-3.5 transition-all hover:border-white/[0.08] hover:bg-white/[0.055]">
                         <div className="flex min-w-0 items-center gap-3">
-                          <span className="rounded-lg bg-white/[0.055] p-2 text-archive-400 transition-colors group-hover:bg-violet-400/10 group-hover:text-violet-200"><Gamepad2 size={15} /></span>
+                          <span className="rounded-lg bg-white/[0.055] p-2 text-archive-400 transition-colors group-hover:bg-amber-400/10 group-hover:text-amber-100"><Gamepad2 size={15} /></span>
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium text-archive-200 group-hover:text-archive-50">{session.game_display_name || '未知游戏'}</p>
                             <p className="mt-1 truncate text-xs text-archive-500">{formatTime(session.started_at)}{session.ended_at ? ` – ${formatTime(session.ended_at)}` : ' – 进行中'} · {session.exe_name}</p>

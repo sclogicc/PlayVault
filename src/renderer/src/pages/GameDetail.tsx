@@ -333,7 +333,7 @@ export default function GameDetail(): React.ReactElement {
     : null
 
   return (
-    <div className="space-y-7 pb-8">
+    <div className="min-h-full space-y-8 bg-[#090a0c] px-8 py-8 pb-12 sm:px-12 lg:px-16">
       {/* Back link */}
       <Link
         to={isArchived ? '/archives' : '/games'}
@@ -344,9 +344,9 @@ export default function GameDetail(): React.ReactElement {
       </Link>
 
       {/* ========== Hero Section ========== */}
-      <div className="group relative overflow-hidden rounded-[26px] border border-white/[0.09] bg-archive-850 shadow-float">
+      <div className="group relative overflow-hidden border-y border-white/[0.09] bg-archive-850 shadow-[0_20px_46px_rgba(0,0,0,0.3)]">
         {/* 背景图独立于游戏封面，用于营造详情页的沉浸式氛围。 */}
-        <div className="relative flex h-[310px] items-center justify-center overflow-hidden bg-gradient-to-br from-archive-800 via-archive-850 to-archive-900 sm:h-[360px] lg:h-[410px]">
+        <div className="media-frame relative flex h-[360px] items-center justify-center bg-gradient-to-br from-archive-800 via-archive-850 to-archive-900 sm:h-[430px] lg:h-[500px]">
           {archiveBackgroundPath ? (
             <CoverImage
               coverPath={archiveBackgroundPath}
@@ -380,7 +380,7 @@ export default function GameDetail(): React.ReactElement {
         <div className="relative -mt-32 bg-gradient-to-b from-archive-950/0 via-archive-950/94 to-archive-950 px-6 pb-7 pt-20 sm:px-8 lg:px-10">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="flex min-w-0 flex-1 items-start gap-5 sm:gap-6">
-              <div className="flex w-28 shrink-0 aspect-[2/3] items-center justify-center overflow-hidden rounded-[18px] border border-white/[0.18] bg-archive-900 shadow-[0_20px_42px_rgba(0,0,0,0.5)] sm:w-36">
+              <div className="media-frame flex w-28 shrink-0 aspect-[2/3] items-center justify-center rounded-[18px] border border-white/[0.18] bg-archive-900 shadow-[0_20px_42px_rgba(0,0,0,0.5)] sm:w-36">
                 {archiveCoverPath ? (
                   <CoverImage
                     coverPath={archiveCoverPath}
@@ -392,7 +392,7 @@ export default function GameDetail(): React.ReactElement {
                 )}
               </div>
               <div className="min-w-0 flex-1 space-y-3.5 pt-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-200">{isArchived ? '历史游戏档案' : '个人游戏档案'}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">{isArchived ? '历史游戏档案' : '个人游戏档案'}</p>
               {/* 名称与状态 */}
               <div className="flex flex-wrap items-center gap-3">
                 <h2 className="text-3xl font-bold tracking-tight text-archive-50 sm:text-4xl">
@@ -400,7 +400,7 @@ export default function GameDetail(): React.ReactElement {
                 </h2>
                 <StatusBadge status={game.status as GameStatus} />
                 {isArchived && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-violet-300/20 bg-violet-400/10 px-2.5 py-1 text-xs font-medium text-violet-200">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/20 bg-amber-400/10 px-2.5 py-1 text-xs font-medium text-amber-100">
                     <Archive size={12} />
                     已封存
                   </span>
@@ -460,7 +460,7 @@ export default function GameDetail(): React.ReactElement {
             {/* Action buttons */}
             {isArchived ? (
               <div className="flex max-w-full shrink-0 flex-wrap items-center justify-end gap-2 lg:max-w-[470px]">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-300/15 bg-violet-400/10 px-3 py-1.5 text-xs text-violet-200">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/15 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
                   <LockKeyhole size={12} />
                   封存于 {formatDate(game.archived_at)}
                 </span>
@@ -588,17 +588,17 @@ export default function GameDetail(): React.ReactElement {
       </div>
 
       {isArchived && (
-        <section className="relative overflow-hidden rounded-[24px] border border-violet-300/[0.14] bg-[linear-gradient(135deg,rgba(109,40,217,0.13),rgba(255,255,255,0.025)_42%,rgba(8,14,22,0.16))] p-6 shadow-panel sm:p-7">
+        <section className="relative overflow-hidden rounded-[24px] border border-amber-300/[0.14] bg-[linear-gradient(135deg,rgba(109,40,217,0.13),rgba(255,255,255,0.025)_42%,rgba(8,14,22,0.16))] p-6 shadow-panel sm:p-7">
           <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-500/10 blur-3xl" />
           <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-200">自动生成的回顾</p>
-              <h3 className="mt-2 flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-archive-50"><Archive size={20} className="text-violet-200" /> 这段游戏经历</h3>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100">自动生成的回顾</p>
+              <h3 className="mt-2 flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-archive-50"><Archive size={20} className="text-amber-100" /> 这段游戏经历</h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-archive-400">无需填写总结。PlayVault 将这段经历中的时间、游玩记录和你选择保留的画面编排为可长期回顾的个人档案。</p>
             </div>
-            <aside className="rounded-2xl border border-violet-300/[0.14] bg-archive-950/42 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-300">封存凭据</p>
-              <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-archive-100"><LockKeyhole size={13} className="text-violet-200" /> 已安全保存</p>
+            <aside className="rounded-2xl border border-amber-300/[0.14] bg-archive-950/42 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-200">封存凭据</p>
+              <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-archive-100"><LockKeyhole size={13} className="text-amber-100" /> 已安全保存</p>
               <p className="mt-1 text-xs leading-5 text-archive-500">封存于 {formatDate(game.archived_at)}<br />保留 {archiveHighlights.length} 张关键画面</p>
             </aside>
           </div>
@@ -612,8 +612,8 @@ export default function GameDetail(): React.ReactElement {
                 { label: '完成封存', value: formatDate(game.archived_at), icon: LockKeyhole },
               ].map(({ label, value, icon: Icon }, index) => (
                 <div key={label} className="relative flex items-center gap-3 rounded-xl bg-white/[0.018] px-3 py-2.5 sm:block sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 sm:pr-5">
-                  {index < 2 && <span className="absolute left-[13px] top-7 hidden h-px w-[calc(100%-24px)] bg-gradient-to-r from-violet-300/45 to-white/[0.08] sm:block" />}
-                  <span className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-violet-300/25 bg-archive-900 text-violet-200"><Icon size={13} /></span>
+                  {index < 2 && <span className="absolute left-[13px] top-7 hidden h-px w-[calc(100%-24px)] bg-gradient-to-r from-amber-300/45 to-white/[0.08] sm:block" />}
+                  <span className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-amber-300/25 bg-archive-900 text-amber-100"><Icon size={13} /></span>
                   <div className="sm:mt-3.5">
                     <p className="text-xs font-medium text-archive-200">{label}</p>
                     <p className="mt-1 text-xs text-archive-500">{value}</p>
@@ -636,8 +636,8 @@ export default function GameDetail(): React.ReactElement {
             ) : (
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-6">
                 {archiveHighlights.map((shot) => (
-                  <button key={shot.id} type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === shot.id))} className={`group relative aspect-video overflow-hidden rounded-2xl border border-violet-300/15 bg-archive-900 text-left shadow-[0_10px_24px_rgba(0,0,0,0.18)] ${archiveHighlights.length === 1 ? 'sm:col-span-6' : archiveHighlights.length === 2 ? 'sm:col-span-3' : 'sm:col-span-2'}`}>
-                    <img src={toFileUrl(shot.preserved_path || shot.file_path)} alt={shot.file_name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
+                  <button key={shot.id} type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === shot.id))} className={`media-frame group relative aspect-video rounded-2xl border border-amber-300/15 bg-archive-900 text-left shadow-[0_10px_24px_rgba(0,0,0,0.18)] ${archiveHighlights.length === 1 ? 'sm:col-span-6' : archiveHighlights.length === 2 ? 'sm:col-span-3' : 'sm:col-span-2'}`}>
+                    <img src={toFileUrl(shot.preserved_path || shot.file_path)} alt={shot.file_name} className="media-image transition-transform duration-300 group-hover:scale-[1.04]" />
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-archive-950/75 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                     <span className="absolute right-2 top-2 rounded-full border border-white/20 bg-archive-950/75 p-1.5 text-violet-100 shadow-lg"><Star size={12} fill="currentColor" /></span>
                   </button>
@@ -652,7 +652,7 @@ export default function GameDetail(): React.ReactElement {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12 xl:items-start">
         {/* Recent Sessions */}
         <div className="card xl:col-span-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Clock size={15} className="text-violet-200" />{isArchived ? '完整游玩记录' : '最近游玩记录'}</h3><span className="rounded-full border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{sessions.length} 次</span></div>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Clock size={15} className="text-amber-100" />{isArchived ? '完整游玩记录' : '最近游玩记录'}</h3><span className="rounded-full border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{sessions.length} 次</span></div>
           {sessionsLoading ? (
             <p className="text-xs text-archive-500">加载中...</p>
           ) : sessions.length === 0 ? (
@@ -729,7 +729,7 @@ export default function GameDetail(): React.ReactElement {
 
         {/* Screenshot Wall */}
         <div className="card overflow-hidden xl:col-span-7 xl:row-span-2">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Image size={15} className="text-violet-200" />{isArchived ? '全部截图索引' : '最近截图'}</h3><span className="rounded-full border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{gameScreenshots.length} 张</span></div>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Image size={15} className="text-amber-100" />{isArchived ? '全部截图索引' : '最近截图'}</h3><span className="rounded-full border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{gameScreenshots.length} 张</span></div>
           {gameScreenshots.length === 0 ? (
             <p className="text-xs text-archive-500">暂无截图</p>
           ) : (
@@ -854,9 +854,9 @@ export default function GameDetail(): React.ReactElement {
         width="max-w-3xl"
       >
         <div className="space-y-5">
-          <div className="rounded-archive border border-violet-300/15 bg-violet-400/[0.08] px-4 py-3.5">
+          <div className="rounded-archive border border-amber-300/15 bg-amber-400/[0.08] px-4 py-3.5">
             <div className="flex items-start gap-3">
-              <span className="rounded-xl bg-violet-400/10 p-2 text-violet-200"><Archive size={17} /></span>
+              <span className="rounded-xl bg-amber-400/10 p-2 text-amber-100"><Archive size={17} /></span>
               <div>
                 <p className="text-sm font-medium text-archive-100">游戏文件可以清理，PlayVault 档案不会删除。</p>
                 <p className="mt-1 text-xs leading-5 text-archive-400">封存后会自动固定累计时长、游玩记录、首次/最后游玩日期与背景封面；游戏将从默认游戏库移入历史档案。</p>
@@ -883,9 +883,9 @@ export default function GameDetail(): React.ReactElement {
                       type="button"
                       onClick={() => toggleArchiveHighlight(shot.id)}
                       disabled={maxed || isArchiving}
-                      className={`group relative aspect-video overflow-hidden rounded-archive border text-left transition-all ${selected ? 'border-violet-300/70 ring-2 ring-violet-300/35' : 'border-white/[0.08] hover:border-white/[0.22]'} ${maxed ? 'cursor-not-allowed opacity-40' : ''}`}
+                      className={`media-frame group relative aspect-video rounded-archive border text-left transition-all ${selected ? 'border-amber-300/70 ring-2 ring-amber-300/35' : 'border-white/[0.08] hover:border-white/[0.22]'} ${maxed ? 'cursor-not-allowed opacity-40' : ''}`}
                     >
-                      <img src={toFileUrl(shot.file_path)} alt={shot.file_name} className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" />
+                      <img src={toFileUrl(shot.file_path)} alt={shot.file_name} className="media-image transition-transform duration-200 group-hover:scale-[1.03]" />
                       <span className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border ${selected ? 'border-violet-200/60 bg-accent-violet text-white' : 'border-white/25 bg-archive-950/70 text-transparent'}`}><Check size={14} strokeWidth={3} /></span>
                       <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 pb-1.5 pt-6 text-[10px] text-archive-200 opacity-0 transition-opacity group-hover:opacity-100">{formatDate(shot.captured_at)}</span>
                     </button>
@@ -997,7 +997,7 @@ function CoverImage({
     <img
       src={toFileUrl(coverPath)}
       alt={displayName}
-      className="w-full h-full object-cover"
+      className="media-image"
       style={getCoverImageStyle(coverCrop)}
       onError={() => setError(true)}
     />
@@ -1015,7 +1015,7 @@ function ScreenshotThumb({
 
   return (
     <div
-      className="group relative aspect-video cursor-pointer overflow-hidden rounded-xl border border-white/[0.06] bg-archive-850 shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300/25 hover:shadow-[0_12px_24px_rgba(0,0,0,0.25)]"
+      className="media-frame group relative aspect-video cursor-pointer rounded-xl border border-white/[0.06] bg-archive-850 shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300/25 hover:shadow-[0_12px_24px_rgba(0,0,0,0.25)]"
       title={shot.file_name}
       onClick={onPreview}
     >
@@ -1023,7 +1023,7 @@ function ScreenshotThumb({
         <img
           src={toFileUrl(shot.preserved_path || shot.file_path)}
           alt={shot.file_name}
-          className="w-full h-full object-cover"
+          className="media-image"
           loading="lazy"
           onError={() => setImgError(true)}
         />

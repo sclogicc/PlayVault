@@ -68,11 +68,11 @@ export default function Settings(): React.ReactElement {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="min-h-full space-y-8 bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
       {/* Header */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-violet">本地配置</p>
-        <h2 className="mt-2 text-3xl font-bold tracking-tight text-archive-50">设置</h2>
+      <div className="border-b border-white/[0.075] pb-7">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">本地配置</p>
+        <h2 className="mt-2 font-serif text-4xl tracking-[-0.025em] text-archive-50">设置</h2>
         <p className="mt-2 text-sm text-archive-400">管理本地扫描路径与截图监听目录，所有数据仍将保留在你的设备中。</p>
       </div>
 

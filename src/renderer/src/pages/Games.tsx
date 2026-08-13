@@ -17,22 +17,13 @@ export default function Games(): React.ReactElement {
   const openTimer = useRef<number | null>(null)
   const [launchStatus, setLaunchStatus] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'recent' | 'duration' | 'name' | 'added'>('recent')
-
-  const {
-    games,
-    isLoading,
-    search,
-    setSearch,
-  } = useGames()
+  const { games, isLoading, search, setSearch } = useGames()
   const { createGame, updateGame } = useGameMutations()
-
   const [formOpen, setFormOpen] = useState(false)
   const [editingGame, setEditingGame] = useState<GameWithStats | null>(null)
 
-  useEffect(() => {
-    return () => {
-      if (openTimer.current !== null) window.clearTimeout(openTimer.current)
-    }
+  useEffect(() => () => {
+    if (openTimer.current !== null) window.clearTimeout(openTimer.current)
   }, [])
 
   const sortedGames = [...games].sort((a, b) => {
@@ -41,11 +32,6 @@ export default function Games(): React.ReactElement {
     if (sortBy === 'added') return b.created_at.localeCompare(a.created_at)
     return (b.last_played_at ?? '').localeCompare(a.last_played_at ?? '')
   })
-
-  const summary = {
-    inProgress: games.filter((game) => game.status === 'in_progress').length,
-    completed: games.filter((game) => game.status === 'completed').length,
-  }
 
   const formatDuration = (seconds: number): string => {
     if (seconds <= 0) return '尚未游玩'
@@ -91,53 +77,46 @@ export default function Games(): React.ReactElement {
       window.clearTimeout(openTimer.current)
       openTimer.current = null
     }
-
-    const installStatus = game.install_status as InstallStatus
-    if (installStatus !== 'installed') {
+    if ((game.install_status as InstallStatus) !== 'installed') {
       setLaunchStatus(`「${game.display_name}」未安装或路径失效，暂时无法启动。`)
       return
     }
-
     const result: GameLaunchResult = await window.api.game.launch(game.id)
     setLaunchStatus(result.success ? `已启动「${game.display_name}」` : result.error ?? `无法启动「${game.display_name}」`)
     window.setTimeout(() => setLaunchStatus(null), 4000)
   }
 
   return (
-    <div className="space-y-7">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+    <div className="min-h-full bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
+      <header className="flex flex-wrap items-end justify-between gap-5 border-b border-white/[0.075] pb-7">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-violet">游戏收藏</p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-archive-50">我的游戏库</h2>
-          <p className="mt-2 text-sm text-archive-400">用封面、游玩记录和截图保存每一段游戏经历。</p>
+          <p className="text-[11px] font-medium tracking-[0.17em] text-[#d8ba77]">个人收藏</p>
+          <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+            <h1 className="font-serif text-4xl tracking-[-0.025em] text-archive-50 sm:text-5xl">游戏库</h1>
+            <span className="text-sm text-archive-500">{games.length} 个本地游戏</span>
+          </div>
+          <p className="mt-3 text-sm text-archive-400">封面、游玩时间与截图，共同构成一段游戏经历。</p>
         </div>
-        <Button variant="primary" onClick={handleCreate}>
-          <Plus size={16} />
-          添加游戏
+        <Button variant="primary" onClick={handleCreate} className="rounded-none border border-[#c9a35a]/75 bg-[#c9a35a] text-[#15110a] hover:bg-[#dec280]">
+          <Plus size={16} /> 添加游戏
         </Button>
       </header>
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <LibraryInsight label="已建立档案" value={`${games.length}`} description="个本地游戏" />
-        <LibraryInsight label="正在游玩" value={`${summary.inProgress}`} description="个游戏进行中" />
-        <LibraryInsight label="已完成" value={`${summary.completed}`} description="段故事已通关" />
-      </section>
-
-      <section className="surface-toolbar flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[220px] flex-1">
-          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-archive-500" />
+      <section className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-white/[0.075] py-4">
+        <div className="relative min-w-[240px] flex-1">
+          <Search size={15} className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-archive-500" />
           <input
             type="text"
-            className="input-field w-full pl-10"
-            placeholder="搜索游戏名称或别名…"
+            className="w-full border-0 border-b border-white/[0.11] bg-transparent py-2 pl-7 pr-2 text-sm text-archive-100 outline-none transition-colors placeholder:text-archive-600 focus:border-[#c9a35a]/75"
+            placeholder="搜索游戏名称或别名"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal size={15} className="text-archive-500" />
+        <div className="flex items-center gap-2 text-sm text-archive-500">
+          <SlidersHorizontal size={15} />
           <select
-            className="input-field w-auto min-w-[132px] cursor-pointer py-2.5 text-sm"
+            className="cursor-pointer border-0 bg-transparent py-2 text-sm text-archive-300 outline-none"
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
             aria-label="游戏排序方式"
@@ -151,34 +130,24 @@ export default function Games(): React.ReactElement {
       </section>
 
       {launchStatus && (
-        <div className="flex items-center gap-2 rounded-archive border border-violet-300/15 bg-violet-400/10 px-4 py-3 text-sm text-violet-100 animate-soft-enter">
-          <Play size={15} className="text-violet-300" />
-          {launchStatus}
+        <div className="mt-5 flex items-center gap-2 border-l-2 border-[#c9a35a] bg-white/[0.03] px-4 py-3 text-sm text-archive-200 animate-soft-enter">
+          <Play size={15} className="text-[#d8ba77]" /> {launchStatus}
         </div>
       )}
 
       {isLoading ? (
-        <div className="empty-state">
-          <p className="text-sm text-archive-500">正在载入游戏库…</p>
-        </div>
+        <div className="py-24 text-center text-sm text-archive-500">正在载入游戏库…</div>
       ) : games.length === 0 ? (
-        <div className="empty-state">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-300/15 bg-violet-400/10 text-violet-200">
-            <Gamepad2 size={28} />
-          </div>
-          <h3 className="mt-4 text-base font-semibold text-archive-200">这里还没有游戏档案</h3>
+        <div className="py-28 text-center">
+          <Gamepad2 size={30} className="mx-auto text-archive-600" />
+          <h2 className="mt-5 font-serif text-2xl text-archive-200">这里还没有游戏档案</h2>
           <p className="mt-2 text-sm text-archive-500">添加游戏，或从“发现候选”中将本地可执行文件加入档案馆。</p>
-          <Button className="mt-5" variant="primary" onClick={handleCreate}>
-            <Plus size={16} /> 添加第一款游戏
-          </Button>
+          <Button className="mt-6 rounded-none" variant="primary" onClick={handleCreate}><Plus size={16} /> 添加第一款游戏</Button>
         </div>
       ) : sortedGames.length === 0 ? (
-        <div className="empty-state">
-          <Search size={26} className="mx-auto text-archive-600" />
-          <p className="mt-3 text-sm text-archive-400">没有找到匹配的游戏</p>
-        </div>
+        <div className="py-24 text-center text-sm text-archive-500">没有找到匹配的游戏。</div>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(166px,1fr))] gap-x-4 gap-y-7 sm:grid-cols-[repeat(auto-fill,minmax(188px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(202px,1fr))]">
+        <section aria-label="游戏封面陈列" className="grid grid-cols-[repeat(auto-fill,minmax(154px,1fr))] gap-x-5 gap-y-9 py-8 sm:grid-cols-[repeat(auto-fill,minmax(178px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(196px,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(212px,1fr))]">
           {sortedGames.map((game) => (
             <GameCard
               key={game.id}
@@ -193,28 +162,10 @@ export default function Games(): React.ReactElement {
               }}
             />
           ))}
-        </div>
+        </section>
       )}
 
-      <GameForm
-        open={formOpen}
-        onClose={() => setFormOpen(false)}
-        onSave={handleSave}
-        game={editingGame}
-        isSaving={createGame.isPending || updateGame.isPending}
-      />
-    </div>
-  )
-}
-
-function LibraryInsight({ label, value, description }: { label: string; value: string; description: string }): React.ReactElement {
-  return (
-    <div className="rounded-panel border border-white/[0.065] bg-white/[0.035] px-5 py-4">
-      <p className="text-xs font-medium text-archive-500">{label}</p>
-      <div className="mt-2 flex items-baseline gap-2">
-        <p className="text-2xl font-bold tracking-tight text-archive-50">{value}</p>
-        <p className="text-xs text-archive-400">{description}</p>
-      </div>
+      <GameForm open={formOpen} onClose={() => setFormOpen(false)} onSave={handleSave} game={editingGame} isSaving={createGame.isPending || updateGame.isPending} />
     </div>
   )
 }
@@ -234,63 +185,33 @@ function GameCard({
   onLaunch: () => void
   onEdit: () => void
 }): React.ReactElement {
-  const installStatus = game.install_status as InstallStatus
-  const isInstalled = installStatus === 'installed'
+  const isInstalled = (game.install_status as InstallStatus) === 'installed'
 
   return (
-    <article
-      className="group relative cursor-pointer select-none"
-      role="button"
-      tabIndex={0}
-      title="单击查看详情，双击启动游戏"
-      onClick={onOpen}
-      onDoubleClick={onLaunch}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') onOpen()
-      }}
-    >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-[15px] border border-white/[0.085] bg-archive-850 shadow-[0_14px_30px_rgba(0,0,0,0.26)] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-violet-300/50 group-hover:shadow-glow">
+    <article className="group relative cursor-pointer select-none" role="button" tabIndex={0} title="单击查看详情，双击启动游戏" onClick={onOpen} onDoubleClick={onLaunch} onKeyDown={(event) => { if (event.key === 'Enter') onOpen() }}>
+      <div className="media-frame relative aspect-[2/3] border border-white/[0.085] bg-[#16181b] shadow-[0_16px_34px_rgba(0,0,0,0.34)] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-[#c9a35a]/70 group-hover:shadow-[0_24px_44px_rgba(0,0,0,0.48)]">
         {game.cover_path ? (
-          <img
-            src={toFileUrl(game.cover_path)}
-            alt={`${game.display_name} 封面`}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
-            style={getCoverImageStyle(parseCoverCrop(game.cover_crop))}
-          />
+          <img src={toFileUrl(game.cover_path)} alt={`${game.display_name} 封面`} className="media-image transition-transform duration-500 group-hover:scale-[1.055]" style={getCoverImageStyle(parseCoverCrop(game.cover_crop))} />
         ) : (
-          <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_32%_8%,rgba(139,92,246,0.3),transparent_45%),linear-gradient(155deg,#26364d,#101824)]">
-            <Gamepad2 size={42} className="text-archive-500" />
-          </div>
+          <div className="flex h-full items-center justify-center bg-[#1a1c1f]"><Gamepad2 size={38} className="text-archive-600" /></div>
         )}
-
-        <div className="absolute inset-0 bg-gradient-to-t from-archive-950 via-archive-950/14 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#070809] via-[#070809]/12 to-transparent" />
         <div className="absolute left-3 top-3 flex items-center gap-2">
           <StatusBadge status={game.status as GameStatus} />
-          {!isInstalled && <span className="rounded-full border border-white/[0.12] bg-black/45 px-2 py-1 text-[10px] font-medium text-archive-200 backdrop-blur-sm">未安装</span>}
+          {!isInstalled && <span className="border border-white/[0.15] bg-black/55 px-1.5 py-1 text-[10px] text-archive-200">未安装</span>}
         </div>
-        <button
-          type="button"
-          className="absolute right-3 top-3 rounded-full border border-white/[0.12] bg-black/35 p-2 text-archive-200 opacity-0 backdrop-blur-sm transition-all hover:bg-white/15 hover:text-white group-hover:opacity-100 focus:opacity-100"
-          title="编辑游戏"
-          aria-label={`编辑${game.display_name}`}
-          onClick={(event) => {
-            event.stopPropagation()
-            onEdit()
-          }}
-          onDoubleClick={(event) => event.stopPropagation()}
-        >
+        <button type="button" className="absolute right-2.5 top-2.5 border border-white/[0.12] bg-black/55 p-1.5 text-archive-200 opacity-0 transition-all hover:border-[#c9a35a]/70 hover:text-[#ead7aa] group-hover:opacity-100 focus:opacity-100" title="编辑游戏" aria-label={`编辑${game.display_name}`} onClick={(event) => { event.stopPropagation(); onEdit() }} onDoubleClick={(event) => event.stopPropagation()}>
           <Pencil size={13} />
         </button>
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <p className="truncate text-[15px] font-semibold text-white">{game.display_name}</p>
-          <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-archive-300">
+          <p className="truncate text-[15px] font-medium text-white">{game.display_name}</p>
+          <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/[0.11] pt-2 text-[11px] text-archive-300">
             <span className="truncate">{formatDuration(game.total_duration)}</span>
             <span className="shrink-0">{formatLastPlayed(game.last_played_at)}</span>
           </div>
         </div>
-        <div className="absolute inset-x-3 bottom-3 flex translate-y-3 items-center justify-between opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-          <span className="rounded-full bg-accent-violet px-3 py-1.5 text-xs font-semibold text-white shadow-[0_8px_18px_rgba(109,40,217,0.35)]">查看档案</span>
-          <span className="rounded-full border border-white/[0.12] bg-black/35 p-1.5 text-white backdrop-blur-sm"><ArrowUpRight size={14} /></span>
+        <div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-between bg-[#c9a35a] px-4 py-2.5 text-xs font-medium text-[#17120a] transition-transform duration-200 group-hover:translate-y-0">
+          <span>查看档案</span><ArrowUpRight size={14} />
         </div>
       </div>
     </article>

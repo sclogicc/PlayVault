@@ -80,12 +80,12 @@ export default function Discover(): React.ReactElement {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="min-h-full space-y-6 bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/[0.075] pb-7">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-violet">本地扫描</p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-archive-50">发现候选</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">本地扫描</p>
+          <h2 className="mt-2 font-serif text-4xl tracking-[-0.025em] text-archive-50">发现候选</h2>
           <p className="mt-2 text-sm text-archive-400">
             发现 {candidates.length} 个候选可执行文件，确认后即可建立游戏档案。
           </p>
@@ -93,15 +93,15 @@ export default function Discover(): React.ReactElement {
       </div>
 
       {/* Status filter tabs */}
-      <div className="surface-toolbar flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-5 border-b border-white/[0.075] pb-3">
         {statusFilterOptions.map((opt) => (
           <button
             key={opt.value}
             onClick={() => setStatusFilter(opt.value as DiscoveredStatus | '全部')}
-            className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
+            className={`border-b px-0 pb-2 text-xs font-medium transition-colors ${
               statusFilter === opt.value
-                ? 'border-violet-300/20 bg-accent-violet text-white shadow-[0_6px_16px_rgba(109,40,217,0.28)]'
-                : 'border-transparent bg-transparent text-archive-400 hover:bg-white/[0.06] hover:text-archive-200'
+                ? 'border-[#c9a35a] text-[#ead7aa]'
+                : 'border-transparent text-archive-500 hover:text-archive-200'
             }`}
           >
             {opt.label}

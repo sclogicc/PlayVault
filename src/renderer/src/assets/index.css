@@ -19,10 +19,11 @@
 
   body {
     @apply bg-archive-950 text-archive-100 antialiased;
-    background-image:
-      radial-gradient(circle at 76% -12%, rgba(92, 63, 166, 0.2), transparent 34rem),
-      radial-gradient(circle at 13% 108%, rgba(23, 119, 124, 0.12), transparent 30rem),
-      linear-gradient(135deg, #080e16 0%, #0d1621 48%, #101927 100%);
+    background: #090a0c;
+  }
+
+  img {
+    max-width: 100%;
   }
 
   button,
@@ -37,57 +38,39 @@
   select:focus-visible,
   textarea:focus-visible,
   a:focus-visible {
-    @apply outline-none ring-2 ring-accent-violet/70 ring-offset-2 ring-offset-archive-950;
+    @apply outline-none ring-2 ring-[#c9a35a]/70 ring-offset-2 ring-offset-[#090a0c];
   }
 
   ::selection {
-    @apply bg-accent-violet/40 text-archive-50;
+    background: rgba(201, 163, 90, 0.34);
+    color: #fffaf0;
   }
 
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(8, 14, 22, 0.55);
+    background: #090a0c;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(103, 117, 138, 0.55);
-    border: 2px solid rgba(8, 14, 22, 0.55);
-    border-radius: 999px;
+    background: rgba(140, 132, 111, 0.46);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(170, 183, 199, 0.55);
+    background: rgba(201, 163, 90, 0.58);
   }
 }
 
 @layer components {
-  .sidebar-link {
-    @apply relative flex items-center gap-3 px-3 py-2.5 text-archive-300
-           hover:text-archive-50 hover:bg-white/[0.055]
-           rounded-archive transition-all duration-200;
-  }
-
-  .sidebar-link.active {
-    @apply text-archive-50 bg-gradient-to-r from-accent-violet/25 to-accent-violet/[0.06]
-           shadow-[inset_0_0_0_1px_rgba(167,139,250,0.16)];
-  }
-
-  .sidebar-link.active::before {
-    content: '';
-    @apply absolute left-0 h-5 w-0.5 rounded-r-full bg-accent-violet shadow-[0_0_12px_rgba(139,92,246,0.75)];
-  }
-
   .card {
-    @apply rounded-panel border border-white/[0.075] bg-gradient-to-br from-white/[0.075] to-white/[0.025]
-           p-5 shadow-panel backdrop-blur-md;
+    @apply border border-white/[0.075] bg-[#0f1114] p-5 shadow-[0_16px_34px_rgba(0,0,0,0.22)];
   }
 
   .card-interactive {
-    @apply card transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.14] hover:shadow-float;
+    @apply card transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.14] hover:bg-[#121419] hover:shadow-[0_20px_40px_rgba(0,0,0,0.34)];
   }
 
   .section-title {
@@ -99,28 +82,19 @@
   }
 
   .btn-primary {
-    @apply border border-accent-violet/30 bg-gradient-to-r from-violet-500 to-accent-violet
-           px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(109,40,217,0.28)]
-           transition-all duration-200 hover:-translate-y-px hover:from-violet-400 hover:to-violet-500
-           hover:shadow-[0_14px_30px_rgba(109,40,217,0.38)] active:translate-y-0;
+    @apply border border-[#c9a35a]/75 bg-[#c9a35a] px-4 py-2 text-sm font-semibold text-[#17120a] transition-colors duration-200 hover:bg-[#dec280] active:bg-[#b9914b];
   }
 
   .btn-danger {
-    @apply border border-accent-red/25 bg-accent-red/10 px-4 py-2 text-sm font-medium text-accent-red
-           transition-all duration-200 hover:-translate-y-px hover:bg-accent-red/20 active:translate-y-0;
+    @apply border border-accent-red/25 bg-accent-red/10 px-4 py-2 text-sm font-medium text-accent-red transition-colors duration-200 hover:bg-accent-red/20;
   }
 
   .btn-secondary {
-    @apply border border-white/[0.09] bg-white/[0.06] px-4 py-2 text-sm font-medium text-archive-200
-           transition-all duration-200 hover:-translate-y-px hover:border-white/[0.16] hover:bg-white/[0.1]
-           hover:text-archive-50 active:translate-y-0;
+    @apply border border-white/[0.11] bg-transparent px-4 py-2 text-sm font-medium text-archive-200 transition-colors duration-200 hover:border-[#c9a35a]/55 hover:text-[#ead7aa];
   }
 
   .input-field {
-    @apply rounded-archive border border-white/[0.09] bg-black/20 px-3.5 py-2.5 text-sm text-archive-100
-           placeholder:text-archive-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]
-           transition-all duration-200 hover:border-white/[0.14]
-           focus:border-accent-violet/60 focus:bg-archive-900/70 focus:ring-2 focus:ring-accent-violet/15;
+    @apply border border-white/[0.11] bg-black/20 px-3.5 py-2.5 text-sm text-archive-100 placeholder:text-archive-500 transition-colors duration-200 hover:border-white/[0.18] focus:border-[#c9a35a]/75 focus:bg-[#0d0f12] focus:ring-0;
   }
 
   .table-header {
@@ -132,10 +106,29 @@
   }
 
   .surface-toolbar {
-    @apply rounded-panel border border-white/[0.065] bg-black/[0.15] p-3 backdrop-blur-sm;
+    @apply border-y border-white/[0.075] bg-[#0c0e11] p-3;
   }
 
   .empty-state {
-    @apply rounded-panel border border-dashed border-white/[0.1] bg-black/[0.12] px-6 py-14 text-center;
+    @apply border border-dashed border-white/[0.11] bg-[#0d0f12] px-6 py-14 text-center;
+  }
+
+  /* All media views must clip transformed images within their assigned frame. */
+  .media-frame {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    contain: paint;
+    background: #111317;
+  }
+
+  .media-frame > img,
+  img.media-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    transform-origin: center center;
   }
 }

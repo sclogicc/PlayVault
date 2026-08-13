@@ -134,11 +134,11 @@ export default function Screenshots(): React.ReactElement {
   const isTrash = activeTab === 'trashed'
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="min-h-full space-y-6 bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/[0.075] pb-7">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-violet">图片资产</p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-archive-50">截图箱</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">图片资产</p>
+          <h2 className="mt-2 font-serif text-4xl tracking-[-0.025em] text-archive-50">截图箱</h2>
           <p className="mt-2 text-sm text-archive-400">
             已显示 {screenshots.length} 张截图，用画面串联你的游戏记忆。
           </p>
@@ -170,7 +170,7 @@ export default function Screenshots(): React.ReactElement {
         </div>
       </div>
 
-      <div className="surface-toolbar flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-5 border-b border-white/[0.075] pb-3">
         {TABS.map((tab) => (
           <button
             key={tab.key}
@@ -179,10 +179,10 @@ export default function Screenshots(): React.ReactElement {
               setSelectedIds(new Set())
             }}
             className={
-              'rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ' +
+              'border-b px-0 pb-2 text-xs font-medium transition-colors ' +
               (activeTab === tab.key
-                ? 'border-violet-300/20 bg-accent-violet text-white shadow-[0_6px_16px_rgba(109,40,217,0.28)]'
-                : 'border-transparent bg-transparent text-archive-400 hover:bg-white/[0.06] hover:text-archive-200')
+                ? 'border-[#c9a35a] text-[#ead7aa]'
+                : 'border-transparent text-archive-500 hover:text-archive-200')
             }
           >
             {tab.label}
@@ -205,7 +205,7 @@ export default function Screenshots(): React.ReactElement {
             />
             {selectedIds.size > 0 ? `已选择 ${selectedIds.size} 张` : '全选'}
           </label>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {screenshots.map((shot, index) => (
               <ScreenshotCard
                 key={shot.id}
@@ -346,11 +346,11 @@ function ScreenshotCard({
 
   return (
     <div
-      className={'group relative overflow-hidden rounded-[16px] border border-white/[0.075] bg-white/[0.035] shadow-[0_12px_28px_rgba(0,0,0,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300/30 hover:shadow-float ' + (selected ? 'ring-2 ring-accent-violet/80' : '')}
+      className={'group relative overflow-hidden border border-white/[0.085] bg-[#0f1114] shadow-[0_14px_30px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#c9a35a]/60 hover:shadow-[0_20px_40px_rgba(0,0,0,0.38)] ' + (selected ? 'ring-2 ring-[#c9a35a]/75' : '')}
       onClick={onToggle}
     >
       <div
-        className="flex aspect-video cursor-zoom-in items-center justify-center overflow-hidden bg-archive-850"
+        className="media-frame flex aspect-video cursor-zoom-in items-center justify-center bg-archive-850"
         onClick={(event) => {
           event.stopPropagation()
           onPreview()
@@ -365,7 +365,7 @@ function ScreenshotCard({
           <img
             src={toFileUrl(shot.file_path)}
             alt={shot.file_name}
-            className="w-full h-full object-cover"
+            className="media-image"
             loading="lazy"
             onError={() => setImageError(true)}
           />
