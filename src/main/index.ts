@@ -9,6 +9,7 @@ import { startScreenshotWatcher, stopScreenshotWatcher } from './services/screen
 import { refreshAllInstallStatus } from './services/installChecker'
 import { getImageMimeType } from './services/localImage'
 import { isRegisteredMediaPath } from './services/mediaRegistry'
+import { checkForUpdates } from './services/autoUpdater'
 import { LOCAL_MEDIA_PROTOCOL, parseLocalMediaUrl } from '../shared/localMedia'
 import type { Database } from './db/sqljs-wrapper'
 
@@ -109,6 +110,11 @@ app.whenReady().then(async () => {
   }
 
   createWindow()
+
+  // 主窗口启动后再在后台检查，避免网络请求拖慢首次界面展示；渲染层会读取已保存的状态。
+  setTimeout(() => {
+    void checkForUpdates()
+  }, 1_200)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

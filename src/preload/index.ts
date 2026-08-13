@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC_CHANNELS } from '../shared/ipc'
 import type { DiscoveredStatus, SessionEndReason, ScreenshotStatus } from '../shared/constants'
+import type { UpdateStatus } from '../shared/update'
 
 const api = {
   game: {
@@ -192,6 +193,19 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_PERMANENT_DELETE, id),
     permanentDeleteMany: (ids: number[]) =>
       ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_BATCH_PERMANENT_DELETE, ids),
+  },
+  update: {
+    getStatus: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_GET_STATUS),
+    check: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_CHECK),
+    trigger: () =>
+      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_TRIGGER),
+    onStatusChange: (callback: (status: UpdateStatus) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, status: UpdateStatus): void => callback(status)
+      ipcRenderer.on(IPC_CHANNELS.UPDATE_STATUS_CHANGED, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.UPDATE_STATUS_CHANGED, listener)
+    },
   },
   file: {
     openLocation: (filePath: string) =>

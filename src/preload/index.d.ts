@@ -11,6 +11,7 @@ import type {
   ArchiveGameResult,
 } from '../shared/types'
 import type { DiscoveredStatus, SessionEndReason, ScreenshotStatus } from '../shared/constants'
+import type { UpdateStatus } from '../shared/update'
 
 declare global {
   interface Window {
@@ -170,6 +171,12 @@ declare global {
         restore: (id: number) => Promise<void>
         permanentDelete: (id: number) => Promise<void>
         permanentDeleteMany: (ids: number[]) => Promise<void>
+      }
+      update: {
+        getStatus: () => Promise<UpdateStatus>
+        check: () => Promise<UpdateStatus>
+        trigger: () => Promise<UpdateStatus>
+        onStatusChange: (callback: (status: UpdateStatus) => void) => () => void
       }
       file: {
         openLocation: (filePath: string) => Promise<void>

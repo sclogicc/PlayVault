@@ -68,6 +68,12 @@ export const IPC_CHANNELS = {
   SESSION_GET_ALL_ACTIVE: 'session:getAllActive',
   SESSION_RECOVER: 'session:recover',
 
+  // Source update
+  UPDATE_GET_STATUS: 'update:getStatus',
+  UPDATE_CHECK: 'update:check',
+  UPDATE_TRIGGER: 'update:trigger',
+  UPDATE_STATUS_CHANGED: 'update:statusChanged',
+
   // File operations
   FILE_OPEN_LOCATION: 'file:openLocation',
   DIALOG_OPEN_EXECUTABLE: 'dialog:openExecutable',
