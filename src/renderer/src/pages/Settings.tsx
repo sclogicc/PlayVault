@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   AlertTriangle,
   RefreshCw,
+  Camera,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -21,6 +22,7 @@ import {
   useTriggerScan,
 } from '../hooks/useSettings'
 import type { VaultHealthReport, VaultLocation } from '@shared/vault'
+import type { GameCaptureStatus } from '@shared/capture'
 
 export default function Settings(): React.ReactElement {
   const { roots, isLoading } = useScanRoots()
@@ -33,6 +35,8 @@ export default function Settings(): React.ReactElement {
   const [vaultHealth, setVaultHealth] = useState<VaultHealthReport | null>(null)
   const [vaultLoading, setVaultLoading] = useState(true)
   const [vaultError, setVaultError] = useState<string>('')
+  const [gameCaptureStatus, setGameCaptureStatus] = useState<GameCaptureStatus | null>(null)
+  const [gameCaptureLoading, setGameCaptureLoading] = useState(true)
 
   useEffect(() => {
     window.api.setting.get('screenshot_dir').then((val) => {
@@ -62,6 +66,26 @@ export default function Settings(): React.ReactElement {
     void refreshVaultInfo()
   }, [])
 
+  useEffect(() => {
+    let alive = true
+    void window.api.gameCapture.getStatus().then((status) => {
+      if (alive) {
+        setGameCaptureStatus(status)
+        setGameCaptureLoading(false)
+      }
+    })
+    const unsubscribe = window.api.gameCapture.onStatusChange((status) => {
+      if (alive) {
+        setGameCaptureStatus(status)
+        setGameCaptureLoading(false)
+      }
+    })
+    return () => {
+      alive = false
+      unsubscribe()
+    }
+  }, [])
+
   const handleAdd = async (): Promise<void> => {
     const dir = await window.api.dialog.openDirectory()
     if (dir) {
@@ -80,6 +104,16 @@ export default function Settings(): React.ReactElement {
   const handleClearScreenshotDir = async (): Promise<void> => {
     await window.api.setting.set('screenshot_dir', '')
     setScreenshotDir('')
+  }
+
+  const handleGameCaptureEnabled = async (enabled: boolean): Promise<void> => {
+    setGameCaptureLoading(true)
+    try {
+      const status = await window.api.gameCapture.setEnabled(enabled)
+      setGameCaptureStatus(status)
+    } finally {
+      setGameCaptureLoading(false)
+    }
   }
 
   const handleRelocateVault = async (): Promise<void> => {
@@ -275,6 +309,62 @@ export default function Settings(): React.ReactElement {
             </Button>
           </div>
         )}
+      </section>
+
+      {/* PlayVault Capture */}
+      <section className="card space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h3 className="flex items-center gap-2 text-base font-medium text-archive-200">
+              <Camera size={16} />
+              PlayVault 主动截图
+            </h3>
+            <p className="mt-0.5 text-sm text-archive-500">
+              按 F12 直接无损保存主显示器画面，并在保存时绑定唯一正在运行的游戏会话。
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={gameCaptureStatus?.enabled ?? false}
+            disabled={gameCaptureLoading}
+            onClick={() => void handleGameCaptureEnabled(!(gameCaptureStatus?.enabled ?? false))}
+            className={`relative h-7 w-12 shrink-0 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+              gameCaptureStatus?.enabled
+                ? 'border-[#c9a35a]/50 bg-[#c9a35a]'
+                : 'border-white/10 bg-white/[0.08]'
+            }`}
+            title={gameCaptureStatus?.enabled ? '关闭主动截图' : '开启主动截图'}
+          >
+            <span className={`absolute top-1 h-5 w-5 rounded-full bg-[#090a0c] shadow transition-transform ${
+              gameCaptureStatus?.enabled ? 'translate-x-5' : 'translate-x-1'
+            }`} />
+          </button>
+        </div>
+
+        {gameCaptureLoading && !gameCaptureStatus ? (
+          <p className="text-xs text-archive-500">正在注册截图快捷键...</p>
+        ) : gameCaptureStatus ? (
+          <div className={`rounded-archive border px-4 py-3 ${
+            gameCaptureStatus.state === 'error'
+              ? 'border-[#bb705d]/30 bg-[#bb705d]/10'
+              : gameCaptureStatus.enabled
+                ? 'border-[#c9a35a]/25 bg-[#c9a35a]/[0.06]'
+                : 'border-white/[0.065] bg-black/[0.13]'
+          }`}>
+            <div className="flex items-center justify-between gap-3">
+              <p className={`text-sm ${gameCaptureStatus.state === 'error' ? 'text-[#e9b6a8]' : 'text-archive-200'}`}>
+                {gameCaptureStatus.message}
+              </p>
+              <kbd className="shrink-0 border border-white/15 bg-black/30 px-2 py-1 font-mono text-xs text-[#d8ba77]">
+                {gameCaptureStatus.accelerator}
+              </kbd>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-archive-500">
+              不会扫描或导入其他软件的截图。没有游戏会话、同时运行多个游戏，或游戏不在主显示器时，PlayVault 会拒绝保存而不是猜测归属。NVIDIA 截图监听仍可单独保留作兼容兜底。
+            </p>
+          </div>
+        ) : null}
       </section>
 
       {/* Vault Safety */}

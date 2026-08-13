@@ -11,6 +11,7 @@ import { getImageMimeType } from './services/localImage'
 import { resolveRegisteredMediaPath } from './services/mediaRegistry'
 import { initializeVault } from './services/vaultManager'
 import { checkForUpdates } from './services/autoUpdater'
+import { startGameCapture, stopGameCapture } from './services/gameCapture'
 import { LOCAL_MEDIA_PROTOCOL, parseLocalMediaUrl } from '../shared/localMedia'
 import type { Database } from './db/sqljs-wrapper'
 
@@ -104,6 +105,9 @@ app.whenReady().then(async () => {
   // Start process monitor for auto session tracking
   startMonitor(db, 2000)
 
+  // Start PlayVault's own F12 game capture after all session services are ready.
+  startGameCapture(db)
+
   // Start screenshot watcher if a source directory is configured
   const screenshotDirRow = db
     .prepare("SELECT value FROM app_settings WHERE key = 'screenshot_dir'")
@@ -133,6 +137,7 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
   stopMonitor()
   stopScreenshotWatcher()
+  stopGameCapture()
   closeDatabase()
   if (process.platform !== 'darwin') {
     app.quit()

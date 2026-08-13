@@ -17,6 +17,7 @@ const VAULT_ROOT_SETTING = 'vault_root_path'
 const VAULT_FORMAT_VERSION = 1
 const VAULT_MANIFEST_NAME = 'vault-manifest.json'
 const ARCHIVE_MEDIA_DIRECTORY = path.join('media', 'archives')
+const CAPTURE_MEDIA_DIRECTORY = path.join('media', 'captures')
 
 interface VaultManifest {
   format: 'playvault-vault'
@@ -84,6 +85,7 @@ async function writeManifest(rootPath: string): Promise<void> {
 
 async function ensureVaultDirectories(rootPath: string): Promise<string> {
   await fs.mkdir(path.join(rootPath, ARCHIVE_MEDIA_DIRECTORY), { recursive: true })
+  await fs.mkdir(path.join(rootPath, CAPTURE_MEDIA_DIRECTORY), { recursive: true })
   await fs.mkdir(path.join(rootPath, 'snapshots'), { recursive: true })
   await fs.mkdir(path.join(rootPath, 'exports'), { recursive: true })
   await writeManifest(rootPath)
@@ -197,6 +199,11 @@ export function getVaultLocation(db: Database): VaultLocation {
 export async function getArchiveMediaRoot(db: Database): Promise<string> {
   const rootPath = await ensureVaultDirectories(getConfiguredVaultRoot(db))
   return path.join(rootPath, ARCHIVE_MEDIA_DIRECTORY)
+}
+
+export async function getCaptureMediaRoot(db: Database): Promise<string> {
+  const rootPath = await ensureVaultDirectories(getConfiguredVaultRoot(db))
+  return path.join(rootPath, CAPTURE_MEDIA_DIRECTORY)
 }
 
 export function resolveVaultReference(db: Database, reference: string): string | null {

@@ -3,6 +3,7 @@ import { IPC_CHANNELS } from '../shared/ipc'
 import type { DiscoveredStatus, SessionEndReason, ScreenshotStatus } from '../shared/constants'
 import type { UpdateStatus } from '../shared/update'
 import type { VaultHealthReport, VaultLocation } from '../shared/vault'
+import type { GameCaptureStatus } from '../shared/capture'
 
 const api = {
   game: {
@@ -194,6 +195,17 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_PERMANENT_DELETE, id),
     permanentDeleteMany: (ids: number[]) =>
       ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_BATCH_PERMANENT_DELETE, ids),
+  },
+  gameCapture: {
+    getStatus: (): Promise<GameCaptureStatus> =>
+      ipcRenderer.invoke(IPC_CHANNELS.GAME_CAPTURE_GET_STATUS),
+    setEnabled: (enabled: boolean): Promise<GameCaptureStatus> =>
+      ipcRenderer.invoke(IPC_CHANNELS.GAME_CAPTURE_SET_ENABLED, enabled),
+    onStatusChange: (callback: (status: GameCaptureStatus) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, status: GameCaptureStatus): void => callback(status)
+      ipcRenderer.on(IPC_CHANNELS.GAME_CAPTURE_STATUS_CHANGED, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.GAME_CAPTURE_STATUS_CHANGED, listener)
+    },
   },
   vault: {
     getLocation: (): Promise<VaultLocation> =>

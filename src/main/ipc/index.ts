@@ -9,6 +9,7 @@ import { registerSettingHandlers } from './settingHandlers'
 import { registerFileHandlers } from './fileHandlers'
 import { registerUpdateHandlers } from './updateHandlers'
 import { registerVaultHandlers } from './vaultHandlers'
+import { registerGameCaptureHandlers } from './gameCaptureHandlers'
 
 export function registerAllIpcHandlers(
   ipcMain: IpcMain,
@@ -23,4 +24,5 @@ export function registerAllIpcHandlers(
   registerFileHandlers(ipcMain)
   registerUpdateHandlers(ipcMain)
   registerVaultHandlers(ipcMain, db)
+  registerGameCaptureHandlers(ipcMain, db)
 }

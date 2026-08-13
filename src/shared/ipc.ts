@@ -68,6 +68,11 @@ export const IPC_CHANNELS = {
   SESSION_GET_ALL_ACTIVE: 'session:getAllActive',
   SESSION_RECOVER: 'session:recover',
 
+  // PlayVault game capture
+  GAME_CAPTURE_GET_STATUS: 'gameCapture:getStatus',
+  GAME_CAPTURE_SET_ENABLED: 'gameCapture:setEnabled',
+  GAME_CAPTURE_STATUS_CHANGED: 'gameCapture:statusChanged',
+
   // Vault archive storage
   VAULT_GET_LOCATION: 'vault:getLocation',
   VAULT_RELOCATE: 'vault:relocate',

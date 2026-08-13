@@ -13,6 +13,7 @@ import type {
 import type { DiscoveredStatus, SessionEndReason, ScreenshotStatus } from '../shared/constants'
 import type { UpdateStatus } from '../shared/update'
 import type { VaultHealthReport, VaultLocation } from '../shared/vault'
+import type { GameCaptureStatus } from '../shared/capture'
 
 declare global {
   interface Window {
@@ -172,6 +173,11 @@ declare global {
         restore: (id: number) => Promise<void>
         permanentDelete: (id: number) => Promise<void>
         permanentDeleteMany: (ids: number[]) => Promise<void>
+      }
+      gameCapture: {
+        getStatus: () => Promise<GameCaptureStatus>
+        setEnabled: (enabled: boolean) => Promise<GameCaptureStatus>
+        onStatusChange: (callback: (status: GameCaptureStatus) => void) => () => void
       }
       vault: {
         getLocation: () => Promise<VaultLocation>

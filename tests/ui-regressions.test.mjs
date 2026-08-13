@@ -116,6 +116,19 @@ test('vault media references remain relative and reject directory traversal', as
   assert.throws(() => toVaultReference('../secrets.txt'), /无效/)
 })
 
+test('PlayVault capture status uses F12 and distinguishes disabled state', async () => {
+  const { createGameCaptureStatus } = await importTypeScriptModule(
+    'src/shared/capture.ts',
+    'game-capture-status.mjs',
+  )
+
+  const ready = createGameCaptureStatus('ready', '就绪')
+  const disabled = createGameCaptureStatus('disabled', '已关闭')
+  assert.equal(ready.accelerator, 'F12')
+  assert.equal(ready.enabled, true)
+  assert.equal(disabled.enabled, false)
+})
+
 test('process tracking matches only exact executable paths and retains known child processes', async () => {
   const { collectLiveProcessTree, matchProcessByPath } = await importTypeScriptModule(
     'src/main/services/processTracking.ts',
