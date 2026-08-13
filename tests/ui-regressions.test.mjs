@@ -98,6 +98,24 @@ test('registered local media includes game background images', async () => {
   ])
 })
 
+test('vault media references remain relative and reject directory traversal', async () => {
+  const { fromVaultReference, toVaultReference } = await importTypeScriptModule(
+    'src/shared/vault.ts',
+    'vault-reference.mjs',
+  )
+
+  assert.equal(
+    toVaultReference('media\\archives\\000001-game\\media\\cover.jpg'),
+    'vault://media/archives/000001-game/media/cover.jpg',
+  )
+  assert.equal(
+    fromVaultReference('vault://media/archives/000001-game/media/cover.jpg'),
+    'media/archives/000001-game/media/cover.jpg',
+  )
+  assert.equal(fromVaultReference('vault://media/../secrets.txt'), null)
+  assert.throws(() => toVaultReference('../secrets.txt'), /无效/)
+})
+
 test('process tracking matches only exact executable paths and retains known child processes', async () => {
   const { collectLiveProcessTree, matchProcessByPath } = await importTypeScriptModule(
     'src/main/services/processTracking.ts',

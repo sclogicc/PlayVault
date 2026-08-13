@@ -8,7 +8,8 @@ import { resumeOrCloseTrackedSessions, startMonitor, stopMonitor } from './servi
 import { startScreenshotWatcher, stopScreenshotWatcher } from './services/screenshotWatcher'
 import { refreshAllInstallStatus } from './services/installChecker'
 import { getImageMimeType } from './services/localImage'
-import { isRegisteredMediaPath } from './services/mediaRegistry'
+import { resolveRegisteredMediaPath } from './services/mediaRegistry'
+import { initializeVault } from './services/vaultManager'
 import { checkForUpdates } from './services/autoUpdater'
 import { LOCAL_MEDIA_PROTOCOL, parseLocalMediaUrl } from '../shared/localMedia'
 import type { Database } from './db/sqljs-wrapper'
@@ -26,9 +27,10 @@ protocol.registerSchemesAsPrivileged([
 
 function registerLocalMediaProtocol(db: Database): void {
   protocol.handle(LOCAL_MEDIA_PROTOCOL, async (request) => {
-    const filePath = parseLocalMediaUrl(request.url)
+    const mediaReference = parseLocalMediaUrl(request.url)
+    const filePath = mediaReference ? resolveRegisteredMediaPath(db, mediaReference) : null
     const mimeType = filePath ? getImageMimeType(filePath) : null
-    if (!filePath || !mimeType || !isRegisteredMediaPath(db, filePath)) {
+    if (!filePath || !mimeType) {
       return new Response(null, { status: 400 })
     }
 
@@ -86,6 +88,7 @@ app.whenReady().then(async () => {
 
   // Initialize database and register IPC handlers
   const db = await initDatabase()
+  await initializeVault(db)
   registerLocalMediaProtocol(db)
   registerAllIpcHandlers(ipcMain, db)
 

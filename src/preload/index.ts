@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IPC_CHANNELS } from '../shared/ipc'
 import type { DiscoveredStatus, SessionEndReason, ScreenshotStatus } from '../shared/constants'
 import type { UpdateStatus } from '../shared/update'
+import type { VaultHealthReport, VaultLocation } from '../shared/vault'
 
 const api = {
   game: {
@@ -193,6 +194,14 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_PERMANENT_DELETE, id),
     permanentDeleteMany: (ids: number[]) =>
       ipcRenderer.invoke(IPC_CHANNELS.SCREENSHOT_BATCH_PERMANENT_DELETE, ids),
+  },
+  vault: {
+    getLocation: (): Promise<VaultLocation> =>
+      ipcRenderer.invoke(IPC_CHANNELS.VAULT_GET_LOCATION),
+    relocate: (): Promise<VaultLocation | null> =>
+      ipcRenderer.invoke(IPC_CHANNELS.VAULT_RELOCATE),
+    getHealth: (): Promise<VaultHealthReport> =>
+      ipcRenderer.invoke(IPC_CHANNELS.VAULT_GET_HEALTH),
   },
   update: {
     getStatus: () =>

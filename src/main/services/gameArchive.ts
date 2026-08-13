@@ -1,10 +1,10 @@
-import { app } from 'electron'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import type { Database } from '../db/sqljs-wrapper'
 import type { Game } from '../../shared/types'
 import * as gameRepo from '../db/repositories/gameRepository'
 import * as screenshotRepo from '../db/repositories/screenshotRepository'
+import { getArchiveMediaRoot, toVaultMediaReference } from './vaultManager'
 
 const MAX_ARCHIVE_HIGHLIGHTS = 3
 
@@ -65,20 +65,21 @@ export async function archiveGameExperience(
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
   const archiveRoot = path.join(
-    app.getPath('userData'),
-    'archives',
+    await getArchiveMediaRoot(db),
     `${String(game.id).padStart(6, '0')}-${safeSegment(game.display_name)}-${timestamp}`,
   )
 
-  const archiveCoverPath = await copyIfAvailable(
+  const archiveCoverFile = await copyIfAvailable(
     game.cover_path,
     path.join(archiveRoot, 'media', `cover${extensionOf(game.cover_path, '.jpg')}`),
   )
-  const archiveBackgroundPath = await copyIfAvailable(
+  const archiveBackgroundFile = await copyIfAvailable(
     game.background_path,
     path.join(archiveRoot, 'media', `background${extensionOf(game.background_path, '.jpg')}`),
   )
 
+  const archiveCoverPath = archiveCoverFile ? toVaultMediaReference(db, archiveCoverFile) : ''
+  const archiveBackgroundPath = archiveBackgroundFile ? toVaultMediaReference(db, archiveBackgroundFile) : ''
   const highlights: Array<{ screenshotId: number; preservedPath: string }> = []
   const skippedScreenshotIds: number[] = []
 
@@ -89,7 +90,7 @@ export async function archiveGameExperience(
       continue
     }
 
-    const preservedPath = await copyIfAvailable(
+    const preservedFile = await copyIfAvailable(
       screenshot.file_path,
       path.join(
         archiveRoot,
@@ -98,8 +99,8 @@ export async function archiveGameExperience(
       ),
     )
 
-    if (preservedPath) {
-      highlights.push({ screenshotId, preservedPath })
+    if (preservedFile) {
+      highlights.push({ screenshotId, preservedPath: toVaultMediaReference(db, preservedFile) })
     } else {
       skippedScreenshotIds.push(screenshotId)
     }
@@ -107,8 +108,8 @@ export async function archiveGameExperience(
 
   gameRepo.archiveGame(db, {
     gameId,
-    archiveCoverPath: archiveCoverPath || game.cover_path,
-    archiveBackgroundPath: archiveBackgroundPath || game.background_path,
+    archiveCoverPath,
+    archiveBackgroundPath,
     highlights,
   })
 

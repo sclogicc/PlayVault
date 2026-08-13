@@ -8,6 +8,10 @@ import {
   Loader2,
   Clock,
   Image,
+  HardDrive,
+  ShieldCheck,
+  AlertTriangle,
+  RefreshCw,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -16,6 +20,7 @@ import {
   useScanRootMutations,
   useTriggerScan,
 } from '../hooks/useSettings'
+import type { VaultHealthReport, VaultLocation } from '@shared/vault'
 
 export default function Settings(): React.ReactElement {
   const { roots, isLoading } = useScanRoots()
@@ -24,12 +29,37 @@ export default function Settings(): React.ReactElement {
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [screenshotDir, setScreenshotDir] = useState<string>('')
   const [screenshotDirLoading, setScreenshotDirLoading] = useState(true)
+  const [vaultLocation, setVaultLocation] = useState<VaultLocation | null>(null)
+  const [vaultHealth, setVaultHealth] = useState<VaultHealthReport | null>(null)
+  const [vaultLoading, setVaultLoading] = useState(true)
+  const [vaultError, setVaultError] = useState<string>('')
 
   useEffect(() => {
     window.api.setting.get('screenshot_dir').then((val) => {
       if (val) setScreenshotDir(val)
       setScreenshotDirLoading(false)
     })
+  }, [])
+
+  const refreshVaultInfo = async (): Promise<void> => {
+    setVaultLoading(true)
+    setVaultError('')
+    try {
+      const [location, health] = await Promise.all([
+        window.api.vault.getLocation(),
+        window.api.vault.getHealth(),
+      ])
+      setVaultLocation(location)
+      setVaultHealth(health)
+    } catch (error) {
+      setVaultError(error instanceof Error ? error.message : '无法读取档案库状态')
+    } finally {
+      setVaultLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void refreshVaultInfo()
   }, [])
 
   const handleAdd = async (): Promise<void> => {
@@ -50,6 +80,23 @@ export default function Settings(): React.ReactElement {
   const handleClearScreenshotDir = async (): Promise<void> => {
     await window.api.setting.set('screenshot_dir', '')
     setScreenshotDir('')
+  }
+
+  const handleRelocateVault = async (): Promise<void> => {
+    setVaultError('')
+    setVaultLoading(true)
+    try {
+      const location = await window.api.vault.relocate()
+      if (location) {
+        setVaultLocation(location)
+        const health = await window.api.vault.getHealth()
+        setVaultHealth(health)
+      }
+    } catch (error) {
+      setVaultError(error instanceof Error ? error.message : '档案库迁移失败')
+    } finally {
+      setVaultLoading(false)
+    }
   }
 
   const handleScan = (): void => {
@@ -228,6 +275,105 @@ export default function Settings(): React.ReactElement {
             </Button>
           </div>
         )}
+      </section>
+
+      {/* Vault Safety */}
+      <section className="card space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h3 className="flex items-center gap-2 text-base font-medium text-archive-200">
+              <HardDrive size={16} />
+              档案安全
+            </h3>
+            <p className="mt-0.5 text-sm text-archive-500">
+              已封存的封面、背景与精选截图会保存在独立档案库中，可迁移到其他磁盘。
+            </p>
+          </div>
+          <Button variant="secondary" size="sm" onClick={() => void refreshVaultInfo()} disabled={vaultLoading}>
+            {vaultLoading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+            检查健康度
+          </Button>
+        </div>
+
+        {vaultLoading && !vaultLocation ? (
+          <p className="text-xs text-archive-500">正在准备本地档案库...</p>
+        ) : vaultError ? (
+          <div className="rounded-archive border border-[#bb705d]/30 bg-[#bb705d]/10 px-4 py-3 text-sm text-[#e9b6a8]">
+            {vaultError}
+          </div>
+        ) : vaultLocation && vaultHealth ? (
+          <>
+            <div className="rounded-archive border border-white/[0.065] bg-black/[0.13] px-4 py-3.5">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#d8ba77]">当前档案库</p>
+              <p className="mt-2 truncate font-mono text-sm text-archive-200" title={vaultLocation.rootPath}>
+                {vaultLocation.rootPath}
+              </p>
+              <p className="mt-1 text-xs text-archive-500">
+                {vaultLocation.isDefaultLocation
+                  ? '使用默认文档目录。建议在完成一次封存后复制到其他磁盘保存。'
+                  : '已使用自定义位置。迁移时会复制档案，旧目录不会被自动删除。'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-px overflow-hidden rounded-archive border border-white/[0.065] bg-white/[0.065] sm:grid-cols-4">
+              <div className="bg-[#111214] px-4 py-3">
+                <p className="text-[11px] text-archive-500">已封存游戏</p>
+                <p className="mt-1 font-serif text-2xl text-archive-100">{vaultHealth.archivedGames}</p>
+              </div>
+              <div className="bg-[#111214] px-4 py-3">
+                <p className="text-[11px] text-archive-500">已托管媒体</p>
+                <p className="mt-1 font-serif text-2xl text-[#d8ba77]">{vaultHealth.managedMediaFiles}</p>
+              </div>
+              <div className="bg-[#111214] px-4 py-3">
+                <p className="text-[11px] text-archive-500">外部引用</p>
+                <p className="mt-1 font-serif text-2xl text-archive-300">{vaultHealth.externalMediaFiles}</p>
+              </div>
+              <div className="bg-[#111214] px-4 py-3">
+                <p className="text-[11px] text-archive-500">缺失媒体</p>
+                <p className={`mt-1 font-serif text-2xl ${vaultHealth.missingMediaFiles > 0 ? 'text-[#d28b76]' : 'text-archive-100'}`}>
+                  {vaultHealth.missingMediaFiles}
+                </p>
+              </div>
+            </div>
+
+            {vaultHealth.issues.length > 0 ? (
+              <div className="rounded-archive border border-[#bb705d]/25 bg-[#17100f] px-4 py-3">
+                <div className="flex items-center gap-2 text-sm text-[#e9b6a8]">
+                  <AlertTriangle size={15} />
+                  发现 {vaultHealth.issues.length} 项档案媒体需要注意
+                </div>
+                <div className="mt-2 space-y-1 text-xs text-archive-400">
+                  {vaultHealth.issues.slice(0, 3).map((issue, index) => (
+                    <p key={`${issue.gameId}-${issue.mediaType}-${index}`} className="truncate">
+                      {issue.gameName || '未命名游戏'} · {issue.mediaType} · {issue.reason === 'missing' ? '文件缺失' : '尚在外部位置'}
+                    </p>
+                  ))}
+                  {vaultHealth.issues.length > 3 && <p>其余 {vaultHealth.issues.length - 3} 项将在后续档案修复工具中处理。</p>}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-[#d8ba77]">
+                <ShieldCheck size={16} />
+                当前已封存档案的媒体引用均可读取。
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.07] pt-4">
+              <p className="max-w-xl text-xs leading-5 text-archive-500">
+                迁移会完整复制当前档案库到你选择的位置，并自动切换到新位置。为避免误删，原档案库会继续保留，待你确认新位置可用后再自行处理。
+              </p>
+              <button
+                type="button"
+                className="inline-flex min-h-8 items-center gap-1.5 border border-[#c9a35a]/45 bg-[#c9a35a] px-3 text-xs font-medium text-[#17130d] transition-colors hover:bg-[#e1c17b] disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={() => void handleRelocateVault()}
+                disabled={vaultLoading}
+              >
+                <HardDrive size={14} />
+                迁移档案库
+              </button>
+            </div>
+          </>
+        ) : null}
       </section>
 
       {/* Placeholder for future settings */}

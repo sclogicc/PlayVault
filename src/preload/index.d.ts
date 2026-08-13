@@ -12,6 +12,7 @@ import type {
 } from '../shared/types'
 import type { DiscoveredStatus, SessionEndReason, ScreenshotStatus } from '../shared/constants'
 import type { UpdateStatus } from '../shared/update'
+import type { VaultHealthReport, VaultLocation } from '../shared/vault'
 
 declare global {
   interface Window {
@@ -171,6 +172,11 @@ declare global {
         restore: (id: number) => Promise<void>
         permanentDelete: (id: number) => Promise<void>
         permanentDeleteMany: (ids: number[]) => Promise<void>
+      }
+      vault: {
+        getLocation: () => Promise<VaultLocation>
+        relocate: () => Promise<VaultLocation | null>
+        getHealth: () => Promise<VaultHealthReport>
       }
       update: {
         getStatus: () => Promise<UpdateStatus>

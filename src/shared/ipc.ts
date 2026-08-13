@@ -68,6 +68,11 @@ export const IPC_CHANNELS = {
   SESSION_GET_ALL_ACTIVE: 'session:getAllActive',
   SESSION_RECOVER: 'session:recover',
 
+  // Vault archive storage
+  VAULT_GET_LOCATION: 'vault:getLocation',
+  VAULT_RELOCATE: 'vault:relocate',
+  VAULT_GET_HEALTH: 'vault:getHealth',
+
   // Source update
   UPDATE_GET_STATUS: 'update:getStatus',
   UPDATE_CHECK: 'update:check',

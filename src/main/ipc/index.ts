@@ -8,6 +8,7 @@ import { registerScreenshotHandlers } from './screenshotHandlers'
 import { registerSettingHandlers } from './settingHandlers'
 import { registerFileHandlers } from './fileHandlers'
 import { registerUpdateHandlers } from './updateHandlers'
+import { registerVaultHandlers } from './vaultHandlers'
 
 export function registerAllIpcHandlers(
   ipcMain: IpcMain,
@@ -21,4 +22,5 @@ export function registerAllIpcHandlers(
   registerSettingHandlers(ipcMain, db)
   registerFileHandlers(ipcMain)
   registerUpdateHandlers(ipcMain)
+  registerVaultHandlers(ipcMain, db)
 }
