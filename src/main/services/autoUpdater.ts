@@ -211,8 +211,10 @@ async function performUpdate(): Promise<UpdateStatus> {
     }))
     await runCommand('git', ['pull', '--ff-only', REMOTE_NAME, REMOTE_BRANCH], repositoryPath)
 
-    setStatus(createUpdateStatus('installing', '正在同步项目依赖…', { repositoryPath }))
-    await runCommand(NPM_COMMAND, ['install'], repositoryPath)
+    setStatus(createUpdateStatus('installing', '正在按锁文件同步项目依赖…', { repositoryPath }))
+    // npm ci 严格遵循已提交的 package-lock.json，不会像 npm install 一样重写锁文件，
+    // 从而避免更新器把自身造成的锁文件变动误判为用户的本地源码修改。
+    await runCommand(NPM_COMMAND, ['ci'], repositoryPath)
 
     setStatus(createUpdateStatus('building', '正在构建新版 PlayVault…', { repositoryPath }))
     await runCommand(NPM_COMMAND, ['run', 'build'], repositoryPath)

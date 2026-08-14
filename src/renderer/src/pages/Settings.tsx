@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   RefreshCw,
   Camera,
+  Download,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -23,6 +24,7 @@ import {
 } from '../hooks/useSettings'
 import type { VaultHealthReport, VaultLocation } from '@shared/vault'
 import type { GameCaptureStatus } from '@shared/capture'
+import type { UpdateStatus } from '@shared/update'
 
 export default function Settings(): React.ReactElement {
   const { roots, isLoading } = useScanRoots()
@@ -39,6 +41,8 @@ export default function Settings(): React.ReactElement {
   const [gameCaptureLoading, setGameCaptureLoading] = useState(true)
   const [recordingCaptureShortcut, setRecordingCaptureShortcut] = useState(false)
   const [captureShortcutHint, setCaptureShortcutHint] = useState('')
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
+  const [updateLoading, setUpdateLoading] = useState(false)
 
   useEffect(() => {
     window.api.setting.get('screenshot_dir').then((val) => {
@@ -151,6 +155,24 @@ export default function Settings(): React.ReactElement {
       setCaptureShortcutHint(status.state === 'error' ? '该组合键未生效，原快捷键已保留。' : '')
     } finally {
       setGameCaptureLoading(false)
+    }
+  }
+
+  const handleCheckForUpdate = async (): Promise<void> => {
+    setUpdateLoading(true)
+    try {
+      setUpdateStatus(await window.api.update.check())
+    } finally {
+      setUpdateLoading(false)
+    }
+  }
+
+  const handleApplyUpdate = async (): Promise<void> => {
+    setUpdateLoading(true)
+    try {
+      setUpdateStatus(await window.api.update.trigger())
+    } finally {
+      setUpdateLoading(false)
     }
   }
 
@@ -521,6 +543,47 @@ export default function Settings(): React.ReactElement {
             </div>
           </>
         ) : null}
+      </section>
+
+      <section className="card space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h3 className="flex items-center gap-2 text-base font-medium text-archive-200">
+              <Download size={16} />
+              版本更新
+            </h3>
+            <p className="mt-0.5 max-w-2xl text-sm text-archive-500">
+              PlayVault 不会在启动时自动联网检查或弹出更新提示。需要更新时，请在这里手动检查。
+            </p>
+          </div>
+          {updateStatus?.stage === 'available' ? (
+            <Button variant="primary" size="sm" onClick={() => void handleApplyUpdate()} disabled={updateLoading}>
+              {updateLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              更新并重启
+            </Button>
+          ) : (
+            <Button variant="secondary" size="sm" onClick={() => void handleCheckForUpdate()} disabled={updateLoading}>
+              {updateLoading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+              检查更新
+            </Button>
+          )}
+        </div>
+        {updateStatus && updateStatus.stage !== 'idle' && (
+          <div className={`border px-4 py-3 text-sm ${
+            ['error', 'blocked', 'unsupported'].includes(updateStatus.stage)
+              ? 'border-[#bb705d]/30 bg-[#bb705d]/10 text-[#e9b6a8]'
+              : updateStatus.stage === 'available'
+                ? 'border-[#c9a35a]/25 bg-[#c9a35a]/[0.06] text-archive-200'
+                : 'border-white/[0.065] bg-black/[0.13] text-archive-300'
+          }`}>
+            <p>{updateStatus.message}</p>
+            {updateStatus.currentRevision && updateStatus.remoteRevision && (
+              <p className="mt-1 font-mono text-[11px] text-archive-500">
+                {updateStatus.currentRevision} → {updateStatus.remoteRevision}
+              </p>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Placeholder for future settings */}

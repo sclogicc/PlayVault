@@ -436,3 +436,17 @@ test('library navigation expands one alphabetically sorted game list', async () 
   assert.equal(toggleLibraryOpen(false), true)
   assert.equal(toggleLibraryOpen(true), false)
 })
+
+
+test('updates are manual and use npm ci without a global startup banner', async () => {
+  const [mainSource, appLayoutSource, updaterSource] = await Promise.all([
+    readFile('src/main/index.ts', 'utf8'),
+    readFile('src/renderer/src/components/layout/AppLayout.tsx', 'utf8'),
+    readFile('src/main/services/autoUpdater.ts', 'utf8'),
+  ])
+
+  assert.doesNotMatch(mainSource, /checkForUpdates/)
+  assert.doesNotMatch(appLayoutSource, /UpdateBanner/)
+  assert.match(updaterSource, /NPM_COMMAND, \['ci'\]/)
+  assert.doesNotMatch(updaterSource, /NPM_COMMAND, \['install'\]/)
+})
