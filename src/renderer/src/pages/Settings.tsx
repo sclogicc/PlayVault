@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type KeyboardEvent } from 'react'
 import {
   FolderPlus,
   Trash2,
@@ -37,6 +37,8 @@ export default function Settings(): React.ReactElement {
   const [vaultError, setVaultError] = useState<string>('')
   const [gameCaptureStatus, setGameCaptureStatus] = useState<GameCaptureStatus | null>(null)
   const [gameCaptureLoading, setGameCaptureLoading] = useState(true)
+  const [recordingCaptureShortcut, setRecordingCaptureShortcut] = useState(false)
+  const [captureShortcutHint, setCaptureShortcutHint] = useState('')
 
   useEffect(() => {
     window.api.setting.get('screenshot_dir').then((val) => {
@@ -111,6 +113,42 @@ export default function Settings(): React.ReactElement {
     try {
       const status = await window.api.gameCapture.setEnabled(enabled)
       setGameCaptureStatus(status)
+    } finally {
+      setGameCaptureLoading(false)
+    }
+  }
+
+  const handleCaptureShortcutKeyDown = async (event: KeyboardEvent<HTMLButtonElement>): Promise<void> => {
+    event.preventDefault()
+    const modifierKey = ['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)
+    if (modifierKey) return
+
+    const key = event.key.length === 1 ? event.key.toUpperCase() : event.key.toUpperCase()
+    const isLetterOrNumber = /^[A-Z0-9]$/.test(key)
+    const isFunctionKey = /^F([1-9]|1[0-2])$/.test(key)
+    if (!isLetterOrNumber && !isFunctionKey) {
+      setCaptureShortcutHint('请按字母、数字或 F1–F12，并同时按住 Ctrl、Alt 或 Shift。')
+      return
+    }
+
+    const modifiers = [
+      event.ctrlKey ? 'Ctrl' : '',
+      event.altKey ? 'Alt' : '',
+      event.shiftKey ? 'Shift' : '',
+    ].filter(Boolean)
+    if (modifiers.length === 0) {
+      setCaptureShortcutHint('为避免与游戏按键冲突，请同时按住 Ctrl、Alt 或 Shift。')
+      return
+    }
+
+    const accelerator = [...modifiers, key].join('+')
+    setRecordingCaptureShortcut(false)
+    setCaptureShortcutHint('正在检测快捷键冲突…')
+    setGameCaptureLoading(true)
+    try {
+      const status = await window.api.gameCapture.setAccelerator(accelerator)
+      setGameCaptureStatus(status)
+      setCaptureShortcutHint(status.state === 'error' ? '该组合键未生效，原快捷键已保留。' : '')
     } finally {
       setGameCaptureLoading(false)
     }
@@ -320,7 +358,7 @@ export default function Settings(): React.ReactElement {
               PlayVault 主动截图
             </h3>
             <p className="mt-0.5 text-sm text-archive-500">
-              按 F12 直接无损保存主显示器画面，并在保存时绑定唯一正在运行的游戏会话。
+              用自定义组合键无损保存主显示器画面，并在保存时绑定唯一正在运行的游戏会话。
             </p>
           </div>
           <button
@@ -356,13 +394,32 @@ export default function Settings(): React.ReactElement {
               <p className={`text-sm ${gameCaptureStatus.state === 'error' ? 'text-[#e9b6a8]' : 'text-archive-200'}`}>
                 {gameCaptureStatus.message}
               </p>
-              <kbd className="shrink-0 border border-white/15 bg-black/30 px-2 py-1 font-mono text-xs text-[#d8ba77]">
-                {gameCaptureStatus.accelerator}
-              </kbd>
+              <button
+                type="button"
+                onClick={() => {
+                  setRecordingCaptureShortcut(true)
+                  setCaptureShortcutHint('请直接按下新的组合键。')
+                }}
+                onKeyDown={(event) => {
+                  if (recordingCaptureShortcut) void handleCaptureShortcutKeyDown(event)
+                }}
+                disabled={gameCaptureLoading}
+                className={`shrink-0 border px-2 py-1 font-mono text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                  recordingCaptureShortcut
+                    ? 'border-[#c9a35a] bg-[#c9a35a]/15 text-[#ead7aa]'
+                    : 'border-white/15 bg-black/30 text-[#d8ba77] hover:border-[#c9a35a]/60 hover:text-[#ead7aa]'
+                }`}
+                title="点击后按下新的截图组合键"
+              >
+                {recordingCaptureShortcut ? '请按组合键…' : gameCaptureStatus.accelerator}
+              </button>
             </div>
             <p className="mt-2 text-xs leading-5 text-archive-500">
-              不会扫描或导入其他软件的截图。没有游戏会话、同时运行多个游戏，或游戏不在主显示器时，PlayVault 会拒绝保存而不是猜测归属。NVIDIA 截图监听仍可单独保留作兼容兜底。
+              点击右侧快捷键即可修改。请使用 Ctrl、Alt 或 Shift 搭配字母、数字或 F1–F12；若系统提示冲突，原快捷键会继续保留。不会扫描或导入其他软件的截图。
             </p>
+            {captureShortcutHint && (
+              <p className="mt-2 text-xs text-[#d8ba77]">{captureShortcutHint}</p>
+            )}
           </div>
         ) : null}
       </section>

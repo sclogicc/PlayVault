@@ -201,6 +201,8 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.GAME_CAPTURE_GET_STATUS),
     setEnabled: (enabled: boolean): Promise<GameCaptureStatus> =>
       ipcRenderer.invoke(IPC_CHANNELS.GAME_CAPTURE_SET_ENABLED, enabled),
+    setAccelerator: (accelerator: string): Promise<GameCaptureStatus> =>
+      ipcRenderer.invoke(IPC_CHANNELS.GAME_CAPTURE_SET_ACCELERATOR, accelerator),
     onStatusChange: (callback: (status: GameCaptureStatus) => void) => {
       const listener = (_event: Electron.IpcRendererEvent, status: GameCaptureStatus): void => callback(status)
       ipcRenderer.on(IPC_CHANNELS.GAME_CAPTURE_STATUS_CHANGED, listener)

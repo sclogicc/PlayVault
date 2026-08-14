@@ -116,15 +116,18 @@ test('vault media references remain relative and reject directory traversal', as
   assert.throws(() => toVaultReference('../secrets.txt'), /无效/)
 })
 
-test('PlayVault capture status uses F12 and distinguishes disabled state', async () => {
-  const { createGameCaptureStatus } = await importTypeScriptModule(
+test('PlayVault capture status uses a low-conflict default and preserves custom shortcuts', async () => {
+  const { createGameCaptureStatus, DEFAULT_GAME_CAPTURE_ACCELERATOR } = await importTypeScriptModule(
     'src/shared/capture.ts',
     'game-capture-status.mjs',
   )
 
   const ready = createGameCaptureStatus('ready', '就绪')
+  const custom = createGameCaptureStatus('ready', '就绪', { accelerator: 'Ctrl+Alt+P' })
   const disabled = createGameCaptureStatus('disabled', '已关闭')
-  assert.equal(ready.accelerator, 'F12')
+  assert.equal(DEFAULT_GAME_CAPTURE_ACCELERATOR, 'Ctrl+Shift+S')
+  assert.equal(ready.accelerator, 'Ctrl+Shift+S')
+  assert.equal(custom.accelerator, 'Ctrl+Alt+P')
   assert.equal(ready.enabled, true)
   assert.equal(disabled.enabled, false)
 })

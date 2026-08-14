@@ -71,6 +71,7 @@ export const IPC_CHANNELS = {
   // PlayVault game capture
   GAME_CAPTURE_GET_STATUS: 'gameCapture:getStatus',
   GAME_CAPTURE_SET_ENABLED: 'gameCapture:setEnabled',
+  GAME_CAPTURE_SET_ACCELERATOR: 'gameCapture:setAccelerator',
   GAME_CAPTURE_STATUS_CHANGED: 'gameCapture:statusChanged',
 
   // Vault archive storage

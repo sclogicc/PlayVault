@@ -177,6 +177,7 @@ declare global {
       gameCapture: {
         getStatus: () => Promise<GameCaptureStatus>
         setEnabled: (enabled: boolean) => Promise<GameCaptureStatus>
+        setAccelerator: (accelerator: string) => Promise<GameCaptureStatus>
         onStatusChange: (callback: (status: GameCaptureStatus) => void) => () => void
       }
       vault: {
