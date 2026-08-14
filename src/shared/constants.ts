@@ -28,8 +28,8 @@ export const INSTALL_STATUS_LABELS: Record<InstallStatus, string> = {
 export type ArchiveStatus = 'active' | 'archived'
 
 export const ARCHIVE_STATUS_LABELS: Record<ArchiveStatus, string> = {
-  active: '进行中档案',
-  archived: '已封存',
+  active: '未留档',
+  archived: '已留档',
 }
 
 // ========== Screenshot Status ==========

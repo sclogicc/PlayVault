@@ -376,7 +376,7 @@ export default function Settings(): React.ReactElement {
               档案安全
             </h3>
             <p className="mt-0.5 text-sm text-archive-500">
-              已封存的封面、背景与精选截图会保存在独立档案库中，可迁移到其他磁盘。
+              已生成游玩留档的封面、背景与精选截图会保存在独立档案库中，可迁移到其他磁盘。
             </p>
           </div>
           <Button variant="secondary" size="sm" onClick={() => void refreshVaultInfo()} disabled={vaultLoading}>
@@ -400,14 +400,14 @@ export default function Settings(): React.ReactElement {
               </p>
               <p className="mt-1 text-xs text-archive-500">
                 {vaultLocation.isDefaultLocation
-                  ? '使用默认文档目录。建议在完成一次封存后复制到其他磁盘保存。'
+                  ? '使用默认文档目录。建议在生成首份游玩留档后复制到其他磁盘保存。'
                   : '已使用自定义位置。迁移时会复制档案，旧目录不会被自动删除。'}
               </p>
             </div>
 
             <div className="grid grid-cols-1 gap-px overflow-hidden rounded-archive border border-white/[0.065] bg-white/[0.065] sm:grid-cols-4">
               <div className="bg-[#111214] px-4 py-3">
-                <p className="text-[11px] text-archive-500">已封存游戏</p>
+                <p className="text-[11px] text-archive-500">已留档游戏</p>
                 <p className="mt-1 font-serif text-2xl text-archive-100">{vaultHealth.archivedGames}</p>
               </div>
               <div className="bg-[#111214] px-4 py-3">

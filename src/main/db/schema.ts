@@ -215,6 +215,11 @@ const MIGRATIONS: Record<number, string[]> = {
     "ALTER TABLE screenshots ADD COLUMN preserved_path TEXT NOT NULL DEFAULT ''",
     "CREATE INDEX IF NOT EXISTS idx_games_archive_status ON games(archive_status)",
   ],
+
+  // v14: a play-log is only a record marker; previously logged games must remain enabled.
+  14: [
+    "UPDATE games SET is_enabled = 1 WHERE archive_status = 'archived'",
+  ],
 }
 
 /**

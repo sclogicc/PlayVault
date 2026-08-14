@@ -18,9 +18,12 @@ export function getAllGames(
   `
   const params: unknown[] = []
 
-  // The normal library deliberately excludes archived games; history remains available through getArchivedGames.
-  sql += ' AND g.archive_status = ?'
-  params.push(filters?.archiveStatus ?? 'active')
+  // A play-log is a historical marker, not a separate or locked game state.
+  // The main library therefore includes every game unless a caller explicitly asks for logged games.
+  if (filters?.archiveStatus) {
+    sql += ' AND g.archive_status = ?'
+    params.push(filters.archiveStatus)
+  }
 
   if (filters?.search) {
     sql += ' AND (g.name LIKE ? OR g.display_name LIKE ? OR g.aliases LIKE ?)'
@@ -214,7 +217,7 @@ export function archiveGame(
            archived_at = COALESCE(archived_at, datetime('now','localtime')),
            archive_cover_path = ?,
            archive_background_path = ?,
-           is_enabled = 0,
+           is_enabled = 1,
            updated_at = datetime('now','localtime')
        WHERE id = ?`,
     ).run(data.archiveCoverPath, data.archiveBackgroundPath, data.gameId)

@@ -102,9 +102,15 @@ async function getRevision(repositoryPath: string, ref: string): Promise<string>
   return stdout.trim()
 }
 
-async function hasCleanWorktree(repositoryPath: string): Promise<boolean> {
+async function getUpdateBlockingWorktreeChanges(repositoryPath: string): Promise<string[]> {
   const { stdout } = await runCommand('git', ['status', '--porcelain=v1'], repositoryPath)
-  return stdout.trim().length === 0
+  return stdout
+    .split(/\r?\n/)
+    .filter(Boolean)
+    // Untracked files such as personal notes or recovery backups never participate
+    // in `git pull --ff-only`, so they must not block normal application updates.
+    .filter((line) => !line.startsWith('?? '))
+    .map((line) => line.slice(3).trim())
 }
 
 async function isAncestor(repositoryPath: string, ancestor: string, descendant: string): Promise<boolean> {
@@ -135,10 +141,11 @@ async function inspectRepository(fetchRemote: boolean): Promise<UpdateStatus> {
 
   try {
     const currentRevision = await getRevision(repositoryPath, 'HEAD')
-    if (!(await hasCleanWorktree(repositoryPath))) {
+    const blockingChanges = await getUpdateBlockingWorktreeChanges(repositoryPath)
+    if (blockingChanges.length > 0) {
       return setStatus(createUpdateStatus(
         'blocked',
-        '检测到本地未提交文件。为防止覆盖你的修改，更新已暂停。',
+        `检测到 ${blockingChanges.length} 项本地源码修改。为防止覆盖代码，更新已暂停；游戏记录、游玩留档、截图和未跟踪备份文件不会影响更新。`,
         { currentRevision, repositoryPath },
       ))
     }

@@ -17,12 +17,9 @@ export function launchGame(
   db: Database,
   gameId: number,
 ): GameLaunchResult {
-  // 1. Archived experiences are intentionally read-only after local files are cleaned.
+  // A play-log is only a historical marker. It must never affect launch permission.
   const game = gameRepo.getGameById(db, gameId)
-  if (!game) return { success: false, error: '游戏档案不存在' }
-  if (game.archive_status === 'archived') {
-    return { success: false, error: '该游戏已封存，仅保留历史档案，无法启动' }
-  }
+  if (!game) return { success: false, error: '游戏记录不存在' }
 
   // 2. Get the primary exe
   const primaryExe = exeRepo.getPrimaryExe(db, gameId)

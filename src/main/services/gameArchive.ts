@@ -53,7 +53,7 @@ export async function archiveGameExperience(
 ): Promise<ArchiveGameResult> {
   const game = gameRepo.getGameById(db, gameId)
   if (!game) throw new Error('未找到需要封存的游戏')
-  if (game.archive_status === 'archived') throw new Error('该游戏已经处于封存状态')
+  if (game.archive_status === 'archived') throw new Error('该游戏已经生成过游玩留档')
 
   const selectedIds = Array.from(new Set(requestedScreenshotIds)).slice(0, MAX_ARCHIVE_HIGHLIGHTS)
   const screenshots = screenshotRepo.getByGameId(db, gameId)
@@ -114,7 +114,7 @@ export async function archiveGameExperience(
   })
 
   const archivedGame = gameRepo.getGameById(db, gameId)
-  if (!archivedGame) throw new Error('游戏封存后无法读取档案')
+  if (!archivedGame) throw new Error('生成游玩留档后无法读取游戏记录')
 
   return {
     game: archivedGame,

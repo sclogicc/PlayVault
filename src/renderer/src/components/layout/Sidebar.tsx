@@ -23,7 +23,7 @@ interface NavItem {
 }
 
 const UTILITY_NAV_ITEMS: NavItem[] = [
-  { to: '/archives', icon: <Archive size={17} />, label: '历史档案' },
+  { to: '/archives', icon: <Archive size={17} />, label: '游玩回顾' },
   { to: '/discover', icon: <Search size={17} />, label: '发现候选' },
   { to: '/screenshots', icon: <Image size={17} />, label: '截图' },
   { to: '/timeline', icon: <Clock3 size={17} />, label: '时间线' },
