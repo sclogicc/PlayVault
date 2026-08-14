@@ -450,3 +450,15 @@ test('updates are manual and use npm ci without a global startup banner', async 
   assert.match(updaterSource, /NPM_COMMAND, \['ci'\]/)
   assert.doesNotMatch(updaterSource, /NPM_COMMAND, \['install'\]/)
 })
+
+
+test('image viewer is portalled to the viewport and locks background scrolling', async () => {
+  const source = await readFile('src/renderer/src/components/ui/ImageViewer.tsx', 'utf8')
+
+  assert.match(source, /createPortal\(/)
+  assert.match(source, /document\.body/)
+  assert.match(source, /document\.body\.style\.overflow = 'hidden'/)
+  assert.match(source, /document\.documentElement\.style\.overflow = 'hidden'/)
+  assert.match(source, /fixed inset-0 z-\[9999\] h-\[100dvh\] w-\[100dvw\] overflow-hidden/)
+  assert.match(source, /max-h-\[calc\(100dvh-5\.5rem\)\]/)
+})
