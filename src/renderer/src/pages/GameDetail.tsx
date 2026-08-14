@@ -342,10 +342,10 @@ export default function GameDetail(): React.ReactElement {
 返回游戏库
       </Link>
 
-      {/* ========== Hero Section ========== */}
-      <div className="group relative overflow-hidden border-y border-white/[0.09] bg-archive-850 shadow-[0_20px_46px_rgba(0,0,0,0.3)]">
+      {/* 游戏详情以稳定信息为主，背景只作为短纹理条，不能决定页面高度。 */}
+      <div className="group relative overflow-hidden border border-white/[0.09] bg-[#0f1114]">
         {/* 背景图独立于游戏封面，用于营造详情页的沉浸式氛围。 */}
-        <div className="media-frame media-backdrop-frame relative flex items-center justify-center bg-gradient-to-br from-archive-800 via-archive-850 to-archive-900">
+        <div className="media-frame relative flex h-[154px] items-center justify-center bg-[linear-gradient(135deg,#15191e,#0e1115_62%,#12100c)] sm:h-[184px]">
           {archiveBackgroundPath ? (
             <CoverImage
               coverPath={archiveBackgroundPath}
@@ -353,7 +353,7 @@ export default function GameDetail(): React.ReactElement {
               displayName={`${game.display_name} 背景图`}
             />
           ) : (
-            <Gamepad2 size={64} className="text-archive-700" />
+            <p className="text-xs tracking-[0.18em] text-archive-700">PLAYVAULT · 游戏记录</p>
           )}
           <div className="absolute right-4 top-4 flex flex-wrap justify-end gap-2 opacity-75 transition-opacity group-hover:opacity-100">
             <Button variant="secondary" size="sm" onClick={handleSetBackground}>
@@ -372,14 +372,13 @@ export default function GameDetail(): React.ReactElement {
             )}
           </div>
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(8,14,22,0.42),transparent_48%,rgba(8,14,22,0.26))]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-archive-950 via-archive-900/88 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0f1114] via-[#0f1114]/72 to-transparent" />
         </div>
 
-        {/* Steam-like transition: the game controls emerge from the background fade. */}
-        <div className="relative -mt-24 bg-gradient-to-b from-archive-950/0 via-archive-950/94 to-archive-950 px-6 pb-7 pt-16 sm:px-8 lg:px-10">
+        <div className="relative -mt-12 bg-gradient-to-b from-[#0f1114]/0 via-[#0f1114]/96 to-[#0f1114] px-5 pb-6 pt-10 sm:px-7">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="flex min-w-0 flex-1 items-start gap-5 sm:gap-6">
-              <div className="media-frame media-cover-frame flex w-24 shrink-0 items-center justify-center rounded-[18px] border border-white/[0.18] bg-archive-900 shadow-[0_20px_42px_rgba(0,0,0,0.5)] sm:w-32">
+              <div className="media-frame media-cover-frame flex w-[88px] shrink-0 items-center justify-center border border-white/[0.15] bg-archive-900 shadow-[0_14px_30px_rgba(0,0,0,0.35)] sm:w-[104px]">
                 {archiveCoverPath ? (
                   <CoverImage
                     coverPath={archiveCoverPath}
@@ -390,11 +389,11 @@ export default function GameDetail(): React.ReactElement {
                   <Gamepad2 size={30} className="text-archive-700" />
                 )}
               </div>
-              <div className="min-w-0 flex-1 space-y-3.5 pt-1">
+              <div className="min-w-0 flex-1 space-y-3 pt-0.5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">个人游戏记录</p>
               {/* 名称与状态 */}
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-3xl font-bold tracking-tight text-archive-50 sm:text-4xl">
+                <h2 className="font-serif text-3xl font-medium tracking-[-0.02em] text-archive-50 sm:text-4xl">
                   {game.display_name}
                 </h2>
                 <StatusBadge status={game.status as GameStatus} />
@@ -546,26 +545,26 @@ export default function GameDetail(): React.ReactElement {
           </div>
 
           {/* Stats bar */}
-          <div className="mt-7 grid grid-cols-2 gap-3 border-t border-white/[0.07] pt-5 text-sm sm:grid-cols-4">
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.045] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
+          <div className="mt-6 grid grid-cols-2 gap-px border-t border-white/[0.07] bg-white/[0.07] pt-5 text-sm sm:grid-cols-4">
+            <div className="bg-[#111317] px-4 py-3">
               <span className="text-[11px] font-medium text-archive-500">总时长</span>
               <p className="mt-1 font-mono text-archive-100">
                 {formatDuration(totalDuration)}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.045] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
+            <div className="bg-[#111317] px-4 py-3">
               <span className="text-[11px] font-medium text-archive-500">最近游玩</span>
               <p className="mt-1 text-archive-100">
                 {formatRelativeDate(lastPlayedAt)}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.045] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
+            <div className="bg-[#111317] px-4 py-3">
               <span className="text-[11px] font-medium text-archive-500">游玩记录</span>
               <p className="mt-1 font-mono text-archive-100">
                 {sessions.length}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.045] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
+            <div className="bg-[#111317] px-4 py-3">
               <span className="text-[11px] font-medium text-archive-500">{isArchived ? '留档精选' : '截图收藏'}</span>
               <p className="mt-1 font-mono text-archive-100">
                 {isArchived ? archiveHighlights.length : gameScreenshots.length}
@@ -576,63 +575,34 @@ export default function GameDetail(): React.ReactElement {
       </div>
 
       {isArchived && (
-        <section className="relative overflow-hidden rounded-[24px] border border-amber-300/[0.14] bg-[linear-gradient(135deg,rgba(109,40,217,0.13),rgba(255,255,255,0.025)_42%,rgba(8,14,22,0.16))] p-6 shadow-panel sm:p-7">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-500/10 blur-3xl" />
-          <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start">
+        <section className="border border-[#c9a35a]/18 bg-[#11120f] px-5 py-5 sm:px-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100">自动生成的回顾</p>
-              <h3 className="mt-2 flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-archive-50"><Archive size={20} className="text-amber-100" /> 这段游戏经历</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-archive-400">无需填写总结。PlayVault 将这段经历中的时间、游玩记录和你选择保留的画面编排为可长期回顾的个人档案。</p>
+              <p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">游玩留档</p>
+              <h3 className="mt-1.5 flex items-center gap-2 text-lg font-medium text-archive-100"><Archive size={17} className="text-[#d8ba77]" />这段游戏经历已保留</h3>
+              <p className="mt-1.5 max-w-2xl text-sm leading-6 text-archive-500">留档不会改变游戏的启动、编辑或继续记录权限。它只保留此刻的游玩资料与精选画面。</p>
             </div>
-            <aside className="rounded-2xl border border-amber-300/[0.14] bg-archive-950/42 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-200">游玩留档</p>
-              <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-archive-100"><Archive size={13} className="text-amber-100" /> 回顾内容已生成</p>
-              <p className="mt-1 text-xs leading-5 text-archive-500">留档于 {formatDate(game.archived_at)}<br />保留 {archiveHighlights.length} 张关键画面</p>
-            </aside>
+            <span className="border border-[#c9a35a]/25 px-2.5 py-1 text-xs text-[#ead7aa]">留档于 {formatDate(game.archived_at)}</span>
           </div>
 
-          <div className="relative mt-6 rounded-2xl border border-white/[0.08] bg-black/[0.18] px-5 py-5 sm:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-archive-500">经历时间轴</p><span className="text-[11px] text-archive-600">系统根据已有记录自动生成</span></div>
-            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-0">
-              {[
-                { label: '首次启动', value: formatDate(firstPlayedAt), icon: Play },
-                { label: '最后一次游玩', value: formatDate(latestSessionAt), icon: Clock },
-                { label: '生成留档', value: formatDate(game.archived_at), icon: Archive },
-              ].map(({ label, value, icon: Icon }, index) => (
-                <div key={label} className="relative flex items-center gap-3 rounded-xl bg-white/[0.018] px-3 py-2.5 sm:block sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 sm:pr-5">
-                  {index < 2 && <span className="absolute left-[13px] top-7 hidden h-px w-[calc(100%-24px)] bg-gradient-to-r from-amber-300/45 to-white/[0.08] sm:block" />}
-                  <span className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-amber-300/25 bg-archive-900 text-amber-100"><Icon size={13} /></span>
-                  <div className="sm:mt-3.5">
-                    <p className="text-xs font-medium text-archive-200">{label}</p>
-                    <p className="mt-1 text-xs text-archive-500">{value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="mt-5 grid grid-cols-1 gap-px border-y border-white/[0.07] bg-white/[0.07] sm:grid-cols-3">
+            <div className="bg-[#11120f] px-4 py-3"><p className="text-[11px] text-archive-500">首次游玩</p><p className="mt-1 text-sm text-archive-200">{formatDate(firstPlayedAt)}</p></div>
+            <div className="bg-[#11120f] px-4 py-3"><p className="text-[11px] text-archive-500">最后游玩</p><p className="mt-1 text-sm text-archive-200">{formatDate(latestSessionAt)}</p></div>
+            <div className="bg-[#11120f] px-4 py-3"><p className="text-[11px] text-archive-500">保留画面</p><p className="mt-1 text-sm text-archive-200">{archiveHighlights.length} 张</p></div>
           </div>
 
-          <div className="relative mt-6 border-t border-white/[0.07] pt-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-archive-100">留档精选</p>
-                <p className="mt-1 text-xs text-archive-500">已复制到 PlayVault 档案目录的精选截图，即使原文件被清理也能回看。</p>
-              </div>
-              <span className="rounded-full bg-white/[0.055] px-2.5 py-1 text-[11px] text-archive-400">{archiveHighlights.length} / 3 张</span>
-            </div>
-            {archiveHighlights.length === 0 ? (
-              <div className="mt-3 flex min-h-24 items-center justify-center rounded-archive border border-dashed border-white/[0.09] bg-black/[0.12] px-4 text-center text-xs text-archive-500">生成留档时未选择精选截图；原截图仍可在截图箱中查看。</div>
-            ) : (
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-6">
+          {archiveHighlights.length > 0 && (
+            <div className="mt-5">
+              <div className="mb-2 flex items-center justify-between"><p className="text-sm text-archive-200">留档精选</p><span className="text-xs text-archive-500">点击查看原图</span></div>
+              <div className="media-contact-sheet">
                 {archiveHighlights.map((shot) => (
-                  <button key={shot.id} type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === shot.id))} className={`media-frame group relative aspect-video rounded-2xl border border-amber-300/15 bg-archive-900 text-left shadow-[0_10px_24px_rgba(0,0,0,0.18)] ${archiveHighlights.length === 1 ? 'sm:col-span-6' : archiveHighlights.length === 2 ? 'sm:col-span-3' : 'sm:col-span-2'}`}>
-                    <img src={toFileUrl(shot.preserved_path || shot.file_path)} alt={shot.file_name} className="media-image transition-transform duration-300 group-hover:scale-[1.04]" />
-                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-archive-950/75 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                    <span className="absolute right-2 top-2 rounded-full border border-white/20 bg-archive-950/75 p-1.5 text-violet-100 shadow-lg"><Star size={12} fill="currentColor" /></span>
+                  <button key={shot.id} type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === shot.id))} className="media-frame media-screenshot-frame group relative border border-white/[0.08] bg-archive-900 text-left hover:border-[#c9a35a]/55">
+                    <img src={toFileUrl(shot.preserved_path || shot.file_path)} alt={shot.file_name} className="media-image transition-transform duration-300 group-hover:scale-[1.03]" />
                   </button>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </section>
       )}
 

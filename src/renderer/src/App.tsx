@@ -14,7 +14,8 @@ export default function App(): React.ReactElement {
     <HashRouter>
       <Routes>
         <Route path="/" element={<AppLayout />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<Navigate to="/games" replace />} />
+          <Route path="overview" element={<Dashboard />} />
           <Route path="games" element={<Games />} />
           <Route path="archives" element={<Archives />} />
           <Route path="games/:gameId" element={<GameDetail />} />

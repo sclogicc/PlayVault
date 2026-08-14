@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Archive, CalendarDays, Clock3, Image, Loader2, Search } from 'lucide-react'
+import { Archive, Loader2, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { GameWithStats } from '@shared/types'
 import { toFileUrl } from '../lib/fileUrl'
@@ -28,15 +28,15 @@ export default function Archives(): React.ReactElement {
   })
 
   return (
-    <div className="min-h-full bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
-      <header className="flex flex-wrap items-end justify-between gap-6 border-b border-white/[0.075] pb-7">
+    <div className="content-canvas min-h-full bg-[#090a0c] px-7 py-8 sm:px-10 lg:px-12">
+      <header className="flex flex-wrap items-center justify-between gap-5 border-b border-white/[0.075] pb-5">
         <div>
-          <p className="text-[11px] font-medium tracking-[0.17em] text-[#d8ba77]">长期保存的回顾</p>
-          <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-2">
-            <h1 className="font-serif text-4xl tracking-[-0.025em] text-archive-50 sm:text-5xl">游玩回顾</h1>
-            <span className="text-sm text-archive-500">{archives.length} 段经历</span>
+          <p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">游戏库筛选</p>
+          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h1 className="font-serif text-3xl tracking-[-0.02em] text-archive-50 sm:text-4xl">游玩回顾</h1>
+            <span className="text-sm text-archive-500">{archives.length} 条已留档记录</span>
           </div>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-archive-400">这里是已生成留档的游戏筛选视图；它们仍在你的游戏库中，可以继续启动、编辑和记录。</p>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-archive-500">已留档只代表你保留了这段经历；游戏仍在游戏库中，可以继续游玩与补充记录。</p>
         </div>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
           <label className="relative min-w-[220px] border-b border-white/[0.11] py-2 pl-6">
@@ -55,7 +55,7 @@ export default function Archives(): React.ReactElement {
       ) : archives.length === 0 ? (
         <div className="py-28 text-center"><Archive size={30} className="mx-auto text-archive-600" /><h2 className="mt-5 font-serif text-2xl text-archive-200">这里会显示已生成留档的游戏</h2><p className="mt-2 text-sm text-archive-500">在游戏详情页选择“生成游玩留档”后，它会同时保留在游戏库与这里。</p></div>
       ) : (
-        <section aria-label="游玩回顾画廊" className="grid grid-cols-[repeat(auto-fill,minmax(164px,1fr))] gap-x-5 gap-y-9 py-8 sm:grid-cols-[repeat(auto-fill,minmax(184px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(204px,1fr))]">
+        <section aria-label="游玩回顾列表" className="grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-x-4 gap-y-7 py-7 sm:grid-cols-[repeat(auto-fill,minmax(166px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(184px,1fr))]">
           {archives.map((game) => <ArchiveCard key={game.id} game={game} />)}
         </section>
       )}
@@ -69,31 +69,18 @@ function ArchiveCard({ game }: { game: GameWithStats }): React.ReactElement {
 
   return (
     <Link to={`/games/${game.id}`} className="group block min-w-0">
-      <article className="media-frame relative aspect-[2/3] border border-white/[0.085] bg-[#15171a] shadow-[0_16px_34px_rgba(0,0,0,0.34)] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-[#c9a35a]/70 group-hover:shadow-[0_24px_44px_rgba(0,0,0,0.48)]">
+      <article className="media-frame media-cover-frame relative border border-white/[0.085] bg-[#15171a] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#c9a35a]/65">
         {posterPath && !imageError ? (
           <img src={toFileUrl(posterPath)} alt={`${game.display_name} 封面`} className="media-image transition-transform duration-500 group-hover:scale-[1.055]" onError={() => setImageError(true)} />
         ) : (
           <div className="flex h-full items-center justify-center bg-[#1a1c1f]"><Archive size={34} className="text-archive-600" /></div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070809] via-[#070809]/15 to-transparent" />
-        <div className="absolute left-3 top-3 flex items-center gap-2 text-[10px]">
-          <span className="border border-[#c9a35a]/45 bg-black/55 px-1.5 py-1 text-[#ead7aa]">已留档</span>
-          <span className="text-archive-300">{formatDate(game.archived_at)}</span>
-        </div>
-        <div className="absolute inset-x-0 bottom-0 p-4">
-          <p className="truncate text-[15px] font-medium text-white">{game.display_name}</p>
-          <p className="mt-2 border-t border-white/[0.11] pt-2 text-[11px] text-archive-300">留档于 {formatDate(game.archived_at)}</p>
-        </div>
-        <div className="absolute inset-x-0 bottom-0 grid translate-y-full grid-cols-3 gap-2 bg-[#c9a35a] px-3 py-2.5 text-[#17120a] transition-transform duration-200 group-hover:translate-y-0">
-          <ArchiveFact icon={<Clock3 size={11} />} label="累计" value={formatDuration(game.total_duration)} />
-          <ArchiveFact icon={<CalendarDays size={11} />} label="最后游玩" value={formatDate(game.last_played_at)} />
-          <ArchiveFact icon={<Image size={11} />} label="截图" value={`${game.screenshot_count} 张`} />
-        </div>
+        <div className="absolute left-2.5 top-2.5 border border-[#c9a35a]/35 bg-black/65 px-1.5 py-1 text-[10px] text-[#ead7aa]">已留档</div>
       </article>
+      <div className="border-b border-white/[0.065] px-1 pb-3 pt-3">
+        <p className="truncate text-sm font-medium text-archive-100">{game.display_name}</p>
+        <p className="mt-1.5 text-[11px] text-archive-500">留档于 {formatDate(game.archived_at)} · {formatDuration(game.total_duration)}</p>
+      </div>
     </Link>
   )
-}
-
-function ArchiveFact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }): React.ReactElement {
-  return <div className="min-w-0"><p className="flex items-center gap-1 text-[9px] opacity-70">{icon}{label}</p><p className="mt-1 truncate text-[10px] font-medium" title={value}>{value}</p></div>
 }

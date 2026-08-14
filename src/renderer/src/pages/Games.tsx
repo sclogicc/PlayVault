@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowUpRight, Gamepad2, Pencil, Play, Plus, Search, SlidersHorizontal } from 'lucide-react'
+import { Gamepad2, Pencil, Play, Plus, Search, SlidersHorizontal } from 'lucide-react'
 import type { GameLaunchResult, GameWithStats, GameFormData } from '@shared/types'
 import type { GameStatus, InstallStatus } from '@shared/constants'
 import { getCoverImageStyle, parseCoverCrop } from '@shared/coverCrop'
@@ -87,17 +87,17 @@ export default function Games(): React.ReactElement {
   }
 
   return (
-    <div className="min-h-full bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
-      <header className="flex flex-wrap items-end justify-between gap-5 border-b border-white/[0.075] pb-7">
+    <div className="content-canvas min-h-full bg-[#090a0c] px-7 py-8 sm:px-10 lg:px-12">
+      <header className="flex flex-wrap items-center justify-between gap-5 border-b border-white/[0.075] pb-5">
         <div>
-          <p className="text-[11px] font-medium tracking-[0.17em] text-[#d8ba77]">个人收藏</p>
-          <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-2">
-            <h1 className="font-serif text-4xl tracking-[-0.025em] text-archive-50 sm:text-5xl">游戏库</h1>
-            <span className="text-sm text-archive-500">{games.length} 个本地游戏</span>
+          <p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">个人游戏日志</p>
+          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h1 className="font-serif text-3xl tracking-[-0.02em] text-archive-50 sm:text-4xl">游戏库</h1>
+            <span className="text-sm text-archive-500">{games.length} 条记录</span>
           </div>
-          <p className="mt-3 text-sm text-archive-400">封面、游玩时间与截图，共同构成一段游戏经历。</p>
+          <p className="mt-2 text-sm text-archive-500">从这里继续游玩、补充资料，或回看留下的游戏经历。</p>
         </div>
-        <Button variant="primary" onClick={handleCreate} className="rounded-none border border-[#c9a35a]/75 bg-[#c9a35a] text-[#15110a] hover:bg-[#dec280]">
+        <Button variant="primary" onClick={handleCreate}>
           <Plus size={16} /> 添加游戏
         </Button>
       </header>
@@ -147,7 +147,7 @@ export default function Games(): React.ReactElement {
       ) : sortedGames.length === 0 ? (
         <div className="py-24 text-center text-sm text-archive-500">没有找到匹配的游戏。</div>
       ) : (
-        <section aria-label="游戏封面陈列" className="grid grid-cols-[repeat(auto-fill,minmax(154px,1fr))] gap-x-5 gap-y-9 py-8 sm:grid-cols-[repeat(auto-fill,minmax(178px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(196px,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(212px,1fr))]">
+        <section aria-label="游戏记录" className="grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-x-4 gap-y-7 py-7 sm:grid-cols-[repeat(auto-fill,minmax(166px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(184px,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(196px,1fr))]">
           {sortedGames.map((game) => (
             <GameCard
               key={game.id}
@@ -189,29 +189,28 @@ function GameCard({
 
   return (
     <article className="group relative cursor-pointer select-none" role="button" tabIndex={0} title="单击查看详情，双击启动游戏" onClick={onOpen} onDoubleClick={onLaunch} onKeyDown={(event) => { if (event.key === 'Enter') onOpen() }}>
-      <div className="media-frame relative aspect-[2/3] border border-white/[0.085] bg-[#16181b] shadow-[0_16px_34px_rgba(0,0,0,0.34)] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-[#c9a35a]/70 group-hover:shadow-[0_24px_44px_rgba(0,0,0,0.48)]">
+      <div className="media-frame media-cover-frame relative border border-white/[0.085] bg-[#15171a] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#c9a35a]/65">
         {game.cover_path ? (
-          <img src={toFileUrl(game.cover_path)} alt={`${game.display_name} 封面`} className="media-image transition-transform duration-500 group-hover:scale-[1.055]" style={getCoverImageStyle(parseCoverCrop(game.cover_crop))} />
+          <img src={toFileUrl(game.cover_path)} alt={`${game.display_name} 封面`} className="media-image transition-transform duration-500 group-hover:scale-[1.035]" style={getCoverImageStyle(parseCoverCrop(game.cover_crop))} />
         ) : (
-          <div className="flex h-full items-center justify-center bg-[#1a1c1f]"><Gamepad2 size={38} className="text-archive-600" /></div>
+          <div className="flex h-full flex-col items-center justify-center bg-[linear-gradient(145deg,#1a1d20,#101215)] text-center">
+            <Gamepad2 size={30} className="text-archive-600" />
+            <p className="mt-3 max-w-[78%] break-words text-xs text-archive-500">{game.display_name}</p>
+          </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070809] via-[#070809]/12 to-transparent" />
-        <div className="absolute left-3 top-3 flex items-center gap-2">
+        <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5">
           <StatusBadge status={game.status as GameStatus} />
-          {!isInstalled && <span className="border border-white/[0.15] bg-black/55 px-1.5 py-1 text-[10px] text-archive-200">未安装</span>}
+          {!isInstalled && <span className="border border-white/[0.15] bg-black/65 px-1.5 py-1 text-[10px] text-archive-300">路径失效</span>}
         </div>
-        <button type="button" className="absolute right-2.5 top-2.5 border border-white/[0.12] bg-black/55 p-1.5 text-archive-200 opacity-0 transition-all hover:border-[#c9a35a]/70 hover:text-[#ead7aa] group-hover:opacity-100 focus:opacity-100" title="编辑游戏" aria-label={`编辑${game.display_name}`} onClick={(event) => { event.stopPropagation(); onEdit() }} onDoubleClick={(event) => event.stopPropagation()}>
+        <button type="button" className="absolute right-2.5 top-2.5 border border-white/[0.12] bg-black/60 p-1.5 text-archive-200 opacity-0 transition-all hover:border-[#c9a35a]/70 hover:text-[#ead7aa] group-hover:opacity-100 focus:opacity-100" title="编辑游戏" aria-label={`编辑${game.display_name}`} onClick={(event) => { event.stopPropagation(); onEdit() }} onDoubleClick={(event) => event.stopPropagation()}>
           <Pencil size={13} />
         </button>
-        <div className="absolute inset-x-0 bottom-0 p-4">
-          <p className="truncate text-[15px] font-medium text-white">{game.display_name}</p>
-          <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/[0.11] pt-2 text-[11px] text-archive-300">
-            <span className="truncate">{formatDuration(game.total_duration)}</span>
-            <span className="shrink-0">{formatLastPlayed(game.last_played_at)}</span>
-          </div>
-        </div>
-        <div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-between bg-[#c9a35a] px-4 py-2.5 text-xs font-medium text-[#17120a] transition-transform duration-200 group-hover:translate-y-0">
-          <span>查看档案</span><ArrowUpRight size={14} />
+      </div>
+      <div className="min-w-0 border-b border-white/[0.065] px-1 pb-3 pt-3">
+        <p className="truncate text-sm font-medium text-archive-100">{game.display_name}</p>
+        <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-archive-500">
+          <span className="truncate">{formatDuration(game.total_duration)}</span>
+          <span className="shrink-0">{formatLastPlayed(game.last_played_at)}</span>
         </div>
       </div>
     </article>
