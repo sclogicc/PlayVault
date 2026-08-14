@@ -113,7 +113,12 @@
     @apply border border-dashed border-white/[0.11] bg-[#0d0f12] px-6 py-14 text-center;
   }
 
-  /* All media views must clip transformed images within their assigned frame. */
+  /* A shared visual grammar: original files are never resized; only their display frames are normalized. */
+  .content-canvas {
+    width: min(100%, 1560px);
+    margin-inline: auto;
+  }
+
   .media-frame {
     position: relative;
     isolation: isolate;
@@ -129,6 +134,30 @@
     height: 100%;
     max-width: none;
     object-fit: cover;
+    object-position: var(--media-focal-x, 50%) var(--media-focal-y, 50%);
     transform-origin: center center;
+  }
+
+  .media-cover-frame {
+    aspect-ratio: 2 / 3;
+  }
+
+  .media-backdrop-frame {
+    height: clamp(220px, 27vw, 360px);
+  }
+
+  .media-screenshot-frame {
+    aspect-ratio: 3 / 2;
+  }
+
+  .media-screenshot-wide-frame {
+    aspect-ratio: 16 / 9;
+  }
+
+  .media-contact-sheet {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr));
+    gap: 0.875rem;
+    align-items: start;
   }
 }

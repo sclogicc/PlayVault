@@ -333,7 +333,7 @@ test('game detail Session data refreshes every second without page navigation', 
   assert.equal(SESSION_REFRESH_INTERVAL_MS, 1000)
 })
 
-test('game detail uses compact independent scroll panels without item limits', async () => {
+test('game detail uses compact contact-sheet panels without item limits', async () => {
   const {
     SCREENSHOT_GRID_CLASS,
     SCREENSHOT_PANEL_SCROLL_CLASS,
@@ -347,11 +347,10 @@ test('game detail uses compact independent scroll panels without item limits', a
   assert.match(SESSION_PANEL_SCROLL_CLASS, /max-h-\[320px\]/)
   assert.match(SESSION_PANEL_SCROLL_CLASS, /sm:max-h-\[280px\]/)
   assert.match(SESSION_PANEL_SCROLL_CLASS, /overflow-y-auto/)
-  assert.match(SCREENSHOT_PANEL_SCROLL_CLASS, /max-h-\[420px\]/)
-  assert.match(SCREENSHOT_PANEL_SCROLL_CLASS, /sm:max-h-\[360px\]/)
+  assert.match(SCREENSHOT_PANEL_SCROLL_CLASS, /max-h-\[336px\]/)
   assert.match(SCREENSHOT_PANEL_SCROLL_CLASS, /overflow-y-auto/)
-  assert.match(SCREENSHOT_GRID_CLASS, /grid-cols-2/)
-  assert.match(SCREENSHOT_GRID_CLASS, /2xl:grid-cols-6/)
+  assert.equal(SCREENSHOT_GRID_CLASS, 'media-contact-sheet')
+  assert.doesNotMatch(source, /xl:row-span-2/)
   assert.doesNotMatch(source, /sessions\.slice\(0,\s*20\)/)
   assert.doesNotMatch(source, /gameScreenshots\.slice\(0,\s*24\)/)
 })

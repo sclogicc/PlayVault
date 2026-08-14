@@ -134,7 +134,7 @@ export default function Screenshots(): React.ReactElement {
   const isTrash = activeTab === 'trashed'
 
   return (
-    <div className="min-h-full space-y-6 bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
+    <div className="content-canvas min-h-full space-y-6 bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/[0.075] pb-7">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">图片资产</p>
@@ -205,7 +205,7 @@ export default function Screenshots(): React.ReactElement {
             />
             {selectedIds.size > 0 ? `已选择 ${selectedIds.size} 张` : '全选'}
           </label>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          <div className="media-contact-sheet">
             {screenshots.map((shot, index) => (
               <ScreenshotCard
                 key={shot.id}
@@ -305,7 +305,7 @@ function LoadingState(): React.ReactElement {
 
 function EmptyState({ isTrash }: { isTrash: boolean }): React.ReactElement {
   return (
-    <div className="card text-center py-16">
+    <div className="empty-state py-10">
       <Image size={48} className="text-archive-700 mx-auto mb-4" />
       <h3 className="text-lg font-medium text-archive-400 mb-2">
         {isTrash ? '回收站为空' : '暂无截图'}
@@ -350,7 +350,7 @@ function ScreenshotCard({
       onClick={onToggle}
     >
       <div
-        className="media-frame flex aspect-video cursor-zoom-in items-center justify-center bg-archive-850"
+        className="media-frame media-screenshot-frame flex cursor-zoom-in items-center justify-center bg-archive-850"
         onClick={(event) => {
           event.stopPropagation()
           onPreview()
@@ -371,13 +371,12 @@ function ScreenshotCard({
           />
         )}
       </div>
-      <div className="space-y-2 p-3.5">
-        <p className="text-xs text-archive-300 truncate" title={shot.file_name}>{shot.file_name}</p>
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] text-archive-500">{formatDate(shot.captured_at)}</span>
-          <span className="text-[10px] text-archive-400 truncate">{gameName ?? SCREENSHOT_STATUS_LABELS[shot.status]}</span>
+      <div className="flex min-w-0 items-center justify-between gap-2 border-t border-white/[0.055] px-3 py-2">
+        <div className="min-w-0">
+          <p className="truncate text-[11px] text-archive-300" title={shot.file_name}>{gameName ?? SCREENSHOT_STATUS_LABELS[shot.status]}</p>
+          <p className="mt-0.5 text-[10px] text-archive-600">{formatDate(shot.captured_at)}</p>
         </div>
-        <div className="flex items-center justify-between pt-1">
+        <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
           <button
             onClick={(event) => {
               event.stopPropagation()
@@ -388,19 +387,17 @@ function ScreenshotCard({
           >
             <FolderOpen size={13} />
           </button>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {isTrash ? (
-              <>
-                <button onClick={(event) => { event.stopPropagation(); onRestore() }} className="p-1 text-accent-teal hover:bg-accent-teal/10 rounded" title="恢复到待整理"><Undo2 size={13} /></button>
-                <button onClick={(event) => { event.stopPropagation(); onPermanentDelete() }} className="p-1 text-accent-red hover:bg-accent-red/10 rounded" title="永久删除"><Trash2 size={13} /></button>
-              </>
-            ) : (
-              <>
-                {shot.status !== 'classified' && <button onClick={(event) => { event.stopPropagation(); onClassify() }} className="p-1 text-accent-teal hover:bg-accent-teal/10 rounded" title="归类到游戏"><CheckCircle size={13} /></button>}
-                <button onClick={(event) => { event.stopPropagation(); onTrash() }} className="p-1 text-archive-400 hover:text-accent-red hover:bg-accent-red/10 rounded" title="移入回收站"><Trash2 size={13} /></button>
-              </>
-            )}
-          </div>
+          {isTrash ? (
+            <>
+              <button onClick={(event) => { event.stopPropagation(); onRestore() }} className="p-1 text-accent-teal hover:bg-accent-teal/10 rounded" title="恢复到待整理"><Undo2 size={13} /></button>
+              <button onClick={(event) => { event.stopPropagation(); onPermanentDelete() }} className="p-1 text-accent-red hover:bg-accent-red/10 rounded" title="永久删除"><Trash2 size={13} /></button>
+            </>
+          ) : (
+            <>
+              {shot.status !== 'classified' && <button onClick={(event) => { event.stopPropagation(); onClassify() }} className="p-1 text-accent-teal hover:bg-accent-teal/10 rounded" title="归类到游戏"><CheckCircle size={13} /></button>}
+              <button onClick={(event) => { event.stopPropagation(); onTrash() }} className="p-1 text-archive-400 hover:text-accent-red hover:bg-accent-red/10 rounded" title="移入回收站"><Trash2 size={13} /></button>
+            </>
+          )}
         </div>
       </div>
     </div>

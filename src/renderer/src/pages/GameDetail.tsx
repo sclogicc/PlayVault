@@ -332,7 +332,7 @@ export default function GameDetail(): React.ReactElement {
     : null
 
   return (
-    <div className="min-h-full space-y-8 bg-[#090a0c] px-8 py-8 pb-12 sm:px-12 lg:px-16">
+    <div className="content-canvas min-h-full space-y-7 bg-[#090a0c] px-8 py-8 pb-12 sm:px-12 lg:px-16">
       {/* Back link */}
       <Link
         to="/games"
@@ -345,7 +345,7 @@ export default function GameDetail(): React.ReactElement {
       {/* ========== Hero Section ========== */}
       <div className="group relative overflow-hidden border-y border-white/[0.09] bg-archive-850 shadow-[0_20px_46px_rgba(0,0,0,0.3)]">
         {/* 背景图独立于游戏封面，用于营造详情页的沉浸式氛围。 */}
-        <div className="media-frame relative flex h-[360px] items-center justify-center bg-gradient-to-br from-archive-800 via-archive-850 to-archive-900 sm:h-[430px] lg:h-[500px]">
+        <div className="media-frame media-backdrop-frame relative flex items-center justify-center bg-gradient-to-br from-archive-800 via-archive-850 to-archive-900">
           {archiveBackgroundPath ? (
             <CoverImage
               coverPath={archiveBackgroundPath}
@@ -376,10 +376,10 @@ export default function GameDetail(): React.ReactElement {
         </div>
 
         {/* Steam-like transition: the game controls emerge from the background fade. */}
-        <div className="relative -mt-32 bg-gradient-to-b from-archive-950/0 via-archive-950/94 to-archive-950 px-6 pb-7 pt-20 sm:px-8 lg:px-10">
+        <div className="relative -mt-24 bg-gradient-to-b from-archive-950/0 via-archive-950/94 to-archive-950 px-6 pb-7 pt-16 sm:px-8 lg:px-10">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="flex min-w-0 flex-1 items-start gap-5 sm:gap-6">
-              <div className="media-frame flex w-28 shrink-0 aspect-[2/3] items-center justify-center rounded-[18px] border border-white/[0.18] bg-archive-900 shadow-[0_20px_42px_rgba(0,0,0,0.5)] sm:w-36">
+              <div className="media-frame media-cover-frame flex w-24 shrink-0 items-center justify-center rounded-[18px] border border-white/[0.18] bg-archive-900 shadow-[0_20px_42px_rgba(0,0,0,0.5)] sm:w-32">
                 {archiveCoverPath ? (
                   <CoverImage
                     coverPath={archiveCoverPath}
@@ -716,7 +716,7 @@ export default function GameDetail(): React.ReactElement {
         </div>
 
         {/* Screenshot Wall */}
-        <div className="card overflow-hidden xl:col-span-7 xl:row-span-2">
+        <div className="card overflow-hidden xl:col-span-7">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Image size={15} className="text-amber-100" />最近截图</h3><span className="rounded-full border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{gameScreenshots.length} 张</span></div>
           {gameScreenshots.length === 0 ? (
             <p className="text-xs text-archive-500">暂无截图</p>
@@ -1003,7 +1003,7 @@ function ScreenshotThumb({
 
   return (
     <div
-      className="media-frame group relative aspect-video cursor-pointer rounded-xl border border-white/[0.06] bg-archive-850 shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300/25 hover:shadow-[0_12px_24px_rgba(0,0,0,0.25)]"
+      className="media-frame media-screenshot-frame group relative cursor-pointer rounded-xl border border-white/[0.06] bg-archive-850 shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300/25 hover:shadow-[0_12px_24px_rgba(0,0,0,0.25)]"
       title={shot.file_name}
       onClick={onPreview}
     >
