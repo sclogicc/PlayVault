@@ -3,7 +3,14 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Screenshot, GameLaunchResult } from '@shared/types'
 import type { CoverCrop } from '@shared/coverCrop'
-import { getCoverImageStyle, parseCoverCrop, serializeCoverCrop } from '@shared/coverCrop'
+import {
+  getBackgroundImageStyle,
+  getCoverImageStyle,
+  parseBackgroundCrop,
+  parseCoverCrop,
+  serializeBackgroundCrop,
+  serializeCoverCrop,
+} from '@shared/coverCrop'
 import {
   Monitor,
   Clock,
@@ -210,7 +217,7 @@ export default function GameDetail(): React.ReactElement {
 
     await window.api.game.update(game.id, {
       [mediaEditorMode === 'cover' ? 'cover_crop' : 'background_crop']:
-        serializeCoverCrop(crop),
+        mediaEditorMode === 'cover' ? serializeCoverCrop(crop) : serializeBackgroundCrop(crop),
     })
     await qc.invalidateQueries({ queryKey: ['games'] })
     setMediaEditorMode(null)
@@ -349,13 +356,14 @@ export default function GameDetail(): React.ReactElement {
           {archiveBackgroundPath ? (
             <CoverImage
               coverPath={archiveBackgroundPath}
-              coverCrop={parseCoverCrop(game.background_crop)}
+              coverCrop={parseBackgroundCrop(game.background_crop)}
+              cropMode="background"
               displayName={`${game.display_name} 背景图`}
             />
           ) : (
             <p className="text-xs tracking-[0.18em] text-archive-700">PLAYVAULT · 游戏记录</p>
           )}
-          <div className="absolute right-4 top-4 flex flex-wrap justify-end gap-2 opacity-75 transition-opacity group-hover:opacity-100">
+          <div className="absolute right-3 top-3 flex flex-wrap justify-end gap-1.5 border border-white/[0.10] bg-black/55 p-1.5 backdrop-blur-sm">
             <Button variant="secondary" size="sm" onClick={handleSetBackground}>
               <Image size={14} />
               {game.background_path ? '更换背景图' : '设置背景图'}
@@ -918,11 +926,14 @@ export default function GameDetail(): React.ReactElement {
       <CoverCropEditor
         open={mediaEditorMode !== null}
         filePath={mediaEditorPath}
-        initialCrop={parseCoverCrop(
-          mediaEditorMode === 'cover' ? game.cover_crop : game.background_crop,
-        )}
-        aspectRatio={mediaEditorMode === 'cover' ? '2 / 3' : '16 / 9'}
-        title={mediaEditorMode === 'cover' ? '调整游戏封面' : '调整游戏背景图'}
+        initialCrop={
+          mediaEditorMode === 'cover'
+            ? parseCoverCrop(game.cover_crop)
+            : parseBackgroundCrop(game.background_crop)
+        }
+        aspectRatio={mediaEditorMode === 'cover' ? '2 / 3' : '7 / 1'}
+        title={mediaEditorMode === 'cover' ? '调整游戏封面' : '调整短横幅背景'}
+        cropMode={mediaEditorMode === 'cover' ? 'cover' : 'background'}
         onClose={() => setMediaEditorMode(null)}
         onSave={handleSaveMediaCrop}
       />
@@ -935,10 +946,12 @@ export default function GameDetail(): React.ReactElement {
 function CoverImage({
   coverPath,
   coverCrop,
+  cropMode = 'cover',
   displayName,
 }: {
   coverPath: string
   coverCrop: CoverCrop
+  cropMode?: 'cover' | 'background'
   displayName: string
 }): React.ReactElement {
   const [error, setError] = useState(false)
@@ -956,7 +969,7 @@ function CoverImage({
       src={toFileUrl(coverPath)}
       alt={displayName}
       className="media-image"
-      style={getCoverImageStyle(coverCrop)}
+      style={cropMode === 'background' ? getBackgroundImageStyle(coverCrop) : getCoverImageStyle(coverCrop)}
       onError={() => setError(true)}
     />
   )
