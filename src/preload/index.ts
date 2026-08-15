@@ -52,7 +52,7 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.GAME_TOGGLE, id),
     getArchived: (filters?: { search?: string; sortOrder?: 'asc' | 'desc' }) =>
       ipcRenderer.invoke(IPC_CHANNELS.GAME_GET_ARCHIVED, filters),
-    archive: (data: { gameId: number; screenshotIds?: number[] }) =>
+    archive: (data: { gameId: number; screenshotIds?: number[]; archiveNote?: string }) =>
       ipcRenderer.invoke(IPC_CHANNELS.GAME_ARCHIVE, data),
     launch: (gameId: number) =>
       ipcRenderer.invoke(IPC_CHANNELS.GAME_LAUNCH, gameId),

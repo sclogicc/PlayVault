@@ -34,6 +34,7 @@ export interface Game {
   archived_at: string | null
   archive_cover_path: string
   archive_background_path: string
+  archive_note: string
   created_at: string
   updated_at: string
 }

@@ -49,6 +49,7 @@ import {
   SCREENSHOT_PANEL_SCROLL_CLASS,
   SESSION_PANEL_SCROLL_CLASS,
 } from '../lib/gameDetailPanelLayout'
+import { getGameRecordCompleteness, RECORD_FIELD_LABELS } from '../lib/gameRecordCompleteness'
 
 export default function GameDetail(): React.ReactElement {
   const { gameId } = useParams<{ gameId: string }>()
@@ -86,6 +87,7 @@ export default function GameDetail(): React.ReactElement {
   const [archivingGame, setArchivingGame] = useState(false)
   const [archiveHighlightIds, setArchiveHighlightIds] = useState<number[]>([])
   const [archiveError, setArchiveError] = useState<string | null>(null)
+  const [archiveNote, setArchiveNote] = useState('')
   const [isArchiving, setIsArchiving] = useState(false)
 
   if (gameLoading) {
@@ -260,6 +262,7 @@ export default function GameDetail(): React.ReactElement {
       await window.api.game.archive({
         gameId: game.id,
         screenshotIds: archiveHighlightIds,
+        archiveNote,
       })
       await Promise.all([
         qc.invalidateQueries({ queryKey: ['games'] }),
@@ -348,6 +351,14 @@ export default function GameDetail(): React.ReactElement {
       return candidate > latest ? candidate : latest
     }, sessions[0].ended_at ?? sessions[0].started_at)
     : null
+  const recordCompleteness = getGameRecordCompleteness({
+    cover_path: game.cover_path,
+    background_path: game.background_path,
+    notes: game.notes,
+    screenshot_count: gameScreenshots.length,
+    exe_count: exes.length,
+  })
+  const missingRecordLabels = recordCompleteness.missing.map((field) => RECORD_FIELD_LABELS[field])
 
   return (
     <div className="content-canvas min-h-full space-y-7 bg-[#090a0c] px-8 py-8 pb-12 sm:px-12 lg:px-16">
@@ -459,7 +470,7 @@ export default function GameDetail(): React.ReactElement {
                   <span className="flex items-center gap-1.5 border border-emerald-300/15 bg-emerald-400/10 px-3 py-1.5 text-sm text-emerald-200"><CheckCircle size={14} />已通关</span>
                 )}
                 {!activeSession && !isArchived && (
-                  <Button variant="secondary" onClick={() => { setArchiveError(null); setArchiveHighlightIds([]); setArchivingGame(true) }}><Archive size={16} />生成留档</Button>
+                  <Button variant="secondary" onClick={() => { setArchiveError(null); setArchiveHighlightIds([]); setArchiveNote(''); setArchivingGame(true) }}><Archive size={16} />生成留档</Button>
                 )}
               </div>
               <details className="border-t border-white/[0.07] pt-3 text-right">
@@ -509,6 +520,13 @@ export default function GameDetail(): React.ReactElement {
         </div>
       </div>
 
+      {recordCompleteness.missing.length > 0 && (
+        <section className="flex flex-wrap items-center justify-between gap-4 border border-white/[0.075] bg-white/[0.02] px-5 py-4">
+          <div><p className="text-sm text-archive-200">这份记录还可以补充 {recordCompleteness.missing.length} 项资料</p><p className="mt-1 text-xs leading-5 text-archive-500">缺少：{missingRecordLabels.join('、')}。这只是回看提示，不影响继续游玩、留档或删除。</p></div>
+          {!isArchived && <Button variant="secondary" size="sm" onClick={() => { setArchiveError(null); setArchiveHighlightIds([]); setArchiveNote(''); setArchivingGame(true) }}><Archive size={14} />生成留档</Button>}
+        </section>
+      )}
+
       {isArchived && (
         <section className="border border-[#c9a35a]/18 bg-[#11120f] px-5 py-5 sm:px-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -525,6 +543,8 @@ export default function GameDetail(): React.ReactElement {
             <div className="bg-[#11120f] px-4 py-3"><p className="text-[11px] text-archive-500">最后游玩</p><p className="mt-1 text-sm text-archive-200">{formatDate(latestSessionAt)}</p></div>
             <div className="bg-[#11120f] px-4 py-3"><p className="text-[11px] text-archive-500">保留画面</p><p className="mt-1 text-sm text-archive-200">{archiveHighlights.length} 张</p></div>
           </div>
+
+          {game.archive_note && <blockquote className="mt-5 border-l-2 border-[#c9a35a]/60 bg-black/[0.12] px-4 py-3 text-sm leading-6 text-archive-300">“{game.archive_note}”</blockquote>}
 
           {archiveHighlights.length > 0 && (
             <div className="mt-5">
@@ -757,6 +777,8 @@ export default function GameDetail(): React.ReactElement {
             </div>
           </div>
 
+          <div><div className="flex items-end justify-between gap-3"><div><p className="text-sm font-medium text-archive-100">可选：留下一句话</p><p className="mt-1 text-xs text-archive-500">它会作为这次留档的私人短感想保存，不会替代游戏备注。</p></div><span className="text-[11px] text-archive-600">{archiveNote.length} / 600</span></div><textarea value={archiveNote} maxLength={600} onChange={(event) => setArchiveNote(event.target.value)} placeholder="例如：这段旅程最想记住的是什么？" className="mt-3 min-h-20 w-full resize-y border border-white/[0.09] bg-black/[0.16] px-3 py-2.5 text-sm leading-6 text-archive-200 outline-none placeholder:text-archive-600 focus:border-[#c9a35a]/60" /></div>
+
           {gameScreenshots.length > 0 && (
             <div>
               <div className="flex flex-wrap items-end justify-between gap-2">
@@ -840,7 +862,7 @@ export default function GameDetail(): React.ReactElement {
         onClose={() => setDeletingGame(false)}
         onConfirm={handleDeleteGame}
         title="确认删除游戏"
-        message={`确定要删除「${game.display_name}」的 PlayVault 档案吗？可执行文件绑定和游玩记录会一并删除；截图会保留在截图箱中，但会取消归类。不会删除硬盘中的游戏文件。`}
+        message={`确定要删除「${game.display_name}」的 PlayVault 档案吗？可执行文件绑定和游玩记录会一并删除；截图会保留在截图箱中，但会取消归类。不会删除硬盘中的游戏文件。${!isArchived && (gameScreenshots.length > 0 || sessions.length > 0) ? `\n\n这段经历尚未生成游玩留档${missingRecordLabels.length > 0 ? `，且还缺少：${missingRecordLabels.join('、')}` : ''}。如果希望保留回看资料，可先取消并生成留档。` : ''}`}
         confirmLabel="删除游戏"
         variant="danger"
       />

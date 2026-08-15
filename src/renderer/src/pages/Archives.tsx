@@ -81,6 +81,7 @@ function ArchiveCard({ game }: { game: GameWithStats }): React.ReactElement {
       <div className="border-b border-white/[0.065] px-1 pb-3 pt-3">
         <p className="truncate text-sm font-medium text-archive-100">{game.display_name}</p>
         <p className="mt-1.5 text-[11px] text-archive-500">留档于 {formatDate(game.archived_at)} · {formatDuration(game.total_duration)}</p>
+        {game.archive_note && <p className="mt-2 line-clamp-2 text-xs leading-5 text-archive-400">“{game.archive_note}”</p>}
       </div>
     </Link>
   )

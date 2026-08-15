@@ -102,7 +102,7 @@ export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
 
   ipcMain.handle(
     IPC_CHANNELS.GAME_ARCHIVE,
-    async (_event, data: { gameId: number; screenshotIds?: number[] }) =>
-      archiveGameExperience(db, data.gameId, data.screenshotIds ?? []),
+    async (_event, data: { gameId: number; screenshotIds?: number[]; archiveNote?: string }) =>
+      archiveGameExperience(db, data.gameId, data.screenshotIds ?? [], data.archiveNote ?? ''),
   )
 }

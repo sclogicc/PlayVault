@@ -50,12 +50,14 @@ export async function archiveGameExperience(
   db: Database,
   gameId: number,
   requestedScreenshotIds: number[] = [],
+  archiveNote = '',
 ): Promise<ArchiveGameResult> {
   const game = gameRepo.getGameById(db, gameId)
   if (!game) throw new Error('未找到需要封存的游戏')
   if (game.archive_status === 'archived') throw new Error('该游戏已经生成过游玩留档')
 
   const selectedIds = Array.from(new Set(requestedScreenshotIds)).slice(0, MAX_ARCHIVE_HIGHLIGHTS)
+  const safeArchiveNote = archiveNote.trim().slice(0, 600)
   const screenshots = screenshotRepo.getByGameId(db, gameId)
   const selectable = new Map(
     screenshots
@@ -111,6 +113,7 @@ export async function archiveGameExperience(
     archiveCoverPath,
     archiveBackgroundPath,
     highlights,
+    archiveNote: safeArchiveNote,
   })
 
   const archivedGame = gameRepo.getGameById(db, gameId)

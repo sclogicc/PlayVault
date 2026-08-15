@@ -228,6 +228,11 @@ const MIGRATIONS: Record<number, string[]> = {
     "CREATE INDEX IF NOT EXISTS idx_games_favorite ON games(is_favorite)",
     "CREATE INDEX IF NOT EXISTS idx_games_hidden ON games(is_hidden)",
   ],
+
+  // v16: a short personal reflection belongs to the archived experience, not to general game notes.
+  16: [
+    "ALTER TABLE games ADD COLUMN archive_note TEXT NOT NULL DEFAULT ''",
+  ],
 }
 
 /**

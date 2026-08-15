@@ -220,6 +220,7 @@ export function archiveGame(
     archiveCoverPath: string
     archiveBackgroundPath: string
     highlights: Array<{ screenshotId: number; preservedPath: string }>
+    archiveNote: string
   },
 ): void {
   db.transaction(() => {
@@ -229,10 +230,11 @@ export function archiveGame(
            archived_at = COALESCE(archived_at, datetime('now','localtime')),
            archive_cover_path = ?,
            archive_background_path = ?,
+           archive_note = ?,
            is_enabled = 1,
            updated_at = datetime('now','localtime')
        WHERE id = ?`,
-    ).run(data.archiveCoverPath, data.archiveBackgroundPath, data.gameId)
+    ).run(data.archiveCoverPath, data.archiveBackgroundPath, data.archiveNote, data.gameId)
 
     db.prepare(
       `UPDATE screenshots
