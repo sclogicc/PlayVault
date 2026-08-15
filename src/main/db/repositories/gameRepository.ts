@@ -154,6 +154,8 @@ export function updateGame(
     'is_enabled',
     'is_favorite',
     'is_hidden',
+    'archive_note',
+    'archive_primary_screenshot_id',
   ]
 
   for (const key of allowed) {
@@ -221,6 +223,7 @@ export function archiveGame(
     archiveBackgroundPath: string
     highlights: Array<{ screenshotId: number; preservedPath: string }>
     archiveNote: string
+    archivePrimaryScreenshotId: number | null
   },
 ): void {
   db.transaction(() => {
@@ -231,10 +234,11 @@ export function archiveGame(
            archive_cover_path = ?,
            archive_background_path = ?,
            archive_note = ?,
+           archive_primary_screenshot_id = ?,
            is_enabled = 1,
            updated_at = datetime('now','localtime')
        WHERE id = ?`,
-    ).run(data.archiveCoverPath, data.archiveBackgroundPath, data.archiveNote, data.gameId)
+    ).run(data.archiveCoverPath, data.archiveBackgroundPath, data.archiveNote, data.archivePrimaryScreenshotId, data.gameId)
 
     db.prepare(
       `UPDATE screenshots

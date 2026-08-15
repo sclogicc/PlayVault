@@ -114,6 +114,7 @@ export async function archiveGameExperience(
     archiveBackgroundPath,
     highlights,
     archiveNote: safeArchiveNote,
+    archivePrimaryScreenshotId: highlights[0]?.screenshotId ?? null,
   })
 
   const archivedGame = gameRepo.getGameById(db, gameId)

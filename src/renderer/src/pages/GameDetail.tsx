@@ -784,7 +784,7 @@ export default function GameDetail(): React.ReactElement {
               <div className="flex flex-wrap items-end justify-between gap-2">
                 <div>
                   <p className="text-sm font-medium text-archive-100">可选：保留关键画面</p>
-                  <p className="mt-1 text-xs text-archive-500">选择至多 3 张截图，PlayVault 会复制到自己的档案目录。可完全跳过。</p>
+                  <p className="mt-1 text-xs text-archive-500">选择至多 3 张截图。第一张会成为回忆卡主画面，其余作为补充画面；可完全跳过。</p>
                 </div>
                 <span className="rounded-full bg-white/[0.055] px-2.5 py-1 text-[11px] text-archive-400">已选择 {archiveHighlightIds.length} / 3</span>
               </div>
@@ -807,6 +807,7 @@ export default function GameDetail(): React.ReactElement {
                         imageClassName="transition-transform duration-200 group-hover:scale-[1.03]"
                       />
                       <span className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border ${selected ? 'border-violet-200/60 bg-accent-violet text-white' : 'border-white/25 bg-archive-950/70 text-transparent'}`}><Check size={14} strokeWidth={3} /></span>
+                      {selected && archiveHighlightIds[0] === shot.id && <span className="absolute left-2 top-2 border border-[#c9a35a]/55 bg-black/70 px-1.5 py-1 text-[10px] text-[#ead7aa]">主画面</span>}
                       <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 pb-1.5 pt-6 text-[10px] text-archive-200 opacity-0 transition-opacity group-hover:opacity-100">{formatDate(shot.captured_at)}</span>
                     </button>
                   )

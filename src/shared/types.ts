@@ -35,6 +35,7 @@ export interface Game {
   archive_cover_path: string
   archive_background_path: string
   archive_note: string
+  archive_primary_screenshot_id: number | null
   created_at: string
   updated_at: string
 }

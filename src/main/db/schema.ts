@@ -233,6 +233,11 @@ const MIGRATIONS: Record<number, string[]> = {
   16: [
     "ALTER TABLE games ADD COLUMN archive_note TEXT NOT NULL DEFAULT ''",
   ],
+
+  // v17: one selected highlight is the visual anchor of the private memory card.
+  17: [
+    "ALTER TABLE games ADD COLUMN archive_primary_screenshot_id INTEGER",
+  ],
 }
 
 /**
