@@ -1,84 +1,135 @@
-import { NavLink } from 'react-router-dom'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import {
   Archive,
   Clock3,
+  FolderArchive,
   Gamepad2,
   HardDrive,
   Image,
+  PanelLeftClose,
+  PanelLeftOpen,
   Search,
   Settings,
+  TriangleAlert,
 } from 'lucide-react'
+import type { GameWithStats } from '@shared/types'
+import { parseLibraryScope, type LibraryScope } from '../../lib/libraryView'
 
 interface NavItem {
   to: string
-  icon: React.ReactNode
+  icon: ReactNode
   label: string
+  count?: number
+  isActive?: boolean
 }
 
-const MAIN_NAV_ITEMS: NavItem[] = [
-  { to: '/games', icon: <Gamepad2 size={18} strokeWidth={1.7} />, label: '游戏库' },
-  { to: '/archives', icon: <Archive size={18} strokeWidth={1.7} />, label: '游玩回顾' },
-  { to: '/screenshots', icon: <Image size={18} strokeWidth={1.7} />, label: '截图箱' },
-]
+const SIDEBAR_STORAGE_KEY = 'playvault.sidebar.expanded'
 
-const SECONDARY_NAV_ITEMS: NavItem[] = [
-  { to: '/timeline', icon: <Clock3 size={18} strokeWidth={1.7} />, label: '时间线' },
-  { to: '/discover', icon: <Search size={18} strokeWidth={1.7} />, label: '发现候选' },
-]
+function getInitialExpandedState(): boolean {
+  return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) !== 'false'
+}
 
-function navClass(isActive: boolean): string {
-  return `group relative flex h-11 w-11 items-center justify-center border transition-colors ${
-    isActive
-      ? 'border-[#c9a35a]/70 bg-[#17140f] text-[#ead7aa]'
+function countByScope(games: GameWithStats[], scope: LibraryScope): number {
+  if (scope === 'in_progress') return games.filter((game) => game.status === 'in_progress').length
+  if (scope === 'recent') return games.filter((game) => Boolean(game.last_played_at)).length
+  if (scope === 'archived') return games.filter((game) => game.archive_status === 'archived').length
+  if (scope === 'missing') return games.filter((game) => game.install_status === 'missing').length
+  return games.length
+}
+
+function navItemClass(active: boolean, expanded: boolean): string {
+  return `group relative flex h-10 items-center gap-3 border transition-colors ${expanded ? 'w-full px-3' : 'w-11 justify-center'} ${
+    active
+      ? 'border-[#c9a35a]/40 bg-[#17140f] text-[#ead7aa]'
       : 'border-transparent text-archive-500 hover:border-white/[0.10] hover:bg-white/[0.035] hover:text-archive-200'
   }`
 }
 
-function NavButton({ item }: { item: NavItem }): React.ReactElement {
+function LibraryLink({ item, expanded }: { item: NavItem; expanded: boolean }): React.ReactElement {
   return (
-    <NavLink
-      to={item.to}
-      className={({ isActive }) => navClass(isActive)}
-      aria-label={item.label}
-      title={item.label}
-    >
+    <NavLink to={item.to} className={() => navItemClass(Boolean(item.isActive), expanded)} title={expanded ? undefined : item.label}>
       {item.icon}
-      <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap border border-white/[0.10] bg-[#15171a] px-2.5 py-1.5 text-xs text-archive-200 shadow-lg group-hover:block">
-        {item.label}
-      </span>
+      {expanded && <span className="min-w-0 flex-1 truncate text-sm">{item.label}</span>}
+      {expanded && typeof item.count === 'number' && <span className="font-mono text-[11px] text-archive-600">{item.count}</span>}
+      {!expanded && <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap border border-white/[0.10] bg-[#15171a] px-2.5 py-1.5 text-xs text-archive-200 shadow-lg group-hover:block">{item.label}</span>}
+    </NavLink>
+  )
+}
+
+function DirectLink({ item, expanded }: { item: NavItem; expanded: boolean }): React.ReactElement {
+  return (
+    <NavLink to={item.to} className={({ isActive }) => navItemClass(isActive, expanded)} title={expanded ? undefined : item.label}>
+      {item.icon}
+      {expanded && <span className="min-w-0 flex-1 truncate text-sm">{item.label}</span>}
+      {!expanded && <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap border border-white/[0.10] bg-[#15171a] px-2.5 py-1.5 text-xs text-archive-200 shadow-lg group-hover:block">{item.label}</span>}
     </NavLink>
   )
 }
 
 export default function Sidebar(): React.ReactElement {
+  const location = useLocation()
+  const [expanded, setExpanded] = useState(getInitialExpandedState)
+  const { data: games = [] } = useQuery<GameWithStats[]>({
+    queryKey: ['games', 'sidebar-navigation'],
+    queryFn: () => window.api.game.getAll(),
+  })
+
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(expanded))
+  }, [expanded])
+
+  const activeScope = location.pathname === '/games'
+    ? parseLibraryScope(new URLSearchParams(location.search).get('scope'))
+    : null
+
+  const libraryItems = useMemo<NavItem[]>(() => [
+    { to: '/games', icon: <Gamepad2 size={17} strokeWidth={1.7} />, label: '全部游戏', count: countByScope(games, 'all'), isActive: activeScope === 'all' },
+    { to: '/games?scope=in_progress', icon: <Clock3 size={17} strokeWidth={1.7} />, label: '进行中', count: countByScope(games, 'in_progress'), isActive: activeScope === 'in_progress' },
+    { to: '/games?scope=recent', icon: <Archive size={17} strokeWidth={1.7} />, label: '最近游玩', count: countByScope(games, 'recent'), isActive: activeScope === 'recent' },
+    { to: '/games?scope=archived', icon: <FolderArchive size={17} strokeWidth={1.7} />, label: '已留档', count: countByScope(games, 'archived'), isActive: activeScope === 'archived' },
+    { to: '/games?scope=missing', icon: <TriangleAlert size={17} strokeWidth={1.7} />, label: '路径失效', count: countByScope(games, 'missing'), isActive: activeScope === 'missing' },
+  ], [activeScope, games])
+
+  const toolItems: NavItem[] = [
+    { to: '/archives', icon: <Archive size={17} strokeWidth={1.7} />, label: '游玩回顾' },
+    { to: '/screenshots', icon: <Image size={17} strokeWidth={1.7} />, label: '截图箱' },
+    { to: '/timeline', icon: <Clock3 size={17} strokeWidth={1.7} />, label: '时间线' },
+    { to: '/discover', icon: <Search size={17} strokeWidth={1.7} />, label: '发现候选' },
+  ]
+
   return (
-    <aside className="flex h-screen w-[72px] min-w-[72px] flex-col items-center border-r border-white/[0.075] bg-[#0a0c0f] py-5">
-      <NavLink
-        to="/games"
-        aria-label="PlayVault 游戏库"
-        title="PlayVault"
-        className="flex h-11 w-11 items-center justify-center border border-[#c9a35a]/55 text-[#d6b36a] transition-colors hover:bg-[#17140f]"
-      >
-        <Gamepad2 size={19} strokeWidth={1.7} />
-      </NavLink>
-
-      <nav className="mt-10 flex flex-col items-center gap-2" aria-label="主要导航">
-        {MAIN_NAV_ITEMS.map((item) => <NavButton key={item.to} item={item} />)}
-      </nav>
-
-      <div className="my-6 h-px w-7 bg-white/[0.08]" />
-
-      <nav className="flex flex-col items-center gap-2" aria-label="工具导航">
-        {SECONDARY_NAV_ITEMS.map((item) => <NavButton key={item.to} item={item} />)}
-      </nav>
-
-      <div className="mt-auto flex flex-col items-center gap-3">
-        <NavLink to="/settings" className={({ isActive }) => navClass(isActive)} aria-label="设置" title="设置">
-          <Settings size={18} strokeWidth={1.7} />
+    <aside className={`flex h-screen shrink-0 flex-col border-r border-white/[0.075] bg-[#0a0c0f] py-4 transition-[width] duration-200 ${expanded ? 'w-[196px]' : 'w-[72px] items-center'}`}>
+      <div className={`flex h-11 items-center ${expanded ? 'justify-between px-3' : 'justify-center'}`}>
+        <NavLink to="/games" aria-label="PlayVault 游戏库" title="PlayVault" className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#c9a35a]/55 text-[#d6b36a] transition-colors hover:bg-[#17140f]">
+          <Gamepad2 size={18} strokeWidth={1.7} />
         </NavLink>
-        <span className="flex h-8 w-8 items-center justify-center text-archive-700" title="仅本地存储">
-          <HardDrive size={14} />
-        </span>
+        {expanded && <span className="ml-3 flex-1 text-[11px] font-medium tracking-[0.16em] text-archive-400">PLAYVAULT</span>}
+        <button type="button" onClick={() => setExpanded((value) => !value)} className="flex h-8 w-8 shrink-0 items-center justify-center text-archive-600 transition-colors hover:bg-white/[0.04] hover:text-archive-200" title={expanded ? '折叠导航' : '展开导航'} aria-label={expanded ? '折叠导航' : '展开导航'}>
+          {expanded ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}
+        </button>
+      </div>
+
+      <nav className={`mt-7 flex w-full flex-col gap-1 ${expanded ? 'px-3' : 'items-center'}`} aria-label="游戏资料导航">
+        {expanded && <p className="mb-1 px-1 text-[10px] font-medium tracking-[0.16em] text-archive-700">游戏资料</p>}
+        {libraryItems.map((item) => <LibraryLink key={item.to} item={item} expanded={expanded} />)}
+      </nav>
+
+      <div className={`my-5 h-px bg-white/[0.08] ${expanded ? 'mx-3' : 'w-7'}`} />
+
+      <nav className={`flex w-full flex-col gap-1 ${expanded ? 'px-3' : 'items-center'}`} aria-label="日志工具导航">
+        {expanded && <p className="mb-1 px-1 text-[10px] font-medium tracking-[0.16em] text-archive-700">日志工具</p>}
+        {toolItems.map((item) => <DirectLink key={item.to} item={item} expanded={expanded} />)}
+      </nav>
+
+      <div className={`mt-auto flex w-full flex-col gap-2 ${expanded ? 'px-3' : 'items-center'}`}>
+        <DirectLink item={{ to: '/settings', icon: <Settings size={17} strokeWidth={1.7} />, label: '设置' }} expanded={expanded} />
+        {expanded ? (
+          <span className="flex items-center gap-2 px-1 pb-1 text-[10px] text-archive-700"><HardDrive size={12} />仅本地存储</span>
+        ) : (
+          <span className="flex h-8 w-8 items-center justify-center text-archive-700" title="仅本地存储"><HardDrive size={14} /></span>
+        )}
       </div>
     </aside>
   )

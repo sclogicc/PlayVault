@@ -470,6 +470,52 @@ test('library navigation expands one alphabetically sorted game list', async () 
 })
 
 
+test('library view filters personal record scopes and normalizes persistent preferences', async () => {
+  const {
+    filterGamesByScope,
+    normalizeLibraryViewPreferences,
+    parseLibraryScope,
+    sortLibraryGames,
+  } = await importTypeScriptModule('src/renderer/src/lib/libraryView.ts', 'libraryView.mjs')
+
+  const games = [
+    { id: 1, display_name: 'Gamma', status: 'in_progress', install_status: 'installed', archive_status: 'active', last_played_at: '2026-08-12 10:00:00', archived_at: null, total_duration: 3600, created_at: '2026-08-01 10:00:00' },
+    { id: 2, display_name: 'Alpha', status: 'completed', install_status: 'missing', archive_status: 'archived', last_played_at: null, archived_at: '2026-08-10 10:00:00', total_duration: 7200, created_at: '2026-08-02 10:00:00' },
+    { id: 3, display_name: 'Beta', status: 'not_started', install_status: 'installed', archive_status: 'active', last_played_at: null, archived_at: null, total_duration: 0, created_at: '2026-08-03 10:00:00' },
+  ]
+
+  assert.equal(parseLibraryScope('archived'), 'archived')
+  assert.equal(parseLibraryScope('unknown'), 'all')
+  assert.deepEqual(filterGamesByScope(games, 'in_progress').map((game) => game.id), [1])
+  assert.deepEqual(filterGamesByScope(games, 'recent').map((game) => game.id), [1])
+  assert.deepEqual(filterGamesByScope(games, 'archived').map((game) => game.id), [2])
+  assert.deepEqual(filterGamesByScope(games, 'missing').map((game) => game.id), [2])
+  assert.deepEqual(sortLibraryGames(games, 'name', false).map((game) => game.id), [2, 3, 1])
+  assert.deepEqual(
+    normalizeLibraryViewPreferences({ layout: 'list', density: 'compact', sortBy: 'duration', sortDescending: false }),
+    { layout: 'list', density: 'compact', sortBy: 'duration', sortDescending: false },
+  )
+  assert.deepEqual(
+    normalizeLibraryViewPreferences({ layout: 'broken', density: 'wide', sortBy: 'nope' }),
+    { layout: 'grid', density: 'comfortable', sortBy: 'recent', sortDescending: true },
+  )
+})
+
+test('library shell exposes expandable personal navigation and dual views', async () => {
+  const [sidebar, games, preferences] = await Promise.all([
+    readFile('src/renderer/src/components/layout/Sidebar.tsx', 'utf8'),
+    readFile('src/renderer/src/pages/Games.tsx', 'utf8'),
+    readFile('src/renderer/src/hooks/useLibraryViewPreferences.ts', 'utf8'),
+  ])
+
+  assert.match(sidebar, /playvault\.sidebar\.expanded/)
+  assert.match(sidebar, /已留档/)
+  assert.match(sidebar, /路径失效/)
+  assert.match(games, /GameGrid/)
+  assert.match(games, /GameList/)
+  assert.match(preferences, /library_view_preferences_v1/)
+})
+
 test('updates are manual and use npm ci without a global startup banner', async () => {
   const [mainSource, appLayoutSource, updaterSource] = await Promise.all([
     readFile('src/main/index.ts', 'utf8'),
