@@ -441,24 +441,39 @@ test('media roles are rendered by independent cover, backdrop and screenshot com
   assert.doesNotMatch(coverEditor, /cropMode/)
 })
 
-test('new screenshots are auto-classified only when one Session is active', async () => {
-  const { getUniqueActiveSessionMatch } = await importTypeScriptModule(
+test('new external screenshots are auto-classified only for one PlayVault-launched Session', async () => {
+  const { getPlayVaultLaunchSessionMatch } = await importTypeScriptModule(
     'src/main/services/screenshotSessionMatcher.ts',
     'screenshotSessionMatcher.mjs',
   )
 
   assert.deepEqual(
-    getUniqueActiveSessionMatch([{ id: 12, game_id: 5 }]),
+    getPlayVaultLaunchSessionMatch([{ id: 12, game_id: 5, tracking_mode: 'launch_tree' }]),
     { game_id: 5, session_id: 12 },
   )
-  assert.equal(getUniqueActiveSessionMatch([]), null)
+  assert.equal(getPlayVaultLaunchSessionMatch([]), null)
   assert.equal(
-    getUniqueActiveSessionMatch([
-      { id: 12, game_id: 5 },
-      { id: 13, game_id: 8 },
+    getPlayVaultLaunchSessionMatch([
+      { id: 12, game_id: 5, tracking_mode: 'launch_tree' },
+      { id: 13, game_id: 8, tracking_mode: 'launch_tree' },
     ]),
     null,
   )
+  assert.equal(
+    getPlayVaultLaunchSessionMatch([{ id: 12, game_id: 5, tracking_mode: 'external_path' }]),
+    null,
+  )
+})
+
+test('external screenshot watcher ignores historical files and only trusts PlayVault launch sessions', async () => {
+  const watcher = await readFile(resolve('src/main/services/screenshotWatcher.ts'), 'utf8')
+  const screenshots = await readFile(resolve('src/renderer/src/pages/Screenshots.tsx'), 'utf8')
+
+  assert.match(watcher, /getPlayVaultLaunchSessionMatch/)
+  assert.match(watcher, /Ignored: no unique PlayVault-launched game session/)
+  assert.doesNotMatch(watcher, /walkDir\(/)
+  assert.match(screenshots, /清除归属/)
+  assert.match(screenshots, /重新归类/)
 })
 
 test('library navigation expands one alphabetically sorted game list', async () => {

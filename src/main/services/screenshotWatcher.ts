@@ -4,7 +4,7 @@ import path from 'path'
 import type { Database } from '../db/sqljs-wrapper'
 import * as screenshotRepo from '../db/repositories/screenshotRepository'
 import * as sessionRepo from '../db/repositories/sessionRepository'
-import { getUniqueActiveSessionMatch } from './screenshotSessionMatcher'
+import { getPlayVaultLaunchSessionMatch } from './screenshotSessionMatcher'
 
 let watcher: chokidar.FSWatcher | null = null
 
@@ -39,15 +39,21 @@ function computeHash(filePath: string): string {
 }
 
 /**
- * Process one screenshot file. Only files observed after the watcher starts are
- * eligible for active-Session auto-classification; historical scans stay pending.
+ * Process one external screenshot file. The file enters PlayVault only when it
+ * was observed while one PlayVault-launched game session is still verified.
+ * This intentionally prefers a missed image over polluting another game's archive.
  */
 function processScreenshot(
   db: Database,
   filePath: string,
   sourceDir: string,
-  autoClassifyActiveSession: boolean,
 ): void {
+  const match = getPlayVaultLaunchSessionMatch(sessionRepo.getVerifiedActiveSessions(db))
+  if (!match) {
+    console.log('[ScreenshotWatcher] Ignored: no unique PlayVault-launched game session')
+    return
+  }
+
   const fileName = path.basename(filePath)
   const capturedAt = extractCapturedAt(filePath)
   const hash = computeHash(filePath)
@@ -60,34 +66,29 @@ function processScreenshot(
   // If it exists, even if it's 'deleted', we don't re-import it.
   if (existing) return
 
-  // Insert as pending
+  // Only trusted launch-session captures are persisted; unrelated desktop or manually launched-game images never enter the inbox.
   const result = screenshotRepo.create(db, {
     file_path: filePath,
     file_name: fileName,
     captured_at: capturedAt,
-    status: 'pending',
+    status: 'classified',
     source_directory: sourceDir,
     hash,
   })
 
-  const match = autoClassifyActiveSession
-    ? getUniqueActiveSessionMatch(sessionRepo.getVerifiedActiveSessions(db))
-    : null
-  if (match) {
-    screenshotRepo.updateStatus(
-      db,
-      result.lastInsertRowid,
-      'classified',
-      match.game_id,
-      match.session_id,
-    )
-  }
+  screenshotRepo.updateStatus(
+    db,
+    result.lastInsertRowid,
+    'classified',
+    match.game_id,
+    match.session_id,
+  )
 }
 
 /**
  * Start watching a screenshot source directory with chokidar.
- * Recursively scans subdirectories for image files.
- * New files are ingested and auto-matched.
+ * Watches new image files only. Historical screenshots are intentionally ignored:
+ * their original game lifecycle can no longer be proven safely.
  */
 export function startScreenshotWatcher(
   db: Database,
@@ -102,36 +103,11 @@ export function startScreenshotWatcher(
     return
   }
 
-  // Initial scan — recursively walk subdirectories for existing images
-  try {
-    const walkDir = (dir: string): void => {
-      try {
-        const entries = fs.readdirSync(dir, { withFileTypes: true })
-        for (const entry of entries) {
-          const fullPath = path.join(dir, entry.name)
-          if (entry.isDirectory()) {
-            walkDir(fullPath)
-          } else if (entry.isFile()) {
-            const ext = path.extname(entry.name).toLowerCase()
-            if (IMAGE_EXTS.includes(ext)) {
-              processScreenshot(db, fullPath, sourceDir, false)
-            }
-          }
-        }
-      } catch {
-        // Skip directories we can't read
-      }
-    }
-    walkDir(sourceDir)
-  } catch {
-    // Skip if we can't read the root directory
-  }
-
-  // Watch for new files (recursively, no depth limit)
+  // Watch for future files only (recursively, no depth limit).
   watcher = chokidar.watch(sourceDir, {
     ignored: /(^|[\/\\])\../, // ignore dotfiles
     persistent: true,
-    ignoreInitial: true, // already handled above
+    ignoreInitial: true,
     awaitWriteFinish: {
       stabilityThreshold: 500,
       pollInterval: 100,
@@ -142,7 +118,7 @@ export function startScreenshotWatcher(
     const ext = path.extname(filePath).toLowerCase()
     if (IMAGE_EXTS.includes(ext)) {
       console.log(`[ScreenshotWatcher] New file: ${filePath}`)
-      processScreenshot(db, filePath, sourceDir, true)
+      processScreenshot(db, filePath, sourceDir)
     }
   })
 

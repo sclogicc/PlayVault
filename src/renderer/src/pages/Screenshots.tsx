@@ -68,6 +68,13 @@ export default function Screenshots(): React.ReactElement {
       setSelectedIds(new Set())
     },
   })
+  const clearClassificationMutation = useMutation({
+    mutationFn: (ids: number[]) => window.api.screenshot.batchUpdate(ids, 'pending'),
+    onSuccess: () => {
+      invalidate()
+      setSelectedIds(new Set())
+    },
+  })
   const restoreMutation = useMutation({
     mutationFn: (id: number) => window.api.screenshot.restore(id),
     onSuccess: invalidate,
@@ -153,7 +160,11 @@ export default function Screenshots(): React.ReactElement {
             <>
               <Button variant="primary" size="sm" onClick={() => openClassification(Array.from(selectedIds))}>
                 <CheckCircle size={14} />
-                归类到游戏
+                重新归类
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => clearClassificationMutation.mutate(Array.from(selectedIds))}>
+                <Undo2 size={14} />
+                清除归属
               </Button>
               <Button variant="secondary" size="sm" onClick={() => batchTrashMutation.mutate(Array.from(selectedIds))}>
                 <Trash2 size={14} />
@@ -215,6 +226,7 @@ export default function Screenshots(): React.ReactElement {
                 gameName={games.find((game) => game.id === shot.game_id)?.display_name}
                 onToggle={() => toggleSelect(shot.id)}
                 onClassify={() => openClassification([shot.id])}
+                onClearClassification={() => clearClassificationMutation.mutate([shot.id])}
                 onTrash={() => trashMutation.mutate(shot.id)}
                 onRestore={() => restoreMutation.mutate(shot.id)}
                 onPermanentDelete={() => setPermanentDeletingId(shot.id)}
@@ -324,6 +336,7 @@ function ScreenshotCard({
   gameName,
   onToggle,
   onClassify,
+  onClearClassification,
   onTrash,
   onRestore,
   onPermanentDelete,
@@ -336,6 +349,7 @@ function ScreenshotCard({
   gameName?: string
   onToggle: () => void
   onClassify: () => void
+  onClearClassification: () => void
   onTrash: () => void
   onRestore: () => void
   onPermanentDelete: () => void
@@ -383,7 +397,8 @@ function ScreenshotCard({
             </>
           ) : (
             <>
-              {shot.status !== 'classified' && <button onClick={(event) => { event.stopPropagation(); onClassify() }} className="p-1 text-accent-teal hover:bg-accent-teal/10 rounded" title="归类到游戏"><CheckCircle size={13} /></button>}
+              <button onClick={(event) => { event.stopPropagation(); onClassify() }} className="p-1 text-accent-teal hover:bg-accent-teal/10 rounded" title={shot.status === 'classified' ? '重新归类' : '归类到游戏'}><CheckCircle size={13} /></button>
+              {shot.status === 'classified' && <button onClick={(event) => { event.stopPropagation(); onClearClassification() }} className="p-1 text-archive-400 hover:bg-white/[0.08] hover:text-archive-100 rounded" title="清除归属，移回待整理"><Undo2 size={13} /></button>}
               <button onClick={(event) => { event.stopPropagation(); onTrash() }} className="p-1 text-archive-400 hover:text-accent-red hover:bg-accent-red/10 rounded" title="移入回收站"><Trash2 size={13} /></button>
             </>
           )}

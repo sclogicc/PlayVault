@@ -12,7 +12,7 @@ import {
   DEFAULT_GAME_CAPTURE_ACCELERATOR,
   type GameCaptureStatus,
 } from '../../shared/capture'
-import { getUniqueActiveSessionMatch } from './screenshotSessionMatcher'
+import { getPlayVaultLaunchSessionMatch } from './screenshotSessionMatcher'
 import { getCaptureMediaRoot, toVaultMediaReference } from './vaultManager'
 
 const GAME_CAPTURE_ENABLED_SETTING = 'game_capture_enabled'
@@ -136,10 +136,10 @@ async function capturePrimaryDisplay(db: Database): Promise<GameCaptureStatus> {
   }
 
   const verifiedSessions = sessionRepo.getVerifiedActiveSessions(db)
-  const match = getUniqueActiveSessionMatch(verifiedSessions)
+  const match = getPlayVaultLaunchSessionMatch(verifiedSessions)
   if (!match) {
     const message = verifiedSessions.length === 0
-      ? '未检测到正在运行的游戏，会话外截图不会被保存。'
+      ? '未检测到由 PlayVault 启动且仍在运行的游戏，会话外截图不会被保存。'
       : '检测到多个游戏会话，无法安全判断截图归属。'
     const status = setStatus(createCaptureStatus('blocked', message))
     notify('PlayVault 截图未保存', message)
