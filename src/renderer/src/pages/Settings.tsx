@@ -14,6 +14,11 @@ import {
   RefreshCw,
   Camera,
   Download,
+  Grid2X2,
+  List,
+  SlidersHorizontal,
+  ArrowDownAZ,
+  ArrowUpDown,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -25,11 +30,14 @@ import {
 import type { VaultHealthReport, VaultLocation } from '@shared/vault'
 import type { GameCaptureStatus } from '@shared/capture'
 import type { UpdateStatus } from '@shared/update'
+import { useLibraryViewPreferences } from '../hooks/useLibraryViewPreferences'
+import type { LibraryDensity, LibraryLayout, LibrarySort } from '../lib/libraryView'
 
 export default function Settings(): React.ReactElement {
   const { roots, isLoading } = useScanRoots()
   const { create, remove, toggle } = useScanRootMutations()
   const triggerScan = useTriggerScan()
+  const { preferences: libraryPreferences, isReady: libraryPreferencesReady, updatePreferences: updateLibraryPreferences } = useLibraryViewPreferences()
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [screenshotDir, setScreenshotDir] = useState<string>('')
   const [screenshotDirLoading, setScreenshotDirLoading] = useState(true)
@@ -212,12 +220,40 @@ export default function Settings(): React.ReactElement {
     <div className="min-h-full space-y-8 bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
       {/* Header */}
       <div className="border-b border-white/[0.075] pb-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">本地配置</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">私人资料设置</p>
         <h2 className="mt-2 font-serif text-4xl tracking-[-0.025em] text-archive-50">设置</h2>
-        <p className="mt-2 text-sm text-archive-400">管理本地扫描路径与截图监听目录，所有数据仍将保留在你的设备中。</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-archive-400">调整资料库的浏览方式，并管理本地扫描、截图和留档位置。所有记录与偏好都只保留在这台设备上。</p>
       </div>
 
-      {/* Scan Directories Section */}
+      <section className="card space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/[0.07] pb-5">
+          <div>
+            <h3 className="flex items-center gap-2 text-base font-medium text-archive-200"><Grid2X2 size={16} />外观与资料库</h3>
+            <p className="mt-1 text-sm text-archive-500">控制游戏库默认显示方式。更改会立即生效，并保存在本地。</p>
+          </div>
+          {!libraryPreferencesReady && <span className="text-xs text-archive-600">正在读取偏好…</span>}
+        </div>
+        <div className="grid gap-5 md:grid-cols-2">
+          <div>
+            <p className="mb-2 text-xs font-medium text-archive-400">浏览方式</p>
+            <div className="flex gap-2"><PreferenceChoice active={libraryPreferences.layout === 'grid'} onClick={() => updateLibraryPreferences({ layout: 'grid' as LibraryLayout })} icon={<Grid2X2 size={15} />} label="封面网格" /><PreferenceChoice active={libraryPreferences.layout === 'list'} onClick={() => updateLibraryPreferences({ layout: 'list' as LibraryLayout })} icon={<List size={15} />} label="紧凑列表" /></div>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-medium text-archive-400">卡片密度</p>
+            <div className="flex gap-2"><PreferenceChoice active={libraryPreferences.density === 'comfortable'} onClick={() => updateLibraryPreferences({ density: 'comfortable' as LibraryDensity })} icon={<Grid2X2 size={15} />} label="舒展" /><PreferenceChoice active={libraryPreferences.density === 'compact'} onClick={() => updateLibraryPreferences({ density: 'compact' as LibraryDensity })} icon={<List size={15} />} label="紧凑" /></div>
+          </div>
+          <div>
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-archive-400"><SlidersHorizontal size={13} />默认排序</p>
+            <select value={libraryPreferences.sortBy} onChange={(event) => updateLibraryPreferences({ sortBy: event.target.value as LibrarySort })} className="w-full border border-white/[0.09] bg-black/[0.16] px-3 py-2 text-sm text-archive-200 outline-none transition-colors focus:border-[#c9a35a]/60"><option value="recent">最近游玩</option><option value="duration">总游玩时长</option><option value="name">游戏名称</option><option value="added">添加时间</option><option value="archived">留档时间</option></select>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-medium text-archive-400">排序方向</p>
+            <PreferenceChoice active={libraryPreferences.sortDescending} onClick={() => updateLibraryPreferences({ sortDescending: !libraryPreferences.sortDescending })} icon={libraryPreferences.sortDescending ? <ArrowDownAZ size={15} /> : <ArrowUpDown size={15} />} label={libraryPreferences.sortDescending ? '当前：倒序' : '当前：正序'} />
+          </div>
+        </div>
+      </section>
+
+      <div className="flex items-center gap-3 pt-1"><span className="h-px w-8 bg-[#c9a35a]/55" /><p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">资料库来源</p></div>
       <section className="card space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -323,7 +359,7 @@ export default function Settings(): React.ReactElement {
         )}
       </section>
 
-      {/* Screenshot Directory */}
+      <div className="flex items-center gap-3 pt-1"><span className="h-px w-8 bg-[#c9a35a]/55" /><p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">截图与留档</p></div>
       <section className="card space-y-5">
         <div>
           <h3 className="text-base font-medium text-archive-200 flex items-center gap-2">
@@ -371,7 +407,6 @@ export default function Settings(): React.ReactElement {
         )}
       </section>
 
-      {/* PlayVault Capture */}
       <section className="card space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -446,7 +481,6 @@ export default function Settings(): React.ReactElement {
         ) : null}
       </section>
 
-      {/* Vault Safety */}
       <section className="card space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -545,6 +579,7 @@ export default function Settings(): React.ReactElement {
         ) : null}
       </section>
 
+      <div className="flex items-center gap-3 pt-1"><span className="h-px w-8 bg-[#c9a35a]/55" /><p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">系统</p></div>
       <section className="card space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -586,21 +621,6 @@ export default function Settings(): React.ReactElement {
         )}
       </section>
 
-      {/* Placeholder for future settings */}
-      <section className="grid grid-cols-1 gap-4 border-t border-white/[0.07] pt-6 sm:grid-cols-2">
-        <div>
-          <h3 className="text-base font-medium text-archive-400">监听设置</h3>
-          <p className="text-xs text-archive-600 mt-1">
-            进程轮询间隔 2 秒，启动/结束判定需连续命中 3 次（约 6 秒）
-          </p>
-        </div>
-        <div>
-          <h3 className="text-base font-medium text-archive-400">系统行为</h3>
-          <p className="text-xs text-archive-600 mt-1">
-            应用启动时自动恢复未结束的游玩记录
-          </p>
-        </div>
-      </section>
 
       {/* Delete confirmation */}
       <ConfirmDialog
@@ -618,5 +638,27 @@ export default function Settings(): React.ReactElement {
         variant="danger"
       />
     </div>
+  )
+}
+
+function PreferenceChoice({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean
+  onClick: () => void
+  icon: React.ReactNode
+  label: string
+}): React.ReactElement {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex min-h-9 items-center gap-2 border px-3 text-sm transition-colors ${active ? 'border-[#c9a35a]/60 bg-[#17140f] text-[#ead7aa]' : 'border-white/[0.09] bg-black/[0.12] text-archive-400 hover:border-white/[0.18] hover:text-archive-200'}`}
+    >
+      {icon}{label}
+    </button>
   )
 }

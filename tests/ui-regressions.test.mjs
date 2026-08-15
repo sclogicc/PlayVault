@@ -526,6 +526,17 @@ test('library shell exposes expandable personal navigation and dual views', asyn
   assert.match(preferences, /library_view_preferences_v1/)
 })
 
+test('settings expose persistent library appearance controls alongside local capture and archive tools', async () => {
+  const source = await readFile('src/renderer/src/pages/Settings.tsx', 'utf8')
+
+  assert.match(source, /外观与资料库/)
+  assert.match(source, /资料库来源/)
+  assert.match(source, /截图与留档/)
+  assert.match(source, /系统/)
+  assert.match(source, /useLibraryViewPreferences/)
+  assert.doesNotMatch(source, /Placeholder for future settings/)
+})
+
 test('updates are manual and use npm ci without a global startup banner', async () => {
   const [mainSource, appLayoutSource, updaterSource] = await Promise.all([
     readFile('src/main/index.ts', 'utf8'),
