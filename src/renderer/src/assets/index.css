@@ -212,10 +212,12 @@
     will-change: transform;
   }
 
+  /* NVIDIA 原始截图为 1920×1080；所有缩略图共用固定 16:9 画布，源图永不参与撑高布局。 */
   .media-screenshot-frame {
-    aspect-ratio: 3 / 2;
+    aspect-ratio: 16 / 9;
   }
 
+  /* 保留旧类名作为兼容别名，避免历史页面出现比例差异。 */
   .media-screenshot-wide-frame {
     aspect-ratio: 16 / 9;
   }

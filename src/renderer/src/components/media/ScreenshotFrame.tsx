@@ -12,7 +12,10 @@ interface ScreenshotFrameProps {
   children?: ReactNode
 }
 
-/** 固定 3:2 的截图框；原图查看由外部按钮或查看器负责，缩略图永不撑开布局。 */
+/**
+ * 媒体规则：NVIDIA 截图固定为 1920×1080。缩略图统一采用 16:9 画布，
+ * 原图查看由外部查看器负责，任何源图片都不能撑开页面布局。
+ */
 export default function ScreenshotFrame({
   filePath,
   alt,

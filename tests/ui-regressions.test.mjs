@@ -567,5 +567,5 @@ test('image viewer is portalled to the viewport and locks background scrolling',
   assert.match(source, /document\.body\.style\.overflow = 'hidden'/)
   assert.match(source, /document\.documentElement\.style\.overflow = 'hidden'/)
   assert.match(source, /fixed inset-0 z-\[9999\] h-\[100dvh\] w-\[100dvw\] overflow-hidden/)
-  assert.match(source, /max-h-\[calc\(100dvh-5\.5rem\)\]/)
+  assert.match(source, /max-h-full max-w-full/)
 })

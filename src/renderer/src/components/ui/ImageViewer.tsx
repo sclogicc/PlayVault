@@ -115,7 +115,7 @@ export default function ImageViewer({
               key={item.filePath}
               src={toFileUrl(item.filePath)}
               alt={item.fileName}
-              className="block h-auto w-auto max-h-[calc(100dvh-5.5rem)] max-w-[calc(100dvw-3rem)] select-none object-contain sm:max-w-[calc(100dvw-5rem)]"
+              className="block h-auto w-auto max-h-full max-w-full select-none object-contain"
               draggable={false}
               onError={() => setImageError(true)}
             />
