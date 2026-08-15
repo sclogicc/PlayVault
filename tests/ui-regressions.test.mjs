@@ -599,17 +599,25 @@ test('settings expose persistent library appearance controls alongside local cap
   assert.doesNotMatch(source, /Placeholder for future settings/)
 })
 
-test('updates are manual and use npm ci without a global startup banner', async () => {
-  const [mainSource, appLayoutSource, updaterSource] = await Promise.all([
+test('updates are manual, avoid live dependency sync, and have no global startup banner', async () => {
+  const [mainSource, appLayoutSource, updaterSource, databaseSource] = await Promise.all([
     readFile('src/main/index.ts', 'utf8'),
     readFile('src/renderer/src/components/layout/AppLayout.tsx', 'utf8'),
     readFile('src/main/services/autoUpdater.ts', 'utf8'),
+    readFile('src/main/db/sqljs-wrapper.ts', 'utf8'),
   ])
 
   assert.doesNotMatch(mainSource, /checkForUpdates/)
   assert.doesNotMatch(appLayoutSource, /UpdateBanner/)
-  assert.match(updaterSource, /NPM_COMMAND, \['ci'\]/)
+  assert.match(updaterSource, /hasDependencyManifestChanges/)
+  assert.match(updaterSource, /DEPENDENCY_MANIFEST_FILES/)
+  assert.match(updaterSource, /dependencyManifestsChanged/)
+  assert.doesNotMatch(updaterSource, /NPM_COMMAND, \['ci'\]/)
   assert.doesNotMatch(updaterSource, /NPM_COMMAND, \['install'\]/)
+  assert.doesNotMatch(databaseSource, /^import initSqlJs/m)
+  assert.match(databaseSource, /await import\('sql\.js'\)/)
+  assert.match(databaseSource, /数据库依赖未安装完整/)
+  assert.match(databaseSource, /npm ci/)
 })
 
 

@@ -1,6 +1,24 @@
-import initSqlJs, { type Database as SqlJsDatabase, type Statement, type BindParams, type SqlJsStatic } from 'sql.js'
+import type { Database as SqlJsDatabase, Statement, BindParams, SqlJsStatic } from 'sql.js'
 import fs from 'fs'
 import path from 'path'
+
+async function loadSqlJs(): Promise<SqlJsStatic> {
+  try {
+    const { default: initSqlJs } = await import('sql.js')
+    return await initSqlJs()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (message.includes("Cannot find module 'sql.js'") || message.includes("Cannot find package 'sql.js'")) {
+      throw new Error(
+        'PlayVault 的数据库依赖未安装完整。请完全退出 PlayVault 后，在项目目录依次执行：\n' +
+        'npm ci\n' +
+        'npm run build\n\n' +
+        '如果 npm ci 提示 EBUSY，请先关闭正在运行的 electron.exe，再重新执行上述命令。',
+      )
+    }
+    throw error
+  }
+}
 
 /**
  * A wrapper around sql.js that provides a better-sqlite3-like API
@@ -22,7 +40,7 @@ export class Database {
       fs.mkdirSync(dir, { recursive: true })
     }
 
-    const sql = await initSqlJs()
+    const sql = await loadSqlJs()
 
     let db: SqlJsDatabase
     if (fs.existsSync(filePath)) {

@@ -9,6 +9,7 @@ const REMOTE_NAME = 'origin'
 const REMOTE_BRANCH = 'main'
 const NPM_COMMAND = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const COMMAND_OUTPUT_LIMIT = 12_000
+const DEPENDENCY_MANIFEST_FILES = ['package.json', 'package-lock.json'] as const
 
 let latestStatus = createUpdateStatus('idle', '尚未检查更新')
 let activeUpdate: Promise<UpdateStatus> | null = null
@@ -123,6 +124,15 @@ async function isAncestor(repositoryPath: string, ancestor: string, descendant: 
   }
 }
 
+async function hasDependencyManifestChanges(repositoryPath: string, baseRevision: string): Promise<boolean> {
+  const { stdout } = await runCommand(
+    'git',
+    ['diff', '--name-only', baseRevision, 'HEAD', '--', ...DEPENDENCY_MANIFEST_FILES],
+    repositoryPath,
+  )
+  return stdout.split(/\r?\n/).some(Boolean)
+}
+
 function formatCommandReason(error: unknown): string {
   if (error instanceof CommandError) {
     return error.output || error.message
@@ -198,7 +208,7 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
 
 async function performUpdate(): Promise<UpdateStatus> {
   const checkStatus = await checkForUpdates()
-  if (checkStatus.stage !== 'available' || !checkStatus.repositoryPath) {
+  if (checkStatus.stage !== 'available' || !checkStatus.repositoryPath || !checkStatus.currentRevision) {
     return checkStatus
   }
 
@@ -211,10 +221,21 @@ async function performUpdate(): Promise<UpdateStatus> {
     }))
     await runCommand('git', ['pull', '--ff-only', REMOTE_NAME, REMOTE_BRANCH], repositoryPath)
 
-    setStatus(createUpdateStatus('installing', '正在按锁文件同步项目依赖…', { repositoryPath }))
-    // npm ci 严格遵循已提交的 package-lock.json，不会像 npm install 一样重写锁文件，
-    // 从而避免更新器把自身造成的锁文件变动误判为用户的本地源码修改。
-    await runCommand(NPM_COMMAND, ['ci'], repositoryPath)
+    const dependencyManifestsChanged = await hasDependencyManifestChanges(
+      repositoryPath,
+      checkStatus.currentRevision,
+    )
+    if (dependencyManifestsChanged) {
+      return setStatus(createUpdateStatus(
+        'blocked',
+        '新版代码已下载，但包含依赖更新。为避免 Windows 锁定正在运行的 Electron 文件，请退出 PlayVault 后，在项目目录执行 npm ci 和 npm run build，再重新启动。',
+        {
+          currentRevision: checkStatus.currentRevision,
+          remoteRevision: checkStatus.remoteRevision,
+          repositoryPath,
+        },
+      ))
+    }
 
     setStatus(createUpdateStatus('building', '正在构建新版 PlayVault…', { repositoryPath }))
     await runCommand(NPM_COMMAND, ['run', 'build'], repositoryPath)
