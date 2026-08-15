@@ -386,7 +386,7 @@ export default function GameDetail(): React.ReactElement {
         />
 
         <div className="relative -mt-[28%] bg-gradient-to-b from-transparent via-[var(--pv-surface)]/90 to-[var(--pv-surface)] px-5 pb-7 pt-11 sm:px-7 sm:pb-8">
-          <div className="flex flex-wrap items-start justify-between gap-6">
+          <div className="scene-archive-detail-top flex flex-wrap items-start justify-between gap-6">
             <div className="flex min-w-0 flex-1 items-start gap-5 sm:gap-7">
               <CoverFrame
                 filePath={archiveCoverPath}
@@ -409,7 +409,7 @@ export default function GameDetail(): React.ReactElement {
             </div>
 
             {/* 仅保留日常记录动作；媒体和删除维护收进次级管理区，避免头部变成按钮墙。 */}
-            <div className="flex max-w-full shrink-0 flex-col items-stretch gap-3.5 lg:w-[360px]">
+            <div className="scene-archive-detail-actions flex max-w-full shrink-0 flex-col items-stretch gap-3.5 lg:w-[360px]">
               <div className="flex flex-wrap items-center justify-end gap-2">
                 {isArchived && (
                   <span className="inline-flex items-center gap-1.5 rounded-md border border-[#c7e4ee]/18 bg-[#c7e4ee]/[0.07] px-3 py-1.5 text-xs text-[#dceff6]">
@@ -459,7 +459,7 @@ export default function GameDetail(): React.ReactElement {
           </div>
 
           {/* 时间已归属于标题下方；底部只保留回看维度。 */}
-          <div className="mt-7 grid grid-cols-3 gap-px border-t border-white/[0.07] bg-white/[0.07] pt-5 text-sm">
+          <div className="scene-archive-detail-evidence mt-7 grid grid-cols-3 gap-px border-t border-white/[0.07] bg-white/[0.07] pt-5 text-sm">
             <div className="bg-[var(--pv-raised)] px-4 py-3.5 transition-colors duration-300">
               <span className="text-[10px] font-semibold tracking-[0.12em] text-archive-500">最近游玩</span>
               <p className="mt-1 text-archive-100">

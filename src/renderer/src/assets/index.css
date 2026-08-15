@@ -626,7 +626,67 @@
   .scene-archive-detail { max-width: 1640px; }
   .scene-archive-detail-stage { border-radius: 0.5rem; box-shadow: 0 24px 60px rgba(0,0,0,0.23); }
   .scene-archive-detail-stage > div:nth-child(2) { background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--pv-surface) 91%, transparent)) !important; }
-  @media (max-width: 720px) { .scene-archive-shot.is-lead { grid-column: span 1; grid-row: span 1; } }
+  @media (max-width: 1440px) {
+    .scene-archive-library { max-width: 1380px; }
+    .scene-archive-card.is-lead .scene-archive-card-stage { height: clamp(380px, 34vw, 470px); }
+  }
+  @media (max-width: 1180px) {
+    .scene-archive-library { padding-inline: 1rem; }
+    .scene-archive-library .library-hero-stage { height: clamp(330px, 43vw, 460px); }
+    .scene-archive-tools { width: 96%; }
+    .scene-archive-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .scene-archive-card.is-lead .scene-archive-card-stage { height: clamp(330px, 40vw, 420px); }
+    .scene-archive-memory-backdrop { height: clamp(260px, 36vw, 360px); }
+    .scene-archive-detail { padding-inline: clamp(1.5rem, 3vw, 2.25rem) !important; }
+    .scene-archive-detail-actions { width: 100%; }
+    .scene-archive-detail-actions > div { justify-content: flex-start !important; }
+    .scene-archive-detail-actions details { text-align: left !important; }
+  }
+  @media (max-width: 900px) {
+    .scene-archive-library { padding: 0.875rem; }
+    .scene-archive-library .library-hero-stage { height: 360px; }
+    .scene-archive-identity h1 { font-size: 2.1rem; }
+    .scene-archive-evidence { gap: 0.9rem; }
+    .scene-archive-evidence .library-hero-panel + .library-hero-panel { padding-left: 0.7rem !important; }
+    .scene-archive-tools { width: calc(100% - 1rem); margin-top: -0.75rem; }
+    .scene-archive-tools > label { min-width: min(100%, 190px); }
+    .scene-archive-card.is-lead .scene-archive-card-stage { height: 340px; }
+    .scene-archive-memory-backdrop { height: 290px; }
+    .scene-archive-memory-grid { grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)) !important; gap: 0.875rem !important; }
+    .scene-archive-media-page .media-contact-sheet { grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); }
+    .scene-archive-detail-top { flex-direction: column; }
+    .scene-archive-detail-top > div:first-child { width: 100%; }
+    .scene-archive-detail-evidence > div { padding-inline: 0.875rem; }
+  }
+  @media (max-width: 720px) {
+    .scene-archive-library .library-hero-stage { height: 340px; border-radius: 0.375rem; }
+    .scene-archive-identity { max-width: 100%; }
+    .scene-archive-identity-cover { width: 2.75rem !important; }
+    .scene-archive-identity h1 { font-size: 1.85rem; }
+    .scene-archive-identity p:last-child { font-size: 0.8125rem; line-height: 1.4; }
+    .scene-archive-evidence { gap: 0.65rem; }
+    .scene-archive-evidence strong { font-size: 0.75rem !important; }
+    .scene-archive-tools { width: 100%; margin-top: 0.75rem; border-radius: 0.375rem; }
+    .scene-archive-grid { grid-template-columns: 1fr !important; }
+    .scene-archive-card.is-lead { grid-column: span 1; grid-row: span 1; }
+    .scene-archive-card.is-lead .scene-archive-card-stage { height: 280px; }
+    .scene-archive-card.is-lead .scene-archive-card-stage .absolute.bottom-3 { bottom: 4rem; }
+    .scene-archive-memory-backdrop { height: 260px; }
+    .scene-archive-memory-stage { border-radius: 0.375rem; }
+    .scene-archive-memory-cover { width: 3.25rem !important; }
+    .scene-archive-memory-stage h2 { font-size: 1.65rem; }
+    .scene-archive-shot.is-lead { grid-column: span 1; grid-row: span 1; }
+    .scene-archive-media-page .media-contact-sheet { grid-template-columns: 1fr; }
+    .scene-archive-detail { padding-inline: 1rem !important; padding-top: 1rem !important; }
+    .scene-archive-detail-stage { border-radius: 0.375rem; }
+    .scene-archive-detail-stage > div:nth-child(2) { padding-inline: 1rem !important; }
+    .scene-archive-detail-top > div:first-child { gap: 1rem; }
+    .scene-archive-detail-top > div:first-child > div:first-child { width: 4.5rem !important; }
+    .scene-archive-detail-top h2 { font-size: 1.85rem !important; }
+    .scene-archive-detail-actions { gap: 0.875rem; }
+    .scene-archive-detail-evidence { grid-template-columns: 1fr; gap: 1px; }
+    .scene-archive-detail-evidence > div { padding-block: 0.75rem; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
