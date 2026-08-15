@@ -5,7 +5,7 @@ import {
   type LibraryViewPreferences,
 } from '../lib/libraryView'
 
-const SETTING_KEY = 'library_view_preferences_v1'
+const SETTING_KEY = 'library_view_preferences_v2'
 
 export function useLibraryViewPreferences(): {
   preferences: LibraryViewPreferences

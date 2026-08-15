@@ -44,10 +44,10 @@ function countByScope(games: GameWithStats[], scope: LibraryScope): number {
 }
 
 function navItemClass(active: boolean, expanded: boolean): string {
-  return `group relative flex h-10 items-center gap-3 border transition-colors ${expanded ? 'w-full px-3' : 'w-11 justify-center'} ${
+  return `group relative flex h-10 items-center gap-3 rounded-lg border transition-[background-color,color,border-color,transform] duration-200 ${expanded ? 'w-full px-3' : 'w-11 justify-center'} ${
     active
-      ? 'border-[#c9a35a]/38 bg-[#211b12] text-[#ead7aa]'
-      : 'border-transparent text-archive-500 hover:border-white/[0.10] hover:bg-white/[0.035] hover:text-archive-200'
+      ? 'border-white/[0.14] bg-[#cce8f6]/[0.11] text-[#e5f5fb] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]'
+      : 'border-transparent text-archive-500 hover:border-white/[0.10] hover:bg-white/[0.055] hover:text-archive-200'
   }`
 }
 
@@ -106,12 +106,12 @@ export default function Sidebar(): React.ReactElement {
   ]
 
   return (
-    <aside className={`flex h-screen shrink-0 flex-col border-r border-white/[0.075] bg-[#100e0d] py-4 transition-[width] duration-200 ${expanded ? 'w-[196px]' : 'w-[72px] items-center'}`}>
+    <aside className={`pv-sidebar flex h-screen shrink-0 flex-col border-r py-4 transition-[width] duration-200 ${expanded ? 'w-[212px]' : 'w-[72px] items-center'}`}>
       <div className={`flex h-11 items-center ${expanded ? 'justify-between px-3' : 'justify-center'}`}>
-        <NavLink to="/games" aria-label="PlayVault 游戏库" title="PlayVault" className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#c9a35a]/55 text-[#d6b36a] transition-colors hover:bg-[#211b12]">
+        <NavLink to="/games" aria-label="PlayVault 游戏库" title="PlayVault" className="pv-sidebar-mark flex h-10 w-10 shrink-0 items-center justify-center transition-colors hover:bg-[#d9f1fb]/[0.15]">
           <Gamepad2 size={18} strokeWidth={1.7} />
         </NavLink>
-        {expanded && <span className="ml-3 flex-1 text-[11px] font-medium tracking-[0.16em] text-archive-400">PLAYVAULT</span>}
+        {expanded && <span className="ml-3 flex-1 text-[11px] font-medium tracking-[0.16em] text-archive-300">PLAYVAULT</span>}
         <button type="button" onClick={() => setExpanded((value) => !value)} className="flex h-8 w-8 shrink-0 items-center justify-center text-archive-600 transition-colors hover:bg-white/[0.04] hover:text-archive-200" title={expanded ? '折叠导航' : '展开导航'} aria-label={expanded ? '折叠导航' : '展开导航'}>
           {expanded ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}
         </button>

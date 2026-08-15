@@ -585,7 +585,7 @@ test('library shell exposes expandable personal navigation and dual views', asyn
   assert.match(games, /GameList/)
   assert.match(games, /onToggleFavorite/)
   assert.match(games, /onToggleHidden/)
-  assert.match(preferences, /library_view_preferences_v1/)
+  assert.match(preferences, /library_view_preferences_v2/)
 })
 
 test('settings expose persistent library appearance controls alongside local capture and archive tools', async () => {

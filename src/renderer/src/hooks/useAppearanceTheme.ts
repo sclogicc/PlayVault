@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 
 export type AppearanceTheme = 'warm-charcoal' | 'night-ink'
 
-const SETTING_KEY = 'appearance_theme_v1'
-const DEFAULT_THEME: AppearanceTheme = 'warm-charcoal'
+const SETTING_KEY = 'appearance_theme_v2'
+const DEFAULT_THEME: AppearanceTheme = 'night-ink'
 
 function normalizeTheme(value: string | null): AppearanceTheme {
   return value === 'night-ink' ? 'night-ink' : DEFAULT_THEME
