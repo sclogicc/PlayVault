@@ -1,3 +1,4 @@
+/* 视觉基线：背景构图编辑器沿用详情舞台的冷墨玻璃控制层。 */
 import { useEffect, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
 import type { BackdropCrop } from '@shared/backdropCrop'
@@ -46,7 +47,7 @@ export default function BackdropEditor({
       <div className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <p className="max-w-xl text-sm leading-6 text-archive-400">此处预览与详情页使用同一背景舞台。缩放会生成安全的可移动余量，横向和纵向焦点会即时移动图片，且不会露出空白边缘。</p>
-          <button type="button" onClick={() => setCrop({ ...DEFAULT_BACKDROP_CROP })} className="inline-flex items-center gap-1.5 text-xs text-archive-400 transition-colors hover:text-[#ead7aa]">
+          <button type="button" onClick={() => setCrop({ ...DEFAULT_BACKDROP_CROP })} className="inline-flex items-center gap-1.5 text-xs text-archive-400 transition-colors hover:text-[#dceff6]">
             <RotateCcw size={13} /> 恢复默认构图
           </button>
         </div>
@@ -108,7 +109,7 @@ function BackdropRange({
         <span className="text-archive-300">{label}</span>
         <span className="font-mono text-archive-500">{display}</span>
       </div>
-      <input type="range" value={value} min={min} max={max} step={step} onChange={(event) => onChange(Number(event.target.value))} className="w-full accent-[#c9a35a]" />
+      <input type="range" value={value} min={min} max={max} step={step} onChange={(event) => onChange(Number(event.target.value))} className="w-full accent-[#b9dce8]" />
     </label>
   )
 }

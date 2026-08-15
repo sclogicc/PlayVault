@@ -220,13 +220,8 @@ export default function Settings(): React.ReactElement {
   }
 
   return (
-    <div className="min-h-full space-y-8 bg-[var(--pv-void)] px-8 py-9 transition-colors duration-300 sm:px-12 lg:px-16">
-      {/* Header */}
-      <div className="border-b border-white/[0.075] pb-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">私人资料设置</p>
-        <h2 className="mt-2 font-serif text-4xl tracking-[-0.025em] text-archive-50">设置</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-archive-400">调整资料库的浏览方式，并管理本地扫描、截图和留档位置。所有记录与偏好都只保留在这台设备上。</p>
-      </div>
+    <div className="pv-page space-y-5 transition-colors duration-300">
+      <header className="pv-page-header"><div><p className="eyebrow">私人资料设置</p><h1 className="pv-page-title">设置</h1><p className="pv-page-copy">调整资料库的浏览方式，并管理本地扫描、截图和留档位置。所有记录与偏好都只保留在这台设备上。</p></div></header>
 
       <section className="card space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/[0.07] pb-5">
@@ -240,8 +235,8 @@ export default function Settings(): React.ReactElement {
           <div className="md:col-span-2">
             <div className="mb-2 flex items-center justify-between gap-3"><p className="text-xs font-medium text-archive-400">界面主题</p>{!themeReady && <span className="text-[11px] text-archive-600">正在读取主题…</span>}</div>
             <div className="grid gap-2 sm:grid-cols-2">
-              <ThemeChoice active={theme === 'warm-charcoal'} onClick={() => void updateTheme('warm-charcoal')} theme="warm-charcoal" title="暖炭黑" description="暖调纸张与低饱和金色，像一册安静的私人日志。" />
-              <ThemeChoice active={theme === 'night-ink'} onClick={() => void updateTheme('night-ink')} theme="night-ink" title="夜墨" description="更冷静的蓝墨深色，强调信息和媒体的边界。" />
+              <ThemeChoice active={theme === 'warm-charcoal'} onClick={() => void updateTheme('warm-charcoal')} theme="warm-charcoal" title="石墨" description="偏中性的石墨深色，适合降低媒体内容的视觉侵入。" />
+              <ThemeChoice active={theme === 'night-ink'} onClick={() => void updateTheme('night-ink')} theme="night-ink" title="夜墨" description="冷静的蓝墨深色，让信息和媒体保持清晰边界。" />
             </div>
           </div>
           <div>
@@ -254,7 +249,7 @@ export default function Settings(): React.ReactElement {
           </div>
           <div>
             <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-archive-400"><SlidersHorizontal size={13} />默认排序</p>
-            <select value={libraryPreferences.sortBy} onChange={(event) => updateLibraryPreferences({ sortBy: event.target.value as LibrarySort })} className="w-full border border-white/[0.09] bg-black/[0.16] px-3 py-2 text-sm text-archive-200 outline-none transition-colors focus:border-[#c9a35a]/60"><option value="recent">最近游玩</option><option value="duration">总游玩时长</option><option value="name">游戏名称</option><option value="added">添加时间</option><option value="archived">留档时间</option></select>
+            <select value={libraryPreferences.sortBy} onChange={(event) => updateLibraryPreferences({ sortBy: event.target.value as LibrarySort })} className="w-full rounded-lg border border-white/[0.09] bg-black/[0.16] px-3 py-2 text-sm text-archive-200 outline-none transition-colors focus:border-[#c8e5f1]/60"><option value="recent">最近游玩</option><option value="duration">总游玩时长</option><option value="name">游戏名称</option><option value="added">添加时间</option><option value="archived">留档时间</option></select>
           </div>
           <div>
             <p className="mb-2 text-xs font-medium text-archive-400">排序方向</p>
@@ -263,7 +258,7 @@ export default function Settings(): React.ReactElement {
         </div>
       </section>
 
-      <div className="flex items-center gap-3 pt-1"><span className="h-px w-8 bg-[#c9a35a]/55" /><p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">资料库来源</p></div>
+      <SectionMarker label="资料库来源" />
       <section className="card space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -369,7 +364,7 @@ export default function Settings(): React.ReactElement {
         )}
       </section>
 
-      <div className="flex items-center gap-3 pt-1"><span className="h-px w-8 bg-[#c9a35a]/55" /><p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">截图与留档</p></div>
+      <SectionMarker label="截图与留档" />
       <section className="card space-y-5">
         <div>
           <h3 className="text-base font-medium text-archive-200 flex items-center gap-2">
@@ -436,7 +431,7 @@ export default function Settings(): React.ReactElement {
             onClick={() => void handleGameCaptureEnabled(!(gameCaptureStatus?.enabled ?? false))}
             className={`relative h-7 w-12 shrink-0 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
               gameCaptureStatus?.enabled
-                ? 'border-[#c9a35a]/50 bg-[#c9a35a]'
+                ? 'border-[#c7e3ee]/45 bg-[#b9dbe8]/70'
                 : 'border-white/10 bg-white/[0.08]'
             }`}
             title={gameCaptureStatus?.enabled ? '关闭主动截图' : '开启主动截图'}
@@ -454,7 +449,7 @@ export default function Settings(): React.ReactElement {
             gameCaptureStatus.state === 'error'
               ? 'border-[#bb705d]/30 bg-[#bb705d]/10'
               : gameCaptureStatus.enabled
-                ? 'border-[#c9a35a]/25 bg-[#c9a35a]/[0.06]'
+                ? 'border-[#c7e3ee]/22 bg-[#c7e3ee]/[0.07]'
                 : 'border-white/[0.065] bg-black/[0.13]'
           }`}>
             <div className="flex items-center justify-between gap-3">
@@ -473,8 +468,8 @@ export default function Settings(): React.ReactElement {
                 disabled={gameCaptureLoading}
                 className={`shrink-0 border px-2 py-1 font-mono text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                   recordingCaptureShortcut
-                    ? 'border-[#c9a35a] bg-[#c9a35a]/15 text-[#ead7aa]'
-                    : 'border-white/15 bg-black/30 text-[#d8ba77] hover:border-[#c9a35a]/60 hover:text-[#ead7aa]'
+                    ? 'border-[#c7e3ee]/55 bg-[#c7e3ee]/15 text-[#e5f6fb]'
+                    : 'border-white/15 bg-black/30 text-[#c4dce6] hover:border-[#c7e3ee]/60 hover:text-[#edf9fc]'
                 }`}
                 title="点击后按下新的截图组合键"
               >
@@ -485,7 +480,7 @@ export default function Settings(): React.ReactElement {
               点击右侧快捷键即可修改。请使用 Ctrl、Alt 或 Shift 搭配字母、数字或 F1–F12；若系统提示冲突，原快捷键会继续保留。不会扫描或导入其他软件的截图。
             </p>
             {captureShortcutHint && (
-              <p className="mt-2 text-xs text-[#d8ba77]">{captureShortcutHint}</p>
+              <p className="mt-2 text-xs text-[#c7e3ee]">{captureShortcutHint}</p>
             )}
           </div>
         ) : null}
@@ -517,7 +512,7 @@ export default function Settings(): React.ReactElement {
         ) : vaultLocation && vaultHealth ? (
           <>
             <div className="rounded-archive border border-white/[0.065] bg-black/[0.13] px-4 py-3.5">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#d8ba77]">当前档案库</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#c6dee8]">当前档案库</p>
               <p className="mt-2 truncate font-mono text-sm text-archive-200" title={vaultLocation.rootPath}>
                 {vaultLocation.rootPath}
               </p>
@@ -535,7 +530,7 @@ export default function Settings(): React.ReactElement {
               </div>
               <div className="bg-[#111214] px-4 py-3">
                 <p className="text-[11px] text-archive-500">已托管媒体</p>
-                <p className="mt-1 font-serif text-2xl text-[#d8ba77]">{vaultHealth.managedMediaFiles}</p>
+                <p className="mt-1 font-serif text-2xl text-[#c6e4ee]">{vaultHealth.managedMediaFiles}</p>
               </div>
               <div className="bg-[#111214] px-4 py-3">
                 <p className="text-[11px] text-archive-500">外部引用</p>
@@ -565,7 +560,7 @@ export default function Settings(): React.ReactElement {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-sm text-[#d8ba77]">
+              <div className="flex items-center gap-2 text-sm text-[#c6e4ee]">
                 <ShieldCheck size={16} />
                 当前已封存档案的媒体引用均可读取。
               </div>
@@ -577,7 +572,7 @@ export default function Settings(): React.ReactElement {
               </p>
               <button
                 type="button"
-                className="inline-flex min-h-8 items-center gap-1.5 border border-[#c9a35a]/45 bg-[#c9a35a] px-3 text-xs font-medium text-[#17130d] transition-colors hover:bg-[#e1c17b] disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-primary inline-flex min-h-8 items-center gap-1.5 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={() => void handleRelocateVault()}
                 disabled={vaultLoading}
               >
@@ -589,7 +584,7 @@ export default function Settings(): React.ReactElement {
         ) : null}
       </section>
 
-      <div className="flex items-center gap-3 pt-1"><span className="h-px w-8 bg-[#c9a35a]/55" /><p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">系统</p></div>
+      <SectionMarker label="系统" />
       <section className="card space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -618,7 +613,7 @@ export default function Settings(): React.ReactElement {
             ['error', 'blocked', 'unsupported'].includes(updateStatus.stage)
               ? 'border-[#bb705d]/30 bg-[#bb705d]/10 text-[#e9b6a8]'
               : updateStatus.stage === 'available'
-                ? 'border-[#c9a35a]/25 bg-[#c9a35a]/[0.06] text-archive-200'
+                ? 'border-[#c7e3ee]/25 bg-[#c7e3ee]/[0.06] text-archive-200'
                 : 'border-white/[0.065] bg-black/[0.13] text-archive-300'
           }`}>
             <p>{updateStatus.message}</p>
@@ -664,18 +659,18 @@ function ThemeChoice({
   title: string
   description: string
 }): React.ReactElement {
-  const isWarm = theme === 'warm-charcoal'
+  const isGraphite = theme === 'warm-charcoal'
   return (
     <button
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`group relative overflow-hidden border p-3 text-left transition-[border-color,background-color,transform,box-shadow] duration-200 ${active ? 'border-[var(--pv-accent)]/70 bg-white/[0.045] shadow-[0_10px_24px_rgba(0,0,0,0.16)]' : 'border-white/[0.075] bg-black/[0.12] hover:-translate-y-px hover:border-white/[0.17] hover:bg-white/[0.025]'}`}
+      className={`group relative overflow-hidden rounded-lg border p-3 text-left transition-[border-color,background-color,transform,box-shadow] duration-200 ${active ? 'border-[var(--pv-accent)]/70 bg-white/[0.045] shadow-[0_10px_24px_rgba(0,0,0,0.16)]' : 'border-white/[0.075] bg-black/[0.12] hover:-translate-y-px hover:border-white/[0.17] hover:bg-white/[0.025]'}`}
     >
-      <div className={`mb-3 flex h-11 items-end gap-1.5 border p-2 ${isWarm ? 'border-[#ead7aa]/10 bg-[#0b0a09]' : 'border-[#c1d4df]/10 bg-[#0a0d12]'}`}>
-        <span className={`h-full flex-1 ${isWarm ? 'bg-[#1b1917]' : 'bg-[#18212b]'}`} />
-        <span className={`h-3/5 flex-1 ${isWarm ? 'bg-[#c9a35a]' : 'bg-[#8ba9bd]'}`} />
-        <span className={`h-4/5 flex-1 ${isWarm ? 'bg-[#302b22]' : 'bg-[#263542]'}`} />
+      <div className={`mb-3 flex h-11 items-end gap-1.5 border p-2 ${isGraphite ? 'border-[#d5e4eb]/10 bg-[#0b0e13]' : 'border-[#c1d4df]/10 bg-[#0a0d12]'}`}>
+        <span className={`h-full flex-1 ${isGraphite ? 'bg-[#171c24]' : 'bg-[#18212b]'}`} />
+        <span className={`h-3/5 flex-1 ${isGraphite ? 'bg-[#bccbd4]' : 'bg-[#a9c9da]'}`} />
+        <span className={`h-4/5 flex-1 ${isGraphite ? 'bg-[#303b47]' : 'bg-[#263542]'}`} />
       </div>
       <div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm font-medium text-archive-200"><Palette size={14} className={active ? 'text-[var(--pv-accent-strong)]' : 'text-archive-500'} />{title}</span>{active && <span className="text-[10px] font-medium tracking-[0.12em] text-[var(--pv-accent-strong)]">当前使用</span>}</div>
       <p className="mt-1.5 text-xs leading-5 text-archive-500">{description}</p>
@@ -698,9 +693,13 @@ function PreferenceChoice({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex min-h-9 items-center gap-2 border px-3 text-sm transition-[border-color,background-color,color] duration-200 ${active ? 'border-[var(--pv-accent)]/60 bg-[color:color-mix(in_srgb,var(--pv-accent)_10%,transparent)] text-[var(--pv-accent-strong)]' : 'border-white/[0.09] bg-black/[0.12] text-archive-400 hover:border-white/[0.18] hover:text-archive-200'}`}
+      className={`inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-sm transition-[border-color,background-color,color] duration-200 ${active ? 'border-[var(--pv-accent)]/60 bg-[color:color-mix(in_srgb,var(--pv-accent)_10%,transparent)] text-[var(--pv-accent-strong)]' : 'border-white/[0.09] bg-black/[0.12] text-archive-400 hover:border-white/[0.18] hover:text-archive-200'}`}
     >
       {icon}{label}
     </button>
   )
+}
+
+function SectionMarker({ label }: { label: string }): React.ReactElement {
+  return <div className="flex items-center gap-3 pt-1"><span className="h-px w-8 bg-[#b9dbe8]/55" /><p className="text-[11px] font-medium tracking-[0.16em] text-[#c5dce6]">{label}</p></div>
 }

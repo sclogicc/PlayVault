@@ -1,38 +1,42 @@
+/* 视觉基线：冷墨玻璃候选卡，信息按文件、位置、识别依据和动作分层，不使用旧表格与暖金色。 */
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  Search,
-  Plus,
-  EyeOff,
-  Star,
-  FolderOpen,
-  HardDrive,
-  Loader2,
-} from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { EyeOff, FolderOpen, HardDrive, Loader2, Plus, Search, Star } from 'lucide-react'
 import type { DiscoveredExecutable } from '@shared/types'
 import type { DiscoveredStatus } from '@shared/constants'
 import { DISCOVERED_STATUSES, DISCOVERED_STATUS_LABELS } from '@shared/constants'
 import Button from '../components/ui/Button'
-import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
+import Modal from '../components/ui/Modal'
+
+function parseReasons(value: string): string[] {
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '—'
+  const mb = bytes / (1024 * 1024)
+  if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`
+  if (mb >= 1) return `${mb.toFixed(0)} MB`
+  return `${(bytes / 1024).toFixed(0)} KB`
+}
 
 export default function Discover(): React.ReactElement {
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState<DiscoveredStatus | '全部'>('全部')
   const [acceptingId, setAcceptingId] = useState<number | null>(null)
   const [displayName, setDisplayName] = useState('')
-
   const { data: candidates = [], isLoading } = useQuery<DiscoveredExecutable[]>({
     queryKey: ['discovered', statusFilter],
-    queryFn: () =>
-      window.api.discovered.getAll(
-        statusFilter !== '全部' ? statusFilter : undefined,
-      ),
+    queryFn: () => window.api.discovered.getAll(statusFilter !== '全部' ? statusFilter : undefined),
   })
-
   const acceptMutation = useMutation({
-    mutationFn: (data: { candidateId: number; displayName?: string }) =>
-      window.api.discover.accept(data),
+    mutationFn: (data: { candidateId: number; displayName?: string }) => window.api.discover.accept(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['discovered'] })
       qc.invalidateQueries({ queryKey: ['games'] })
@@ -40,273 +44,68 @@ export default function Discover(): React.ReactElement {
       setDisplayName('')
     },
   })
-
   const ignoreMutation = useMutation({
-    mutationFn: (id: number) =>
-      window.api.discovered.updateStatus(id, 'ignored'),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['discovered'] })
-    },
+    mutationFn: (id: number) => window.api.discovered.updateStatus(id, 'ignored'),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['discovered'] }),
   })
-
-  const handleAccept = (): void => {
-    if (acceptingId !== null) {
-      acceptMutation.mutate({
-        candidateId: acceptingId,
-        displayName: displayName.trim() || undefined,
-      })
-    }
-  }
-
-  const openAccept = (id: number, defaultName: string): void => {
-    setAcceptingId(id)
-    setDisplayName(defaultName)
-  }
-
   const statusFilterOptions = [
     { value: '全部', label: '全部' },
-    ...DISCOVERED_STATUSES.filter((s) => s !== 'ignored').map((s) => ({
-      value: s,
-      label: DISCOVERED_STATUS_LABELS[s],
-    })),
+    ...DISCOVERED_STATUSES.filter((status) => status !== 'ignored').map((status) => ({ value: status, label: DISCOVERED_STATUS_LABELS[status] })),
   ]
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '—'
-    const mb = bytes / (1024 * 1024)
-    if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`
-    if (mb >= 1) return `${mb.toFixed(0)} MB`
-    return `${(bytes / 1024).toFixed(0)} KB`
-  }
-
   return (
-    <div className="min-h-full space-y-6 bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
-      {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/[0.075] pb-7">
+    <div className="pv-page space-y-5">
+      <header className="pv-page-header">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">本地扫描</p>
-          <h2 className="mt-2 font-serif text-4xl tracking-[-0.025em] text-archive-50">发现候选</h2>
-          <p className="mt-2 text-sm text-archive-400">
-            发现 {candidates.length} 个候选可执行文件，确认后即可建立游戏档案。
-          </p>
+          <p className="eyebrow">本地扫描</p>
+          <h1 className="pv-page-title">发现候选</h1>
+          <p className="pv-page-copy">已发现 {candidates.length} 个可能的本地游戏。确认后才会进入你的私人游戏库。</p>
         </div>
-      </div>
+      </header>
 
-      {/* Status filter tabs */}
-      <div className="flex flex-wrap gap-5 border-b border-white/[0.075] pb-3">
-        {statusFilterOptions.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setStatusFilter(opt.value as DiscoveredStatus | '全部')}
-            className={`border-b px-0 pb-2 text-xs font-medium transition-colors ${
-              statusFilter === opt.value
-                ? 'border-[#c9a35a] text-[#ead7aa]'
-                : 'border-transparent text-archive-500 hover:text-archive-200'
-            }`}
-          >
-            {opt.label}
+      <section className="pv-toolbar flex flex-wrap items-center gap-1.5 p-2" aria-label="候选状态筛选">
+        {statusFilterOptions.map((option) => (
+          <button key={option.value} type="button" data-active={statusFilter === option.value} onClick={() => setStatusFilter(option.value as DiscoveredStatus | '全部')} className="pv-segment px-3 py-2 text-xs font-medium">
+            {option.label}
           </button>
         ))}
-      </div>
+      </section>
 
-      {/* Candidate list */}
       {isLoading ? (
-        <div className="card text-center py-12">
-          <Loader2 size={24} className="animate-spin text-archive-500 mx-auto mb-3" />
-          <p className="text-archive-500">加载中...</p>
-        </div>
+        <div className="empty-state"><Loader2 size={24} className="mx-auto mb-3 animate-spin text-[#b7d5e1]" /><p className="text-sm text-archive-500">正在读取本地扫描结果…</p></div>
       ) : candidates.length === 0 ? (
-        <div className="card text-center py-16">
-          <Search size={48} className="text-archive-700 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-archive-400 mb-2">
-            暂无候选
-          </h3>
-          <p className="text-archive-600 text-sm">
-            前往「设置」配置游戏扫描目录，然后点击扫描
-          </p>
-        </div>
+        <div className="empty-state"><Search size={38} className="mx-auto mb-4 text-[#aacbd8]/52" /><h2 className="text-lg font-medium text-[#dcebf1]">暂时没有候选</h2><p className="mt-2 text-sm text-archive-500">前往“设置”配置游戏扫描目录后，再执行扫描即可。</p></div>
       ) : (
-        <div className="overflow-hidden rounded-panel border border-white/[0.075] bg-white/[0.035] shadow-panel">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/[0.07]">
-                <th className="table-header">文件</th>
-                <th className="table-header">目录</th>
-                <th className="table-header">路径</th>
-                <th className="table-header w-[60px]">评分</th>
-                <th className="table-header">识别原因</th>
-                <th className="table-header w-[80px]">大小</th>
-                <th className="table-header w-[90px]">状态</th>
-                <th className="table-header w-[120px]">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {candidates.map((c) => (
-                <tr
-                  key={c.id}
-                  className="transition-colors hover:bg-white/[0.045]"
-                >
-                  {/* File name */}
-                  <td className="table-cell">
-                    <p className="text-archive-100 font-medium text-sm">
-                      {c.file_name}
-                    </p>
-                  </td>
-
-                  {/* Folder name */}
-                  <td className="table-cell">
-                    <div className="flex items-center gap-1.5 text-archive-400 text-sm">
-                      <FolderOpen size={12} />
-                      {c.folder_name}
-                    </div>
-                  </td>
-
-                  {/* Path */}
-                  <td className="table-cell">
-                    <p className="text-xs text-archive-500 truncate max-w-[200px] font-mono">
-                      {c.file_path}
-                    </p>
-                  </td>
-
-                  {/* Score */}
-                  <td className="table-cell">
-                    <span
-                      className={`inline-flex items-center gap-0.5 text-xs font-mono font-medium ${
-                        c.score >= 70
-                          ? 'text-accent-teal'
-                          : c.score >= 40
-                            ? 'text-accent-gold'
-                            : 'text-archive-500'
-                      }`}
-                    >
-                      <Star size={10} />
-                      {c.score}
-                    </span>
-                  </td>
-
-                  {/* Match reasons */}
-                  <td className="table-cell">
-                    <div className="flex flex-wrap gap-1">
-                      {JSON.parse(c.match_reasons).map(
-                        (reason: string, i: number) => (
-                          <span
-                            key={i}
-                            className={`text-[10px] px-1.5 py-0.5 rounded ${
-                              reason.startsWith('⚠')
-                                ? 'bg-accent-red/10 text-accent-red'
-                                : reason.startsWith('✓')
-                                  ? 'bg-accent-teal/10 text-accent-teal'
-                                  : 'bg-archive-700/50 text-archive-400'
-                            }`}
-                          >
-                            {reason}
-                          </span>
-                        ),
-                      )}
-                    </div>
-                  </td>
-
-                  {/* File size */}
-                  <td className="table-cell">
-                    <div className="flex items-center gap-1 text-xs text-archive-400">
-                      <HardDrive size={10} />
-                      {formatFileSize(c.file_size)}
-                    </div>
-                  </td>
-
-                  {/* Status */}
-                  <td className="table-cell">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        c.status === 'accepted'
-                          ? 'bg-accent-teal/15 text-accent-teal'
-                          : c.status === 'ignored'
-                            ? 'bg-archive-600/30 text-archive-500'
-                            : c.status === 'rejected'
-                              ? 'bg-accent-red/10 text-accent-red'
-                              : 'bg-accent-gold/10 text-accent-gold'
-                      }`}
-                    >
-                      {DISCOVERED_STATUS_LABELS[c.status]}
-                    </span>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="table-cell">
-                    <div className="flex items-center gap-1">
-                      {c.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() =>
-                              openAccept(c.id, c.folder_name || c.file_name.replace(/\.exe$/i, ''))
-                            }
-                            className="rounded-lg p-1.5 text-violet-200 transition-colors hover:bg-accent-violet/15"
-                            title="加入游戏库"
-                          >
-                            <Plus size={14} />
-                          </button>
-                          <button
-                            onClick={() => ignoreMutation.mutate(c.id)}
-                            className="rounded-lg p-1.5 text-archive-500 transition-colors hover:bg-white/[0.06] hover:text-archive-300"
-                            title="忽略"
-                          >
-                            <EyeOff size={14} />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <section className="grid gap-3 xl:grid-cols-2" aria-label="候选可执行文件">
+          {candidates.map((candidate) => (
+            <CandidateCard key={candidate.id} candidate={candidate} onAccept={() => { setAcceptingId(candidate.id); setDisplayName(candidate.folder_name || candidate.file_name.replace(/\.exe$/i, '')) }} onIgnore={() => ignoreMutation.mutate(candidate.id)} />
+          ))}
+        </section>
       )}
 
-      {/* Accept Confirmation Modal */}
-      <Modal
-        open={acceptingId !== null}
-        onClose={() => {
-          setAcceptingId(null)
-          setDisplayName('')
-        }}
-        title="加入游戏库"
-      >
+      <Modal open={acceptingId !== null} onClose={() => { setAcceptingId(null); setDisplayName('') }} title="加入游戏库">
         <div className="space-y-4">
-          <p className="text-sm text-archive-400">
-            将以此信息创建游戏，加入后可在游戏库中继续编辑详情。
-          </p>
-          <Input
-            label="游戏名称"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="输入游戏名称"
-          />
-          <div className="flex justify-end gap-3 pt-2 border-t border-archive-700/30">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                setAcceptingId(null)
-                setDisplayName('')
-              }}
-            >
-              取消
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleAccept}
-              disabled={acceptMutation.isPending}
-            >
-              {acceptMutation.isPending && (
-                <Loader2 size={14} className="animate-spin" />
-              )}
-              加入游戏库
-            </Button>
-          </div>
+          <p className="text-sm leading-6 text-archive-400">将以此信息创建游戏；加入后可继续设置背景、封面和游玩记录。</p>
+          <Input label="游戏名称" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="输入游戏名称" />
+          <div className="flex justify-end gap-3 border-t border-white/[0.08] pt-4"><Button variant="secondary" size="sm" onClick={() => { setAcceptingId(null); setDisplayName('') }}>取消</Button><Button variant="primary" size="sm" onClick={() => acceptingId !== null && acceptMutation.mutate({ candidateId: acceptingId, displayName: displayName.trim() || undefined })} disabled={acceptMutation.isPending}>{acceptMutation.isPending && <Loader2 size={14} className="animate-spin" />}加入游戏库</Button></div>
         </div>
       </Modal>
     </div>
+  )
+}
+
+function CandidateCard({ candidate, onAccept, onIgnore }: { candidate: DiscoveredExecutable; onAccept: () => void; onIgnore: () => void }): React.ReactElement {
+  const reasons = parseReasons(candidate.match_reasons)
+  const scoreTone = candidate.score >= 70 ? 'text-emerald-300' : candidate.score >= 40 ? 'text-[#d1e5ed]' : 'text-archive-500'
+  return (
+    <article className="pv-panel p-4 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-white/[0.2] hover:shadow-[0_18px_36px_rgba(0,0,0,0.2)]">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0"><p className="truncate text-[15px] font-medium text-[#edf7fb]">{candidate.file_name}</p><p className="mt-1 flex items-center gap-1.5 truncate text-xs text-archive-500"><FolderOpen size={12} />{candidate.folder_name}</p></div>
+        <div className="shrink-0 text-right"><span className={`inline-flex items-center gap-1 text-xs font-medium ${scoreTone}`}><Star size={12} />{candidate.score}</span><p className="mt-1 flex items-center justify-end gap-1 text-[11px] text-archive-600"><HardDrive size={11} />{formatFileSize(candidate.file_size)}</p></div>
+      </div>
+      <p className="mt-3 truncate rounded-md border border-white/[0.06] bg-black/[0.13] px-2.5 py-2 font-mono text-[11px] text-[#afc7d1]/58">{candidate.file_path}</p>
+      <div className="mt-3 flex flex-wrap gap-1.5">{reasons.length > 0 ? reasons.map((reason) => <span key={reason} className={`rounded-md border px-2 py-1 text-[10px] ${reason.startsWith('⚠') ? 'border-red-300/16 bg-red-300/[0.06] text-red-200' : reason.startsWith('✓') ? 'border-emerald-300/16 bg-emerald-300/[0.06] text-emerald-200' : 'border-white/[0.08] bg-white/[0.035] text-[#bcd3dc]/68'}`}>{reason}</span>) : <span className="text-[11px] text-archive-600">暂无额外识别依据</span>}</div>
+      <div className="mt-4 flex items-center justify-between border-t border-white/[0.075] pt-3"><span className="text-xs text-[#bcd2dc]/65">{DISCOVERED_STATUS_LABELS[candidate.status]}</span>{candidate.status === 'pending' && <div className="flex items-center gap-1"><button type="button" className="btn-primary min-h-8 px-3 py-1.5 text-xs" onClick={onAccept}><Plus size={13} />加入</button><button type="button" className="pv-icon-button h-8 w-8" title="忽略候选" aria-label="忽略候选" onClick={onIgnore}><EyeOff size={14} /></button></div>}</div>
+    </article>
   )
 }

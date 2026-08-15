@@ -1,3 +1,4 @@
+/* 视觉基线：16:9 截图保持画面优先，筛选和归属操作收进冷墨玻璃工具层。 */
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle, FolderOpen, Image, Loader2, Trash2, Undo2 } from 'lucide-react'
@@ -141,14 +142,12 @@ export default function Screenshots(): React.ReactElement {
   const isTrash = activeTab === 'trashed'
 
   return (
-    <div className="content-canvas min-h-full space-y-6 bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/[0.075] pb-7">
+    <div className="pv-page space-y-5">
+      <header className="pv-page-header">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">图片资产</p>
-          <h2 className="mt-2 font-serif text-4xl tracking-[-0.025em] text-archive-50">截图箱</h2>
-          <p className="mt-2 text-sm text-archive-400">
-            已显示 {screenshots.length} 张截图，用画面串联你的游戏记忆。
-          </p>
+          <p className="eyebrow">图片资产</p>
+          <h1 className="pv-page-title">截图箱</h1>
+          <p className="pv-page-copy">已显示 {screenshots.length} 张截图，用画面串联你的游戏记忆。</p>
         </div>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (isTrash ? (
@@ -179,9 +178,9 @@ export default function Screenshots(): React.ReactElement {
             </Button>
           )}
         </div>
-      </div>
+      </header>
 
-      <div className="flex flex-wrap gap-5 border-b border-white/[0.075] pb-3">
+      <div className="pv-toolbar flex flex-wrap gap-1.5 p-2">
         {TABS.map((tab) => (
           <button
             key={tab.key}
@@ -189,12 +188,8 @@ export default function Screenshots(): React.ReactElement {
               setActiveTab(tab.key)
               setSelectedIds(new Set())
             }}
-            className={
-              'border-b px-0 pb-2 text-xs font-medium transition-colors ' +
-              (activeTab === tab.key
-                ? 'border-[#c9a35a] text-[#ead7aa]'
-                : 'border-transparent text-archive-500 hover:text-archive-200')
-            }
+            data-active={activeTab === tab.key}
+            className="pv-segment px-3 py-2 text-xs font-medium"
           >
             {tab.label}
           </button>
@@ -358,7 +353,7 @@ function ScreenshotCard({
 }): React.ReactElement {
   return (
     <div
-      className={'group relative overflow-hidden border border-white/[0.085] bg-[#0f1114] shadow-[0_14px_30px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#c9a35a]/60 hover:shadow-[0_20px_40px_rgba(0,0,0,0.38)] ' + (selected ? 'ring-2 ring-[#c9a35a]/75' : '')}
+      className={'group relative overflow-hidden rounded-xl border border-white/[0.1] bg-[#101923] shadow-[0_14px_30px_rgba(0,0,0,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#c7e5ef]/46 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] ' + (selected ? 'ring-2 ring-[#c7e5ef]/58' : '')}
       onClick={onToggle}
     >
       <div
@@ -385,21 +380,21 @@ function ScreenshotCard({
               event.stopPropagation()
               window.api.file.openLocation(shot.file_path)
             }}
-            className="p-1 text-archive-500 hover:text-archive-200 rounded"
+            className="pv-icon-button h-7 w-7"
             title="打开文件位置"
           >
             <FolderOpen size={13} />
           </button>
           {isTrash ? (
             <>
-              <button onClick={(event) => { event.stopPropagation(); onRestore() }} className="p-1 text-accent-teal hover:bg-accent-teal/10 rounded" title="恢复到待整理"><Undo2 size={13} /></button>
-              <button onClick={(event) => { event.stopPropagation(); onPermanentDelete() }} className="p-1 text-accent-red hover:bg-accent-red/10 rounded" title="永久删除"><Trash2 size={13} /></button>
+              <button onClick={(event) => { event.stopPropagation(); onRestore() }} className="pv-icon-button h-7 w-7 text-accent-teal" title="恢复到待整理"><Undo2 size={13} /></button>
+              <button onClick={(event) => { event.stopPropagation(); onPermanentDelete() }} className="pv-icon-button h-7 w-7 text-accent-red" title="永久删除"><Trash2 size={13} /></button>
             </>
           ) : (
             <>
-              <button onClick={(event) => { event.stopPropagation(); onClassify() }} className="p-1 text-accent-teal hover:bg-accent-teal/10 rounded" title={shot.status === 'classified' ? '重新归类' : '归类到游戏'}><CheckCircle size={13} /></button>
-              {shot.status === 'classified' && <button onClick={(event) => { event.stopPropagation(); onClearClassification() }} className="p-1 text-archive-400 hover:bg-white/[0.08] hover:text-archive-100 rounded" title="清除归属，移回待整理"><Undo2 size={13} /></button>}
-              <button onClick={(event) => { event.stopPropagation(); onTrash() }} className="p-1 text-archive-400 hover:text-accent-red hover:bg-accent-red/10 rounded" title="移入回收站"><Trash2 size={13} /></button>
+              <button onClick={(event) => { event.stopPropagation(); onClassify() }} className="pv-icon-button h-7 w-7 text-accent-teal" title={shot.status === 'classified' ? '重新归类' : '归类到游戏'}><CheckCircle size={13} /></button>
+              {shot.status === 'classified' && <button onClick={(event) => { event.stopPropagation(); onClearClassification() }} className="pv-icon-button h-7 w-7" title="清除归属，移回待整理"><Undo2 size={13} /></button>}
+              <button onClick={(event) => { event.stopPropagation(); onTrash() }} className="pv-icon-button h-7 w-7 hover:text-accent-red" title="移入回收站"><Trash2 size={13} /></button>
             </>
           )}
         </div>

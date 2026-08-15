@@ -1,3 +1,4 @@
+/* 视觉基线：冷墨档案墙，留档封面保留叙事感，筛选和排序降为透明工具层。 */
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Archive, Loader2, Search } from 'lucide-react'
@@ -28,24 +29,24 @@ export default function Archives(): React.ReactElement {
   })
 
   return (
-    <div className="content-canvas min-h-full bg-[#090a0c] px-7 py-8 sm:px-10 lg:px-12">
-      <header className="flex flex-wrap items-center justify-between gap-5 border-b border-white/[0.075] pb-5">
+    <div className="pv-page">
+      <header className="pv-page-header">
         <div>
-          <p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">游戏库筛选</p>
+          <p className="eyebrow">游戏库筛选</p>
           <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 className="font-serif text-3xl tracking-[-0.02em] text-archive-50 sm:text-4xl">游玩回顾</h1>
+            <h1 className="pv-page-title">游玩回顾</h1>
             <span className="text-sm text-archive-500">{archives.length} 条已留档记录</span>
           </div>
           <p className="mt-2 max-w-xl text-sm leading-6 text-archive-500">已留档只代表你保留了这段经历；游戏仍在游戏库中，可以继续游玩与补充记录。</p>
         </div>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-          <label className="relative min-w-[220px] border-b border-white/[0.11] py-2 pl-6">
+        <div className="pv-toolbar flex flex-wrap items-center gap-2 p-2">
+          <label className="relative min-w-[220px] rounded-md border border-white/[0.09] bg-black/[0.14] py-2 pl-8 pr-2">
             <Search size={14} className="absolute left-0 top-1/2 -translate-y-1/2 text-archive-500" />
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜索游玩回顾" className="w-full bg-transparent text-sm text-archive-100 outline-none placeholder:text-archive-600" />
           </label>
-          <div className="flex items-center gap-4 text-xs">
-            <button type="button" onClick={() => setSortOrder('desc')} className={`border-b pb-1.5 transition-colors ${sortOrder === 'desc' ? 'border-[#c9a35a] text-[#ead7aa]' : 'border-transparent text-archive-500 hover:text-archive-200'}`}>最新留档</button>
-            <button type="button" onClick={() => setSortOrder('asc')} className={`border-b pb-1.5 transition-colors ${sortOrder === 'asc' ? 'border-[#c9a35a] text-[#ead7aa]' : 'border-transparent text-archive-500 hover:text-archive-200'}`}>最早留档</button>
+          <div className="flex items-center gap-1 text-xs">
+            <button type="button" data-active={sortOrder === 'desc'} onClick={() => setSortOrder('desc')} className="pv-segment px-3 py-2">最新留档</button>
+            <button type="button" data-active={sortOrder === 'asc'} onClick={() => setSortOrder('asc')} className="pv-segment px-3 py-2">最早留档</button>
           </div>
         </div>
       </header>
@@ -72,11 +73,11 @@ function ArchiveCard({ game }: { game: GameWithStats }): React.ReactElement {
         filePath={posterPath}
         crop={game.cover_crop}
         alt={`${game.display_name} 封面`}
-        className="relative border border-white/[0.085] bg-[#15171a] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#c9a35a]/65"
+        className="relative overflow-hidden rounded-xl border border-white/[0.1] bg-[#151b24] shadow-[0_12px_26px_rgba(0,0,0,0.16)] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#c7e4ee]/45 group-hover:shadow-[0_18px_34px_rgba(0,0,0,0.24)]"
         imageClassName="transition-transform duration-500"
         fallback={<div className="flex h-full items-center justify-center bg-[#1a1c1f]"><Archive size={34} className="text-archive-600" /></div>}
       >
-        <div className="absolute left-2.5 top-2.5 border border-[#c9a35a]/35 bg-black/65 px-1.5 py-1 text-[10px] text-[#ead7aa]">已留档</div>
+        <div className="absolute left-2.5 top-2.5 rounded-md border border-[#c7e4ee]/25 bg-[#0b131d]/55 px-1.5 py-1 text-[10px] text-[#d9edf5] backdrop-blur">已留档</div>
       </CoverFrame>
       <div className="border-b border-white/[0.065] px-1 pb-3 pt-3">
         <p className="truncate text-sm font-medium text-archive-100">{game.display_name}</p>

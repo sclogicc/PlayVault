@@ -1,3 +1,4 @@
+/* 视觉基线：冷墨背景舞台与半透明指标层，媒体为主、统计退后，不使用暖金主按钮。 */
 import { useQuery } from '@tanstack/react-query'
 import { ArrowUpRight, CalendarDays, Clock3, Gamepad2, Image, PlayCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -70,37 +71,37 @@ export default function Dashboard(): React.ReactElement {
   const featuredGame = recentGames[0]
 
   return (
-    <div className="min-h-full bg-[#090a0c]">
+    <div className="pv-page !space-y-3 !p-4 sm:!p-6">
       <BackdropStage
         filePath={featuredGame?.background_path}
         crop={featuredGame?.background_crop}
         alt="最近游玩背景"
-        className="h-[720px] min-h-[720px] border-b border-white/[0.07] bg-[#0e1013]"
+        className="h-[720px] min-h-[720px] rounded-2xl border border-white/[0.12] bg-[var(--pv-surface)] shadow-[0_22px_54px_rgba(0,0,0,0.24)]"
       >
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,10,12,0.96)_0%,rgba(9,10,12,0.83)_31%,rgba(9,10,12,0.23)_70%,rgba(9,10,12,0.28)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-[#090a0c] via-[#090a0c]/78 to-transparent" />
 
         <div className="relative flex min-h-[720px] flex-col justify-between px-8 pb-10 pt-9 sm:px-12 lg:px-16 lg:pb-12 lg:pt-12">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-[11px] font-medium tracking-[0.18em] text-[#d8ba77]">PLAYVAULT · 本地游戏档案</p>
-            <Link to="/timeline" className="inline-flex items-center gap-2 text-xs text-archive-400 transition-colors hover:text-[#ead7aa]">
+            <p className="eyebrow">PLAYVAULT · 本地游戏档案</p>
+            <Link to="/timeline" className="library-quiet-action inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs">
               <CalendarDays size={14} /> 查看时间线
             </Link>
           </div>
 
           <div className="max-w-2xl pb-8 pt-28 sm:pb-12">
-            <p className="text-xs font-medium tracking-[0.16em] text-[#d8ba77]">最近游玩</p>
+            <p className="eyebrow">最近游玩</p>
             {featuredGame ? (
               <>
                 <h1 className="mt-4 font-serif text-5xl leading-none tracking-[-0.035em] text-white sm:text-6xl lg:text-7xl">{featuredGame.display_name}</h1>
-                <div className="mt-5 h-px w-36 bg-[#c9a35a]/75" />
+                <div className="mt-5 h-px w-36 bg-[#b8dbe8]/70" />
                 <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-archive-300">
                   <span className="inline-flex items-center gap-2"><Clock3 size={15} /> 已游玩 {formatDuration(featuredGame.total_duration)}</span>
                   <span>{formatRelativeDate(featuredGame.last_played_at)}</span>
                   <span>{featuredGame.screenshot_count} 张截图</span>
                 </div>
                 <div className="mt-7 flex flex-wrap items-center gap-6">
-                  <Link to={`/games/${featuredGame.id}`} className="inline-flex items-center gap-2 border border-[#c9a35a]/75 bg-[#c9a35a] px-5 py-2.5 text-sm font-medium text-[#15110a] transition-colors hover:bg-[#dec280]">
+                  <Link to={`/games/${featuredGame.id}`} className="btn-primary inline-flex items-center gap-2 px-5 py-2.5">
                     <PlayCircle size={16} /> 继续游玩
                   </Link>
                   <Link to={`/games/${featuredGame.id}`} className="inline-flex items-center gap-2 text-sm text-archive-200 transition-colors hover:text-white">
@@ -112,7 +113,7 @@ export default function Dashboard(): React.ReactElement {
               <>
                 <h1 className="mt-4 max-w-xl font-serif text-5xl leading-none tracking-[-0.035em] text-white sm:text-6xl">开始记录你的游戏经历</h1>
                 <p className="mt-5 max-w-lg text-sm leading-7 text-archive-300">添加本地游戏并绑定可执行文件后，PlayVault 会安静记录每一次游玩，直到你将它封存为个人档案。</p>
-                <Link to="/games" className="mt-7 inline-flex items-center gap-2 border border-[#c9a35a]/75 bg-[#c9a35a] px-5 py-2.5 text-sm font-medium text-[#15110a] transition-colors hover:bg-[#dec280]">
+                <Link to="/games" className="btn-primary mt-7 inline-flex items-center gap-2 px-5 py-2.5">
                   <Gamepad2 size={16} /> 前往游戏库
                 </Link>
               </>
@@ -122,7 +123,7 @@ export default function Dashboard(): React.ReactElement {
           <div className="relative">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm font-medium text-archive-200">最近游玩</p>
-              <Link to="/games" className="inline-flex items-center gap-1 text-xs text-archive-400 transition-colors hover:text-[#ead7aa]">查看全部 <ArrowUpRight size={13} /></Link>
+              <Link to="/games" className="inline-flex items-center gap-1 text-xs text-archive-400 transition-colors hover:text-[#d9eff7]">查看全部 <ArrowUpRight size={13} /></Link>
             </div>
             {isLoading ? (
               <p className="py-8 text-sm text-archive-500">正在载入你的游戏经历…</p>
@@ -137,14 +138,14 @@ export default function Dashboard(): React.ReactElement {
         </div>
       </BackdropStage>
 
-      <section className="grid grid-cols-1 divide-y divide-white/[0.07] border-b border-white/[0.07] bg-[#0c0e11] md:grid-cols-4 md:divide-x md:divide-y-0">
+      <section className="pv-panel grid grid-cols-1 divide-y divide-white/[0.07] md:grid-cols-4 md:divide-x md:divide-y-0">
         <DashboardMetric label="今日游玩" value={formatDuration(sumDuration(todaySessions))} />
         <DashboardMetric label="近 7 天" value={formatDuration(sumDuration(weekSessions))} />
         <DashboardMetric label="近 30 天" value={formatDuration(sumDuration(sessions))} />
         <Link to="/screenshots" className="group flex min-h-[124px] flex-col justify-center px-8 py-6 transition-colors hover:bg-white/[0.025] sm:px-12">
           <span className="flex items-center gap-2 text-xs text-archive-500"><Image size={14} /> 截图整理</span>
           <span className="mt-2 text-2xl font-medium tracking-tight text-archive-100">{pendingCount} 张待整理</span>
-          <span className="mt-2 inline-flex items-center gap-1 text-xs text-[#d8ba77] opacity-0 transition-opacity group-hover:opacity-100">打开截图箱 <ArrowUpRight size={12} /></span>
+          <span className="mt-2 inline-flex items-center gap-1 text-xs text-[#c5e1eb] opacity-0 transition-opacity group-hover:opacity-100">打开截图箱 <ArrowUpRight size={12} /></span>
         </Link>
       </section>
     </div>
@@ -162,7 +163,7 @@ function DashboardMetric({ label, value }: { label: string; value: string }): Re
 
 function ShelfGameCard({ game, featured }: { game: GameWithStats; featured: boolean }): React.ReactElement {
   return (
-    <Link to={`/games/${game.id}`} className={`group relative block w-[118px] shrink-0 overflow-hidden bg-[#14171a] shadow-[0_12px_28px_rgba(0,0,0,0.38)] transition-transform duration-300 hover:-translate-y-2 sm:w-[132px] ${featured ? 'ring-1 ring-[#c9a35a]/80' : 'ring-1 ring-white/[0.08]'}`}>
+    <Link to={`/games/${game.id}`} className={`group relative block w-[118px] shrink-0 overflow-hidden rounded-lg bg-[#141b24] shadow-[0_12px_28px_rgba(0,0,0,0.38)] transition-transform duration-300 hover:-translate-y-2 sm:w-[132px] ${featured ? 'ring-1 ring-[#c4e4ef]/65' : 'ring-1 ring-white/[0.08]'}`}>
       <CoverFrame
         filePath={game.cover_path}
         crop={game.cover_crop}

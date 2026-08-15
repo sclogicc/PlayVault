@@ -1,3 +1,4 @@
+/* 视觉基线：详情页以 16:9 背景舞台为核心，留档和编辑层沿用冷墨玻璃材质，不回退暖金提示。 */
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -411,7 +412,7 @@ export default function GameDetail(): React.ReactElement {
             <div className="flex max-w-full shrink-0 flex-col items-stretch gap-3.5 lg:w-[360px]">
               <div className="flex flex-wrap items-center justify-end gap-2">
                 {isArchived && (
-                  <span className="inline-flex items-center gap-1.5 border border-amber-300/15 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-[#c7e4ee]/18 bg-[#c7e4ee]/[0.07] px-3 py-1.5 text-xs text-[#dceff6]">
                     <Archive size={12} />
                     留档于 {formatDate(game.archived_at)}
                   </span>
@@ -441,7 +442,7 @@ export default function GameDetail(): React.ReactElement {
                 )}
               </div>
               <details className="border-t border-white/[0.07] pt-3 text-right">
-                <summary className="cursor-pointer select-none text-xs text-archive-500 transition-colors hover:text-[#ead7aa]">整理、媒体与档案</summary>
+                <summary className="cursor-pointer select-none text-xs text-archive-500 transition-colors hover:text-[#dceff6]">整理、媒体与档案</summary>
                 <div className="mt-3 flex flex-wrap justify-end gap-2">
                   <Button variant="ghost" size="sm" onClick={() => void handleToggleFavorite()}><Heart size={14} fill={game.is_favorite === 1 ? 'currentColor' : 'none'} />{game.is_favorite === 1 ? '取消收藏' : '收藏游戏'}</Button>
                   <Button variant="ghost" size="sm" onClick={() => void handleToggleHidden()}><EyeOff size={14} />{game.is_hidden === 1 ? '取消隐藏' : '隐藏游戏'}</Button>
@@ -489,32 +490,32 @@ export default function GameDetail(): React.ReactElement {
       )}
 
       {isArchived && (
-        <section className="border border-[#c9a35a]/18 bg-[#11120f] px-5 py-6 sm:px-6">
+        <section className="pv-panel px-5 py-6 sm:px-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="eyebrow">游玩留档</p>
-              <h3 className="mt-2 flex items-center gap-2 font-serif text-[1.45rem] font-medium leading-none tracking-[-0.025em] text-archive-100"><Archive size={17} className="text-[#d8ba77]" />这段游戏经历已保留</h3>
+              <h3 className="mt-2 flex items-center gap-2 font-serif text-[1.45rem] font-medium leading-none tracking-[-0.025em] text-archive-100"><Archive size={17} className="text-[#c7e4ee]" />这段游戏经历已保留</h3>
               <p className="mt-2.5 max-w-2xl text-[13px] leading-6 text-archive-500">留档不会改变游戏的启动、编辑或继续记录权限。它只保留此刻的游玩资料与精选画面。</p>
             </div>
-            <span className="border border-[#c9a35a]/25 px-2.5 py-1 text-xs text-[#ead7aa]">留档于 {formatDate(game.archived_at)}</span>
+            <span className="rounded-md border border-[#c7e4ee]/24 bg-[#c7e4ee]/[0.06] px-2.5 py-1 text-xs text-[#dceff6]">留档于 {formatDate(game.archived_at)}</span>
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-px border-y border-white/[0.07] bg-white/[0.07] sm:grid-cols-3">
-            <div className="bg-[#11120f] px-4 py-3"><p className="text-[11px] text-archive-500">首次游玩</p><p className="mt-1 text-sm text-archive-200">{formatDate(firstPlayedAt)}</p></div>
-            <div className="bg-[#11120f] px-4 py-3"><p className="text-[11px] text-archive-500">最后游玩</p><p className="mt-1 text-sm text-archive-200">{formatDate(latestSessionAt)}</p></div>
-            <div className="bg-[#11120f] px-4 py-3"><p className="text-[11px] text-archive-500">保留画面</p><p className="mt-1 text-sm text-archive-200">{archiveHighlights.length} 张</p></div>
+            <div className="bg-[var(--pv-raised)]/72 px-4 py-3"><p className="text-[11px] text-archive-500">首次游玩</p><p className="mt-1 text-sm text-archive-200">{formatDate(firstPlayedAt)}</p></div>
+            <div className="bg-[var(--pv-raised)]/72 px-4 py-3"><p className="text-[11px] text-archive-500">最后游玩</p><p className="mt-1 text-sm text-archive-200">{formatDate(latestSessionAt)}</p></div>
+            <div className="bg-[var(--pv-raised)]/72 px-4 py-3"><p className="text-[11px] text-archive-500">保留画面</p><p className="mt-1 text-sm text-archive-200">{archiveHighlights.length} 张</p></div>
           </div>
 
           {archivePrimaryHighlight && (
             <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1.65fr)_minmax(220px,0.75fr)]">
-              <button type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === archivePrimaryHighlight.id))} className="group relative block overflow-hidden border border-[#c9a35a]/28 bg-black text-left transition-colors hover:border-[#c9a35a]/70">
+              <button type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === archivePrimaryHighlight.id))} className="group relative block overflow-hidden rounded-lg border border-[#c7e4ee]/22 bg-black text-left transition-colors hover:border-[#c7e4ee]/58">
                 <ScreenshotFrame filePath={archivePrimaryHighlight.preserved_path || archivePrimaryHighlight.file_path} alt={archivePrimaryHighlight.file_name} className="aspect-[16/9]" imageClassName="transition-transform duration-500 group-hover:scale-[1.025]" />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent px-4 pb-4 pt-16"><span className="border border-[#c9a35a]/45 bg-black/55 px-2 py-1 text-[10px] text-[#ead7aa]">回忆主画面</span>{game.archive_note && <p className="mt-2 max-w-xl text-sm leading-6 text-archive-100">“{game.archive_note}”</p>}</div>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent px-4 pb-4 pt-16"><span className="rounded-md border border-[#c7e4ee]/38 bg-[#0a121b]/55 px-2 py-1 text-[10px] text-[#dceff6] backdrop-blur">回忆主画面</span>{game.archive_note && <p className="mt-2 max-w-xl text-sm leading-6 text-archive-100">“{game.archive_note}”</p>}</div>
               </button>
               <div className="flex min-h-0 flex-col gap-3 border border-white/[0.07] bg-black/[0.12] p-3"><div className="flex items-center justify-between"><p className="text-xs font-medium text-archive-300">补充画面</p><span className="text-[10px] text-archive-600">点击查看原图</span></div>{archiveSecondaryHighlights.length > 0 ? <div className="grid flex-1 grid-cols-2 gap-2 lg:grid-cols-1">{archiveSecondaryHighlights.map((shot) => <button key={shot.id} type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === shot.id))} className="group relative block overflow-hidden border border-white/[0.08] bg-archive-900 text-left transition-colors hover:border-white/[0.24]"><ScreenshotFrame filePath={shot.preserved_path || shot.file_path} alt={shot.file_name} className="aspect-[16/9]" imageClassName="transition-transform duration-300 group-hover:scale-[1.04]" /></button>)}</div> : <p className="py-6 text-xs leading-5 text-archive-600">没有补充画面。主画面会独立保留这段经历。</p>}</div>
             </div>
           )}
-          {!archivePrimaryHighlight && game.archive_note && <blockquote className="mt-5 border-l-2 border-[#c9a35a]/60 bg-black/[0.12] px-4 py-3 text-sm leading-6 text-archive-300">“{game.archive_note}”</blockquote>}
+          {!archivePrimaryHighlight && game.archive_note && <blockquote className="mt-5 border-l-2 border-[#c7e4ee]/55 bg-black/[0.12] px-4 py-3 text-sm leading-6 text-archive-300">“{game.archive_note}”</blockquote>}
         </section>
       )}
 
@@ -719,9 +720,9 @@ export default function GameDetail(): React.ReactElement {
         width="max-w-3xl"
       >
         <div className="space-y-5">
-          <div className="rounded-archive border border-amber-300/15 bg-amber-400/[0.08] px-4 py-3.5">
+          <div className="rounded-archive border border-[#c7e4ee]/18 bg-[#c7e4ee]/[0.07] px-4 py-3.5">
             <div className="flex items-start gap-3">
-              <span className="rounded-xl bg-amber-400/10 p-2 text-amber-100"><Archive size={17} /></span>
+              <span className="rounded-xl bg-[#c7e4ee]/12 p-2 text-[#dceff6]"><Archive size={17} /></span>
               <div>
                 <p className="text-sm font-medium text-archive-100">为这段经历生成可长期回顾的留档。</p>
                 <p className="mt-1 text-xs leading-5 text-archive-400">留档会保存当前的累计时长、游玩记录、首次/最后游玩日期与精选画面，但不会改变游戏在游戏库中的位置，也不会限制启动或编辑。</p>
@@ -729,7 +730,7 @@ export default function GameDetail(): React.ReactElement {
             </div>
           </div>
 
-          <div><div className="flex items-end justify-between gap-3"><div><p className="text-sm font-medium text-archive-100">可选：留下一句话</p><p className="mt-1 text-xs text-archive-500">它会作为这次留档的私人短感想保存，不会替代游戏备注。</p></div><span className="text-[11px] text-archive-600">{archiveNote.length} / 600</span></div><textarea value={archiveNote} maxLength={600} onChange={(event) => setArchiveNote(event.target.value)} placeholder="例如：这段旅程最想记住的是什么？" className="mt-3 min-h-20 w-full resize-y border border-white/[0.09] bg-black/[0.16] px-3 py-2.5 text-sm leading-6 text-archive-200 outline-none placeholder:text-archive-600 focus:border-[#c9a35a]/60" /></div>
+          <div><div className="flex items-end justify-between gap-3"><div><p className="text-sm font-medium text-archive-100">可选：留下一句话</p><p className="mt-1 text-xs text-archive-500">它会作为这次留档的私人短感想保存，不会替代游戏备注。</p></div><span className="text-[11px] text-archive-600">{archiveNote.length} / 600</span></div><textarea value={archiveNote} maxLength={600} onChange={(event) => setArchiveNote(event.target.value)} placeholder="例如：这段旅程最想记住的是什么？" className="mt-3 min-h-20 w-full resize-y rounded-lg border border-white/[0.09] bg-black/[0.16] px-3 py-2.5 text-sm leading-6 text-archive-200 outline-none placeholder:text-archive-600 focus:border-[#c7e4ee]/60" /></div>
 
           {gameScreenshots.length > 0 && (
             <div>
@@ -755,11 +756,11 @@ export default function GameDetail(): React.ReactElement {
                       <ScreenshotFrame
                         filePath={shot.file_path}
                         alt={shot.file_name}
-                        className={`rounded-archive border transition-all ${selected ? 'border-amber-300/70 ring-2 ring-amber-300/35' : 'border-white/[0.08] group-hover:border-white/[0.22]'}`}
+                        className={`rounded-archive border transition-all ${selected ? 'border-[#c7e4ee]/70 ring-2 ring-[#c7e4ee]/30' : 'border-white/[0.08] group-hover:border-white/[0.22]'}`}
                         imageClassName="transition-transform duration-200 group-hover:scale-[1.03]"
                       />
                       <span className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border ${selected ? 'border-violet-200/60 bg-accent-violet text-white' : 'border-white/25 bg-archive-950/70 text-transparent'}`}><Check size={14} strokeWidth={3} /></span>
-                      {selected && archiveHighlightIds[0] === shot.id && <span className="absolute left-2 top-2 border border-[#c9a35a]/55 bg-black/70 px-1.5 py-1 text-[10px] text-[#ead7aa]">主画面</span>}
+                      {selected && archiveHighlightIds[0] === shot.id && <span className="absolute left-2 top-2 rounded-md border border-[#c7e4ee]/48 bg-[#0a121b]/72 px-1.5 py-1 text-[10px] text-[#dceff6]">主画面</span>}
                       <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 pb-1.5 pt-6 text-[10px] text-archive-200 opacity-0 transition-opacity group-hover:opacity-100">{formatDate(shot.captured_at)}</span>
                     </button>
                   )
