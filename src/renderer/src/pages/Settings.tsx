@@ -19,6 +19,7 @@ import {
   SlidersHorizontal,
   ArrowDownAZ,
   ArrowUpDown,
+  Palette,
 } from 'lucide-react'
 import Button from '../components/ui/Button'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -32,12 +33,14 @@ import type { GameCaptureStatus } from '@shared/capture'
 import type { UpdateStatus } from '@shared/update'
 import { useLibraryViewPreferences } from '../hooks/useLibraryViewPreferences'
 import type { LibraryDensity, LibraryLayout, LibrarySort } from '../lib/libraryView'
+import { useAppearanceTheme, type AppearanceTheme } from '../hooks/useAppearanceTheme'
 
 export default function Settings(): React.ReactElement {
   const { roots, isLoading } = useScanRoots()
   const { create, remove, toggle } = useScanRootMutations()
   const triggerScan = useTriggerScan()
   const { preferences: libraryPreferences, isReady: libraryPreferencesReady, updatePreferences: updateLibraryPreferences } = useLibraryViewPreferences()
+  const { theme, isReady: themeReady, updateTheme } = useAppearanceTheme()
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [screenshotDir, setScreenshotDir] = useState<string>('')
   const [screenshotDirLoading, setScreenshotDirLoading] = useState(true)
@@ -217,7 +220,7 @@ export default function Settings(): React.ReactElement {
   }
 
   return (
-    <div className="min-h-full space-y-8 bg-[#090a0c] px-8 py-9 sm:px-12 lg:px-16">
+    <div className="min-h-full space-y-8 bg-[var(--pv-void)] px-8 py-9 transition-colors duration-300 sm:px-12 lg:px-16">
       {/* Header */}
       <div className="border-b border-white/[0.075] pb-7">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#d8ba77]">私人资料设置</p>
@@ -234,6 +237,13 @@ export default function Settings(): React.ReactElement {
           {!libraryPreferencesReady && <span className="text-xs text-archive-600">正在读取偏好…</span>}
         </div>
         <div className="grid gap-5 md:grid-cols-2">
+          <div className="md:col-span-2">
+            <div className="mb-2 flex items-center justify-between gap-3"><p className="text-xs font-medium text-archive-400">界面主题</p>{!themeReady && <span className="text-[11px] text-archive-600">正在读取主题…</span>}</div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <ThemeChoice active={theme === 'warm-charcoal'} onClick={() => void updateTheme('warm-charcoal')} theme="warm-charcoal" title="暖炭黑" description="暖调纸张与低饱和金色，像一册安静的私人日志。" />
+              <ThemeChoice active={theme === 'night-ink'} onClick={() => void updateTheme('night-ink')} theme="night-ink" title="夜墨" description="更冷静的蓝墨深色，强调信息和媒体的边界。" />
+            </div>
+          </div>
           <div>
             <p className="mb-2 text-xs font-medium text-archive-400">浏览方式</p>
             <div className="flex gap-2"><PreferenceChoice active={libraryPreferences.layout === 'grid'} onClick={() => updateLibraryPreferences({ layout: 'grid' as LibraryLayout })} icon={<Grid2X2 size={15} />} label="封面网格" /><PreferenceChoice active={libraryPreferences.layout === 'list'} onClick={() => updateLibraryPreferences({ layout: 'list' as LibraryLayout })} icon={<List size={15} />} label="紧凑列表" /></div>
@@ -641,6 +651,38 @@ export default function Settings(): React.ReactElement {
   )
 }
 
+function ThemeChoice({
+  active,
+  onClick,
+  theme,
+  title,
+  description,
+}: {
+  active: boolean
+  onClick: () => void
+  theme: AppearanceTheme
+  title: string
+  description: string
+}): React.ReactElement {
+  const isWarm = theme === 'warm-charcoal'
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`group relative overflow-hidden border p-3 text-left transition-[border-color,background-color,transform,box-shadow] duration-200 ${active ? 'border-[var(--pv-accent)]/70 bg-white/[0.045] shadow-[0_10px_24px_rgba(0,0,0,0.16)]' : 'border-white/[0.075] bg-black/[0.12] hover:-translate-y-px hover:border-white/[0.17] hover:bg-white/[0.025]'}`}
+    >
+      <div className={`mb-3 flex h-11 items-end gap-1.5 border p-2 ${isWarm ? 'border-[#ead7aa]/10 bg-[#0b0a09]' : 'border-[#c1d4df]/10 bg-[#0a0d12]'}`}>
+        <span className={`h-full flex-1 ${isWarm ? 'bg-[#1b1917]' : 'bg-[#18212b]'}`} />
+        <span className={`h-3/5 flex-1 ${isWarm ? 'bg-[#c9a35a]' : 'bg-[#8ba9bd]'}`} />
+        <span className={`h-4/5 flex-1 ${isWarm ? 'bg-[#302b22]' : 'bg-[#263542]'}`} />
+      </div>
+      <div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm font-medium text-archive-200"><Palette size={14} className={active ? 'text-[var(--pv-accent-strong)]' : 'text-archive-500'} />{title}</span>{active && <span className="text-[10px] font-medium tracking-[0.12em] text-[var(--pv-accent-strong)]">当前使用</span>}</div>
+      <p className="mt-1.5 text-xs leading-5 text-archive-500">{description}</p>
+    </button>
+  )
+}
+
 function PreferenceChoice({
   active,
   onClick,
@@ -656,7 +698,7 @@ function PreferenceChoice({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex min-h-9 items-center gap-2 border px-3 text-sm transition-colors ${active ? 'border-[#c9a35a]/60 bg-[#17140f] text-[#ead7aa]' : 'border-white/[0.09] bg-black/[0.12] text-archive-400 hover:border-white/[0.18] hover:text-archive-200'}`}
+      className={`inline-flex min-h-9 items-center gap-2 border px-3 text-sm transition-[border-color,background-color,color] duration-200 ${active ? 'border-[var(--pv-accent)]/60 bg-[color:color-mix(in_srgb,var(--pv-accent)_10%,transparent)] text-[var(--pv-accent-strong)]' : 'border-white/[0.09] bg-black/[0.12] text-archive-400 hover:border-white/[0.18] hover:text-archive-200'}`}
     >
       {icon}{label}
     </button>

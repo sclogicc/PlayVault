@@ -363,18 +363,18 @@ export default function GameDetail(): React.ReactElement {
   const missingRecordLabels = recordCompleteness.missing.map((field) => RECORD_FIELD_LABELS[field])
 
   return (
-    <div className="content-canvas min-h-full space-y-7 bg-[#090a0c] px-8 py-8 pb-12 sm:px-12 lg:px-16">
+    <div className="content-canvas min-h-full space-y-8 bg-[var(--pv-void)] px-7 py-8 pb-14 transition-colors duration-300 sm:px-10 sm:py-9 lg:px-12">
       {/* Back link */}
       <Link
         to="/games"
-        className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.025] px-3 py-1.5 text-sm text-archive-400 transition-all hover:border-white/[0.14] hover:bg-white/[0.055] hover:text-archive-100"
+        className="inline-flex items-center gap-1.5 border border-white/[0.07] bg-white/[0.025] px-3 py-1.5 text-[13px] text-archive-400 transition-[border-color,background-color,color,transform] duration-200 hover:-translate-x-px hover:border-white/[0.14] hover:bg-white/[0.055] hover:text-archive-100"
       >
         <ChevronLeft size={14} />
 返回游戏库
       </Link>
 
       {/* 游戏详情以稳定信息为主，背景采用受控的中等横幅，不让图片决定页面高度。 */}
-      <div className="group relative overflow-hidden border border-white/[0.09] bg-[#0f1114]">
+      <div className="group relative overflow-hidden border border-white/[0.09] bg-[var(--pv-surface)] transition-colors duration-300">
         {/* 背景图独立于游戏封面，只提供氛围，不参与详情内容布局。 */}
         <BackdropStage
           filePath={archiveBackgroundPath}
@@ -382,21 +382,21 @@ export default function GameDetail(): React.ReactElement {
           alt={`${game.display_name} 背景图`}
         />
 
-        <div className="relative -mt-12 bg-gradient-to-b from-[#0f1114]/0 via-[#0f1114]/96 to-[#0f1114] px-5 pb-6 pt-10 sm:px-7">
+        <div className="relative -mt-12 bg-gradient-to-b from-transparent via-[var(--pv-surface)] to-[var(--pv-surface)] px-5 pb-7 pt-11 sm:px-7 sm:pb-8">
           <div className="flex flex-wrap items-start justify-between gap-6">
-            <div className="flex min-w-0 flex-1 items-start gap-5 sm:gap-6">
+            <div className="flex min-w-0 flex-1 items-start gap-5 sm:gap-7">
               <CoverFrame
                 filePath={archiveCoverPath}
                 crop={game.cover_crop}
                 alt={`${game.display_name} 封面`}
-                className="flex w-[88px] shrink-0 items-center justify-center border border-white/[0.15] bg-archive-900 shadow-[0_14px_30px_rgba(0,0,0,0.35)] sm:w-[104px]"
+                className="flex w-[92px] shrink-0 items-center justify-center border border-white/[0.15] bg-archive-900 shadow-[0_16px_34px_rgba(0,0,0,0.34)] sm:w-[112px]"
                 fallback={<Gamepad2 size={30} className="text-archive-700" />}
               />
-              <div className="min-w-0 flex-1 space-y-3 pt-0.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">个人游戏记录</p>
+              <div className="min-w-0 flex-1 space-y-3.5 pt-0.5">
+              <p className="eyebrow">个人游戏记录</p>
               {/* 名称与状态 */}
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="font-serif text-3xl font-medium tracking-[-0.02em] text-archive-50 sm:text-4xl">
+                <h2 className="font-serif text-[2rem] font-medium leading-none tracking-[-0.04em] text-archive-50 sm:text-[2.65rem]">
                   {game.display_name}
                 </h2>
                 <StatusBadge status={game.status as GameStatus} />
@@ -410,13 +410,13 @@ export default function GameDetail(): React.ReactElement {
 
 
               {game.display_name !== game.name && (
-                <p className="text-sm text-archive-500 font-mono">
+                <p className="text-[13px] text-archive-500 font-mono">
                   系统名: {game.name}
                 </p>
               )}
 
               {/* Install + Path */}
-              <div className="flex items-center gap-3 text-sm">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px]">
                 <span className="flex items-center gap-1.5">
                   <HardDrive size={13} className="text-archive-500" />
                   <span className={isInstalled ? 'text-accent-teal font-medium' : 'text-accent-red font-medium'}>
@@ -443,7 +443,7 @@ export default function GameDetail(): React.ReactElement {
             </div>
 
             {/* 仅保留日常记录动作；媒体和删除维护收进次级管理区，避免头部变成按钮墙。 */}
-            <div className="flex max-w-full shrink-0 flex-col items-stretch gap-3 lg:w-[360px]">
+            <div className="flex max-w-full shrink-0 flex-col items-stretch gap-3.5 lg:w-[360px]">
               <div className="flex flex-wrap items-center justify-end gap-2">
                 {isArchived && (
                   <span className="inline-flex items-center gap-1.5 border border-amber-300/15 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
@@ -493,27 +493,27 @@ export default function GameDetail(): React.ReactElement {
           </div>
 
           {/* Stats bar */}
-          <div className="mt-6 grid grid-cols-2 gap-px border-t border-white/[0.07] bg-white/[0.07] pt-5 text-sm sm:grid-cols-4">
-            <div className="bg-[#111317] px-4 py-3">
-              <span className="text-[11px] font-medium text-archive-500">总时长</span>
+          <div className="mt-7 grid grid-cols-2 gap-px border-t border-white/[0.07] bg-white/[0.07] pt-5 text-sm sm:grid-cols-4">
+            <div className="bg-[var(--pv-raised)] px-4 py-3.5 transition-colors duration-300">
+              <span className="text-[10px] font-semibold tracking-[0.12em] text-archive-500">总时长</span>
               <p className="mt-1 font-mono text-archive-100">
                 {formatDuration(totalDuration)}
               </p>
             </div>
-            <div className="bg-[#111317] px-4 py-3">
-              <span className="text-[11px] font-medium text-archive-500">最近游玩</span>
+            <div className="bg-[var(--pv-raised)] px-4 py-3.5 transition-colors duration-300">
+              <span className="text-[10px] font-semibold tracking-[0.12em] text-archive-500">最近游玩</span>
               <p className="mt-1 text-archive-100">
                 {formatRelativeDate(lastPlayedAt)}
               </p>
             </div>
-            <div className="bg-[#111317] px-4 py-3">
-              <span className="text-[11px] font-medium text-archive-500">游玩记录</span>
+            <div className="bg-[var(--pv-raised)] px-4 py-3.5 transition-colors duration-300">
+              <span className="text-[10px] font-semibold tracking-[0.12em] text-archive-500">游玩记录</span>
               <p className="mt-1 font-mono text-archive-100">
                 {sessions.length}
               </p>
             </div>
-            <div className="bg-[#111317] px-4 py-3">
-              <span className="text-[11px] font-medium text-archive-500">{isArchived ? '留档精选' : '截图收藏'}</span>
+            <div className="bg-[var(--pv-raised)] px-4 py-3.5 transition-colors duration-300">
+              <span className="text-[10px] font-semibold tracking-[0.12em] text-archive-500">{isArchived ? '留档精选' : '截图收藏'}</span>
               <p className="mt-1 font-mono text-archive-100">
                 {isArchived ? archiveHighlights.length : gameScreenshots.length}
               </p>
@@ -523,19 +523,19 @@ export default function GameDetail(): React.ReactElement {
       </div>
 
       {recordCompleteness.missing.length > 0 && (
-        <section className="flex flex-wrap items-center justify-between gap-4 border border-white/[0.075] bg-white/[0.02] px-5 py-4">
-          <div><p className="text-sm text-archive-200">这份记录还可以补充 {recordCompleteness.missing.length} 项资料</p><p className="mt-1 text-xs leading-5 text-archive-500">缺少：{missingRecordLabels.join('、')}。这只是回看提示，不影响继续游玩、留档或删除。</p></div>
+        <section className="flex flex-wrap items-center justify-between gap-4 border border-white/[0.075] bg-white/[0.02] px-5 py-4.5">
+          <div><p className="text-[15px] font-medium tracking-[-0.01em] text-archive-200">这份记录还可以补充 {recordCompleteness.missing.length} 项资料</p><p className="mt-1.5 text-xs leading-5 text-archive-500">缺少：{missingRecordLabels.join('、')}。这只是回看提示，不影响继续游玩、留档或删除。</p></div>
           {!isArchived && <Button variant="secondary" size="sm" onClick={() => { setArchiveError(null); setArchiveHighlightIds([]); setArchiveNote(''); setArchivingGame(true) }}><Archive size={14} />生成留档</Button>}
         </section>
       )}
 
       {isArchived && (
-        <section className="border border-[#c9a35a]/18 bg-[#11120f] px-5 py-5 sm:px-6">
+        <section className="border border-[#c9a35a]/18 bg-[#11120f] px-5 py-6 sm:px-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">游玩留档</p>
-              <h3 className="mt-1.5 flex items-center gap-2 text-lg font-medium text-archive-100"><Archive size={17} className="text-[#d8ba77]" />这段游戏经历已保留</h3>
-              <p className="mt-1.5 max-w-2xl text-sm leading-6 text-archive-500">留档不会改变游戏的启动、编辑或继续记录权限。它只保留此刻的游玩资料与精选画面。</p>
+              <p className="eyebrow">游玩留档</p>
+              <h3 className="mt-2 flex items-center gap-2 font-serif text-[1.45rem] font-medium leading-none tracking-[-0.025em] text-archive-100"><Archive size={17} className="text-[#d8ba77]" />这段游戏经历已保留</h3>
+              <p className="mt-2.5 max-w-2xl text-[13px] leading-6 text-archive-500">留档不会改变游戏的启动、编辑或继续记录权限。它只保留此刻的游玩资料与精选画面。</p>
             </div>
             <span className="border border-[#c9a35a]/25 px-2.5 py-1 text-xs text-[#ead7aa]">留档于 {formatDate(game.archived_at)}</span>
           </div>
@@ -560,10 +560,10 @@ export default function GameDetail(): React.ReactElement {
       )}
 
       {/* ========== Journal Sections ========== */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12 xl:items-start">
+      <div className="grid grid-cols-1 gap-7 xl:grid-cols-12 xl:items-start">
         {/* Play log */}
-        <div className="card xl:col-span-5">
-          <div className="mb-4 flex flex-wrap items-start justify-between gap-3"><div><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Clock size={15} className="text-amber-100" />游玩轨迹</h3><p className="mt-1 text-xs text-archive-500">每次启动和结束都会安静留在这里。</p></div><span className="border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{sessions.length} 次</span></div>
+        <div className="card p-6 xl:col-span-5">
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-3"><div><h3 className="section-title flex items-center gap-2"><Clock size={15} className="text-[var(--pv-accent-strong)]" />游玩轨迹</h3><p className="section-description">每次启动和结束都会安静留在这里。</p></div><span className="border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{sessions.length} 次</span></div>
           {sessionsLoading ? (
             <p className="text-xs text-archive-500">加载中...</p>
           ) : sessions.length === 0 ? (
@@ -583,7 +583,7 @@ export default function GameDetail(): React.ReactElement {
                 return (
                   <div
                     key={s.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.055] bg-white/[0.025] px-3 py-3 text-xs transition-colors hover:border-white/[0.11] hover:bg-white/[0.045]"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.055] bg-white/[0.025] px-3 py-3.5 text-xs transition-[border-color,background-color,transform] duration-200 hover:translate-x-px hover:border-white/[0.11] hover:bg-white/[0.045]"
                   >
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
                       <span className="text-archive-200 font-mono shrink-0">
@@ -639,8 +639,8 @@ export default function GameDetail(): React.ReactElement {
         </div>
 
         {/* Screenshot archive */}
-        <div className="card overflow-hidden xl:col-span-7">
-          <div className="mb-4 flex flex-wrap items-start justify-between gap-3"><div><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Image size={15} className="text-amber-100" />截图留存</h3><p className="mt-1 text-xs text-archive-500">点击任意画面以原图方式回看。</p></div><span className="border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{gameScreenshots.length} 张</span></div>
+        <div className="card overflow-hidden p-6 xl:col-span-7">
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-3"><div><h3 className="section-title flex items-center gap-2"><Image size={15} className="text-[var(--pv-accent-strong)]" />截图留存</h3><p className="section-description">点击任意画面以原图方式回看。</p></div><span className="border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{gameScreenshots.length} 张</span></div>
           {gameScreenshots.length === 0 ? (
             <p className="text-xs text-archive-500">暂无截图</p>
           ) : (
@@ -659,8 +659,8 @@ export default function GameDetail(): React.ReactElement {
         </div>
 
         {/* Game notes */}
-        <div className="card xl:col-span-6">
-          <div className="mb-4"><h3 className="text-sm font-semibold text-archive-100">游戏资料</h3><p className="mt-1 text-xs text-archive-500">为以后回看留下的私人补充信息。</p></div>
+        <div className="card p-6 xl:col-span-6">
+          <div className="mb-5"><h3 className="section-title">游戏资料</h3><p className="section-description">为以后回看留下的私人补充信息。</p></div>
           <div className="space-y-3 text-sm">
             {game.platform && (
               <div className="flex items-center gap-3 rounded-xl border border-white/[0.055] bg-white/[0.025] px-3 py-2.5">
@@ -701,8 +701,8 @@ export default function GameDetail(): React.ReactElement {
         </div>
 
         {/* Bound executables */}
-        <div className="card xl:col-span-6">
-          <div className="mb-4"><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Monitor size={14} />可执行文件</h3><p className="mt-1 text-xs text-archive-500">本地启动路径与备用程序都保存在设备上。</p></div>
+        <div className="card p-6 xl:col-span-6">
+          <div className="mb-5"><h3 className="section-title flex items-center gap-2"><Monitor size={14} className="text-[var(--pv-accent-strong)]" />可执行文件</h3><p className="section-description">本地启动路径与备用程序都保存在设备上。</p></div>
           {exesLoading ? (
             <p className="text-xs text-archive-500">加载中...</p>
           ) : exes.length === 0 ? (
@@ -712,7 +712,7 @@ export default function GameDetail(): React.ReactElement {
               {exes.map((exe) => (
                 <div
                   key={exe.id}
-                  className="flex items-center justify-between rounded-xl border border-white/[0.055] bg-white/[0.025] px-3 py-3 transition-colors hover:border-white/[0.11] hover:bg-white/[0.045]"
+                  className="flex items-center justify-between rounded-xl border border-white/[0.055] bg-white/[0.025] px-3 py-3.5 transition-[border-color,background-color,transform] duration-200 hover:translate-x-px hover:border-white/[0.11] hover:bg-white/[0.045]"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -910,7 +910,7 @@ function ScreenshotThumb({
       <ScreenshotFrame
         filePath={shot.preserved_path || shot.file_path}
         alt={shot.file_name}
-        className="relative cursor-pointer rounded-xl border border-white/[0.06] bg-archive-850 shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-all duration-200 group-hover:-translate-y-0.5 group-hover:border-amber-300/25 group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.25)]"
+        className="relative cursor-pointer rounded-xl border border-white/[0.06] bg-archive-850 shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-[transform,border-color,box-shadow] duration-300 ease-out group-hover:-translate-y-0.5 group-hover:border-[var(--pv-accent)]/35 group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.25)]"
       >
         {shot.is_archived_highlight === 1 && (
           <span className="absolute right-2 top-2 rounded-full border border-white/20 bg-archive-950/75 p-1.5 text-violet-100 shadow-lg"><Star size={11} fill="currentColor" /></span>

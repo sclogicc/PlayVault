@@ -3,14 +3,30 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root,
+  :root[data-pv-theme='warm-charcoal'] {
     color-scheme: dark;
     --pv-void: #0b0a09;
     --pv-surface: #141210;
     --pv-raised: #1b1917;
+    --pv-control: #100e0d;
     --pv-edge: rgba(232, 224, 210, 0.075);
     --pv-edge-strong: rgba(232, 224, 210, 0.14);
-    --pv-gold: #c9a35a;
+    --pv-accent: #c9a35a;
+    --pv-accent-strong: #d8ba77;
+    --pv-accent-contrast: #17120a;
+  }
+
+  :root[data-pv-theme='night-ink'] {
+    --pv-void: #0a0d12;
+    --pv-surface: #121820;
+    --pv-raised: #18212b;
+    --pv-control: #0d1219;
+    --pv-edge: rgba(210, 222, 235, 0.08);
+    --pv-edge-strong: rgba(210, 222, 235, 0.16);
+    --pv-accent: #8ba9bd;
+    --pv-accent-strong: #c1d4df;
+    --pv-accent-contrast: #0c171f;
   }
 
   * {
@@ -44,11 +60,13 @@
   select:focus-visible,
   textarea:focus-visible,
   a:focus-visible {
-    @apply outline-none ring-2 ring-[#c9a35a]/70 ring-offset-2 ring-offset-[#090a0c];
+    @apply outline-none ring-2 ring-offset-2;
+    --tw-ring-color: color-mix(in srgb, var(--pv-accent) 70%, transparent);
+    --tw-ring-offset-color: var(--pv-void);
   }
 
   ::selection {
-    background: rgba(201, 163, 90, 0.34);
+    background: color-mix(in srgb, var(--pv-accent) 34%, transparent);
     color: #fffaf0;
   }
 
@@ -58,25 +76,32 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #090a0c;
+    background: var(--pv-void);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(140, 132, 111, 0.46);
+    background: color-mix(in srgb, var(--pv-accent) 34%, #5d5a53);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(201, 163, 90, 0.58);
+    background: color-mix(in srgb, var(--pv-accent) 58%, #5d5a53);
   }
 }
 
 @layer components {
   .card {
-    @apply border border-white/[0.075] bg-[#141210] p-5 shadow-[0_18px_44px_rgba(0,0,0,0.28)];
+    @apply border p-5 shadow-[0_18px_44px_rgba(0,0,0,0.28)];
+    background: var(--pv-surface);
+    border-color: var(--pv-edge);
   }
 
   .card-interactive {
-    @apply card transition-[transform,border-color,background-color,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:border-white/[0.14] hover:bg-[#1b1917] hover:shadow-[0_20px_42px_rgba(0,0,0,0.34)];
+    @apply card transition-[transform,border-color,background-color,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(0,0,0,0.34)];
+  }
+
+  .card-interactive:hover {
+    background: var(--pv-raised);
+    border-color: var(--pv-edge-strong);
   }
 
   .section-title {
@@ -96,7 +121,14 @@
   }
 
   .btn-primary {
-    @apply border border-[#c9a35a]/70 bg-[#c9a35a] px-4 py-2 text-sm font-semibold text-[#17120a] transition-colors duration-200 hover:bg-[#d7b56e] active:bg-[#ad8745];
+    @apply border px-4 py-2 text-sm font-semibold transition-colors duration-200;
+    border-color: color-mix(in srgb, var(--pv-accent) 70%, transparent);
+    background: var(--pv-accent);
+    color: var(--pv-accent-contrast);
+  }
+
+  .btn-primary:hover {
+    background: var(--pv-accent-strong);
   }
 
   .btn-danger {
@@ -108,7 +140,18 @@
   }
 
   .input-field {
-    @apply border border-white/[0.11] bg-black/20 px-3.5 py-2.5 text-sm text-archive-100 placeholder:text-archive-500 transition-colors duration-200 hover:border-white/[0.18] focus:border-[#c9a35a]/75 focus:bg-[#100e0d] focus:ring-0;
+    @apply border px-3.5 py-2.5 text-sm text-archive-100 placeholder:text-archive-500 transition-colors duration-200 focus:ring-0;
+    background: color-mix(in srgb, var(--pv-control) 85%, transparent);
+    border-color: var(--pv-edge-strong);
+  }
+
+  .input-field:hover {
+    border-color: color-mix(in srgb, var(--pv-edge-strong) 130%, white);
+  }
+
+  .input-field:focus {
+    border-color: color-mix(in srgb, var(--pv-accent) 75%, transparent);
+    background: var(--pv-control);
   }
 
   .table-header {

@@ -8,7 +8,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants = {
   primary:
-    'border-accent-violet/30 bg-gradient-to-r from-violet-500 to-accent-violet text-white shadow-[0_10px_24px_rgba(109,40,217,0.28)] hover:-translate-y-px hover:from-violet-400 hover:to-violet-500 hover:shadow-[0_14px_30px_rgba(109,40,217,0.38)]',
+    'border-[color:color-mix(in_srgb,var(--pv-accent)_68%,transparent)] bg-[var(--pv-accent)] text-[var(--pv-accent-contrast)] shadow-[0_10px_24px_rgba(0,0,0,0.24)] hover:-translate-y-px hover:bg-[var(--pv-accent-strong)] hover:shadow-[0_14px_30px_rgba(0,0,0,0.34)]',
   secondary:
     'border-white/[0.09] bg-white/[0.06] text-archive-200 hover:-translate-y-px hover:border-white/[0.16] hover:bg-white/[0.1] hover:text-archive-50',
   danger:
@@ -35,7 +35,7 @@ export default function Button({
     <button
       type={type}
       className={`inline-flex items-center justify-center gap-1.5 rounded-archive border font-medium
-        transition-all duration-200 active:translate-y-0
+        transition-[transform,border-color,background-color,color,box-shadow] duration-200 ease-out active:translate-y-0
         ${variants[variant]} ${sizes[size]}
         ${disabled ? 'cursor-not-allowed opacity-45 shadow-none hover:translate-y-0' : 'cursor-pointer'}
         ${className}`}
