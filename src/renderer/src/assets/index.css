@@ -76,15 +76,23 @@
   }
 
   .card-interactive {
-    @apply card transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.14] hover:bg-[#1b1917] hover:shadow-[0_20px_42px_rgba(0,0,0,0.34)];
+    @apply card transition-[transform,border-color,background-color,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:border-white/[0.14] hover:bg-[#1b1917] hover:shadow-[0_20px_42px_rgba(0,0,0,0.34)];
   }
 
   .section-title {
-    @apply text-sm font-semibold tracking-[0.01em] text-archive-100;
+    @apply text-[15px] font-semibold leading-snug tracking-[-0.01em] text-archive-100;
   }
 
   .section-description {
-    @apply mt-1 text-sm text-archive-400;
+    @apply mt-1.5 text-[13px] leading-6 text-archive-400;
+  }
+
+  .eyebrow {
+    @apply text-[10px] font-semibold tracking-[0.2em] text-[#d8ba77];
+  }
+
+  .page-title {
+    @apply font-serif text-[2rem] font-medium leading-none tracking-[-0.035em] text-archive-50 sm:text-[2.55rem];
   }
 
   .btn-primary {
@@ -174,5 +182,14 @@
     grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr));
     gap: 0.875rem;
     align-items: start;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 1ms !important;
+    }
   }
 }

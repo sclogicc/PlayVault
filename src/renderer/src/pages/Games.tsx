@@ -114,22 +114,22 @@ export default function Games(): React.ReactElement {
   }
 
   return (
-    <div className="content-canvas min-h-full bg-[#090a0c] px-6 py-7 sm:px-9 lg:px-11">
-      <header className="flex flex-wrap items-end justify-between gap-5 border-b border-white/[0.075] pb-5">
+    <div className="content-canvas min-h-full bg-[#0b0a09] px-7 py-8 sm:px-10 sm:py-9 lg:px-12">
+      <header className="flex flex-wrap items-end justify-between gap-6 border-b border-white/[0.075] pb-6">
         <div>
-          <p className="text-[11px] font-medium tracking-[0.16em] text-[#d8ba77]">个人游戏日志</p>
+          <p className="text-[10px] font-semibold tracking-[0.2em] text-[#d8ba77]">个人游戏日志</p>
           <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 className="font-serif text-3xl tracking-[-0.02em] text-archive-50 sm:text-4xl">{scopeLabel}</h1>
-            <span className="text-sm text-archive-500">{scopedGames.length} 条记录</span>
+            <h1 className="font-serif text-[2rem] font-medium leading-none tracking-[-0.035em] text-archive-50 sm:text-[2.55rem]">{scopeLabel}</h1>
+            <span className="text-[13px] text-archive-500">{scopedGames.length} 条记录</span>
           </div>
-          <p className="mt-2 text-sm text-archive-500">从这里继续游玩、补充资料，或回看留下的游戏经历。</p>
+          <p className="mt-3 text-[13px] leading-6 text-archive-500">从这里继续游玩、补充资料，或回看留下的游戏经历。</p>
         </div>
         <Button variant="primary" onClick={handleCreate}>
           <Plus size={16} /> 添加游戏
         </Button>
       </header>
 
-      <section className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-white/[0.075] py-4" aria-label="游戏库工具条">
+      <section className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-white/[0.075] py-4.5" aria-label="游戏库工具条">
         <div className="relative min-w-[220px] flex-1">
           <Search size={15} className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-archive-500" />
           <input
@@ -247,7 +247,7 @@ interface GamePresentationProps {
 
 function GameGrid({ games, density, ...props }: GamePresentationProps & { density: 'comfortable' | 'compact' }): React.ReactElement {
   const gridClass = density === 'comfortable'
-    ? 'grid-cols-[repeat(auto-fill,minmax(158px,1fr))] gap-x-4 gap-y-7 sm:grid-cols-[repeat(auto-fill,minmax(174px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(204px,1fr))]'
+    ? 'grid-cols-[repeat(auto-fill,minmax(158px,1fr))] gap-x-5 gap-y-8 sm:grid-cols-[repeat(auto-fill,minmax(174px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(204px,1fr))]'
     : 'grid-cols-[repeat(auto-fill,minmax(128px,1fr))] gap-x-3 gap-y-5 sm:grid-cols-[repeat(auto-fill,minmax(142px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(154px,1fr))]'
 
   return <section aria-label="游戏记录" className={`grid py-7 ${gridClass}`}>{games.map((game) => <GameCard key={game.id} game={game} {...props} />)}</section>
@@ -266,8 +266,8 @@ function GameCard({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, on
         filePath={game.cover_path}
         crop={game.cover_crop}
         alt={`${game.display_name} 封面`}
-        className="relative border border-white/[0.085] bg-[#15171a] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#c9a35a]/65"
-        imageClassName="transition-transform duration-500"
+        className="relative border border-white/[0.085] bg-[#1b1917] transition-[transform,border-color,box-shadow] duration-300 ease-out group-hover:-translate-y-1 group-hover:border-[#c9a35a]/58 group-hover:shadow-[0_18px_32px_rgba(0,0,0,0.28)]"
+        imageClassName="transition-transform duration-700 ease-out group-hover:scale-[1.028]"
         fallback={<div className="flex h-full flex-col items-center justify-center bg-[linear-gradient(145deg,#1a1d20,#101215)] text-center"><Gamepad2 size={30} className="text-archive-600" /><p className="mt-3 max-w-[78%] break-words text-xs text-archive-500">{game.display_name}</p></div>}
       >
         <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5"><StatusBadge status={game.status as GameStatus} />{!isInstalled && <span className="border border-white/[0.15] bg-black/65 px-1.5 py-1 text-[10px] text-archive-300">路径失效</span>}</div>
@@ -279,7 +279,7 @@ function GameCard({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, on
           <button type="button" className="border border-white/[0.12] bg-black/60 p-1.5 text-archive-200 transition-colors hover:border-[#c9a35a]/70 hover:text-[#ead7aa]" title="编辑游戏" aria-label={`编辑${game.display_name}`} onClick={(event) => { event.stopPropagation(); onEdit(game) }}><Pencil size={13} /></button>
         </div>
       </CoverFrame>
-      <div className="min-w-0 border-b border-white/[0.065] px-1 pb-3 pt-3"><p className="truncate text-sm font-medium text-archive-100">{game.display_name}</p><div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-archive-500"><span className="truncate">{formatDuration(game.total_duration)}</span><span className="shrink-0">{formatLastPlayed(game.last_played_at)}</span></div></div>
+      <div className="min-w-0 border-b border-white/[0.065] px-1 pb-3.5 pt-3.5"><p className="truncate text-[15px] font-medium leading-snug tracking-[-0.01em] text-archive-100">{game.display_name}</p><div className="mt-2 flex items-center justify-between gap-2 text-[11px] tracking-[0.01em] text-archive-500"><span className="truncate">{formatDuration(game.total_duration)}</span><span className="shrink-0">{formatLastPlayed(game.last_played_at)}</span></div></div>
     </article>
   )
 }
