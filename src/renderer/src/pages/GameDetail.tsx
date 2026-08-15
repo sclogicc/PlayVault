@@ -349,10 +349,10 @@ export default function GameDetail(): React.ReactElement {
 返回游戏库
       </Link>
 
-      {/* 游戏详情以稳定信息为主，背景只作为短纹理条，不能决定页面高度。 */}
+      {/* 游戏详情以稳定信息为主，背景采用受控的中等横幅，不让图片决定页面高度。 */}
       <div className="group relative overflow-hidden border border-white/[0.09] bg-[#0f1114]">
         {/* 背景图独立于游戏封面，用于营造详情页的沉浸式氛围。 */}
-        <div className="media-frame relative flex h-[154px] items-center justify-center bg-[linear-gradient(135deg,#15191e,#0e1115_62%,#12100c)] sm:h-[184px]">
+        <div className="media-frame relative flex h-[210px] items-center justify-center bg-[linear-gradient(135deg,#15191e,#0e1115_62%,#12100c)] sm:h-[250px] xl:h-[280px]">
           {archiveBackgroundPath ? (
             <CoverImage
               coverPath={archiveBackgroundPath}
@@ -931,7 +931,7 @@ export default function GameDetail(): React.ReactElement {
             ? parseCoverCrop(game.cover_crop)
             : parseBackgroundCrop(game.background_crop)
         }
-        aspectRatio={mediaEditorMode === 'cover' ? '2 / 3' : '7 / 1'}
+        aspectRatio={mediaEditorMode === 'cover' ? '2 / 3' : '5 / 1'}
         title={mediaEditorMode === 'cover' ? '调整游戏封面' : '调整短横幅背景'}
         cropMode={mediaEditorMode === 'cover' ? 'cover' : 'background'}
         onClose={() => setMediaEditorMode(null)}

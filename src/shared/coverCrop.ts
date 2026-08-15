@@ -10,6 +10,13 @@ export const DEFAULT_COVER_CROP: CoverCrop = {
   y: 0,
 }
 
+/** 背景图默认保留少量可移动余量，横向和纵向调整都会立即可见。 */
+export const DEFAULT_BACKGROUND_CROP: CoverCrop = {
+  zoom: 1.12,
+  x: 0,
+  y: 0,
+}
+
 export const COVER_CROP_LIMITS = {
   zoom: { min: 1, max: 3, step: 0.05 },
   offset: { min: -100, max: 100, step: 1 },
@@ -21,10 +28,10 @@ export const COVER_CROP_EDITOR_LIMITS = {
   offset: { min: -80, max: 80, step: 1 },
 } as const
 
-/** 短横幅背景只能轻微调整，避免旧版大横幅的放大值在新框架中失控。 */
+/** 背景使用“缩放后的剩余边缘”作为平移范围，既可明显移动，也不会露出空白边。 */
 export const BACKGROUND_CROP_EDITOR_LIMITS = {
-  zoom: { min: 1, max: 1.25, step: 0.05 },
-  offset: { min: -45, max: 45, step: 1 },
+  zoom: { min: 1.12, max: 1.65, step: 0.05 },
+  offset: { min: -100, max: 100, step: 1 },
 } as const
 
 const BACKGROUND_CROP_VERSION = 2
@@ -56,7 +63,7 @@ export function serializeCoverCrop(crop: CoverCrop): string {
 
 export function normalizeBackgroundCrop(crop: Partial<CoverCrop>): CoverCrop {
   return {
-    zoom: clamp(Number(crop.zoom) || 1, BACKGROUND_CROP_EDITOR_LIMITS.zoom.min, BACKGROUND_CROP_EDITOR_LIMITS.zoom.max),
+    zoom: clamp(Number(crop.zoom) || DEFAULT_BACKGROUND_CROP.zoom, BACKGROUND_CROP_EDITOR_LIMITS.zoom.min, BACKGROUND_CROP_EDITOR_LIMITS.zoom.max),
     x: clamp(Number(crop.x) || 0, BACKGROUND_CROP_EDITOR_LIMITS.offset.min, BACKGROUND_CROP_EDITOR_LIMITS.offset.max),
     y: clamp(Number(crop.y) || 0, BACKGROUND_CROP_EDITOR_LIMITS.offset.min, BACKGROUND_CROP_EDITOR_LIMITS.offset.max),
   }
@@ -67,14 +74,14 @@ export function normalizeBackgroundCrop(crop: Partial<CoverCrop>): CoverCrop {
  * 只有新版明确标记过的背景裁切才会被读取；历史记录一律安全回退到居中构图。
  */
 export function parseBackgroundCrop(value: string | null | undefined): CoverCrop {
-  if (!value) return { ...DEFAULT_COVER_CROP }
+  if (!value) return { ...DEFAULT_BACKGROUND_CROP }
   try {
     const parsed = JSON.parse(value) as Partial<CoverCrop> & { backgroundCropVersion?: number }
     return parsed.backgroundCropVersion === BACKGROUND_CROP_VERSION
       ? normalizeBackgroundCrop(parsed)
-      : { ...DEFAULT_COVER_CROP }
+      : { ...DEFAULT_BACKGROUND_CROP }
   } catch {
-    return { ...DEFAULT_COVER_CROP }
+    return { ...DEFAULT_BACKGROUND_CROP }
   }
 }
 
@@ -97,9 +104,13 @@ export function getCoverCropResetKey(
  */
 export function getBackgroundImageStyle(crop: CoverCrop): Record<string, string> {
   const normalized = normalizeBackgroundCrop(crop)
+  const availableTranslation = (normalized.zoom - 1) * 50
+  const translateX = (normalized.x / BACKGROUND_CROP_EDITOR_LIMITS.offset.max) * availableTranslation
+  const translateY = (normalized.y / BACKGROUND_CROP_EDITOR_LIMITS.offset.max) * availableTranslation
+
   return {
-    objectPosition: `${50 + normalized.x / 2}% ${50 + normalized.y / 2}%`,
-    transform: `scale(${normalized.zoom})`,
+    objectPosition: '50% 50%',
+    transform: `translate3d(${translateX}%, ${translateY}%, 0) scale(${normalized.zoom})`,
     transformOrigin: 'center center',
   }
 }

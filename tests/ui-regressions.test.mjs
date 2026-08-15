@@ -399,20 +399,24 @@ test('cover crop settings fall back safely and clamp invalid values', async () =
   )
 })
 
-test('short banner background crop ignores legacy settings and persists only safe v2 values', async () => {
-  const { parseBackgroundCrop, serializeBackgroundCrop } = await importTypeScriptModule(
+test('background crop keeps legacy safety and translates the image within scaled bounds', async () => {
+  const { getBackgroundImageStyle, parseBackgroundCrop, serializeBackgroundCrop } = await importTypeScriptModule(
     'src/shared/coverCrop.ts',
     'backgroundCrop.mjs',
   )
 
-  assert.deepEqual(parseBackgroundCrop('{"zoom":2.4,"x":60,"y":-35}'), { zoom: 1, x: 0, y: 0 })
+  assert.deepEqual(parseBackgroundCrop('{"zoom":2.4,"x":60,"y":-35}'), { zoom: 1.12, x: 0, y: 0 })
   assert.deepEqual(
     parseBackgroundCrop('{"zoom":2.4,"x":60,"y":-35,"backgroundCropVersion":2}'),
-    { zoom: 1.25, x: 45, y: -35 },
+    { zoom: 1.65, x: 60, y: -35 },
   )
   assert.equal(
     serializeBackgroundCrop({ zoom: 2.4, x: 60, y: -35 }),
-    '{"zoom":1.25,"x":45,"y":-35,"backgroundCropVersion":2}',
+    '{"zoom":1.65,"x":60,"y":-35,"backgroundCropVersion":2}',
+  )
+  assert.equal(
+    getBackgroundImageStyle({ zoom: 1.5, x: 100, y: -100 }).transform,
+    'translate3d(25%, -25%, 0) scale(1.5)',
   )
 })
 

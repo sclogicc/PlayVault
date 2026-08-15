@@ -3,6 +3,7 @@ import type { CoverCrop } from '@shared/coverCrop'
 import {
   BACKGROUND_CROP_EDITOR_LIMITS,
   COVER_CROP_EDITOR_LIMITS,
+  DEFAULT_BACKGROUND_CROP,
   DEFAULT_COVER_CROP,
   getCoverCropResetKey,
   getBackgroundImageStyle,
@@ -57,8 +58,8 @@ export default function CoverCropEditor({
     <Modal open={open} onClose={onClose} title={title} width="max-w-3xl">
       <div className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <p className="max-w-xl text-sm leading-6 text-archive-400">拖动下方控制项来调整构图。预览框就是最终显示边界，图片即使缩放也不会越过该边界，原始文件不会被修改。</p>
-          <button type="button" onClick={() => setCrop({ ...DEFAULT_COVER_CROP })} className="inline-flex items-center gap-1.5 text-xs text-archive-400 transition-colors hover:text-[#ead7aa]">
+          <p className="max-w-xl text-sm leading-6 text-archive-400">拖动下方控制项来调整构图。背景图会保留安全的缩放余量，因此左右、上下移动都会在预览中立即生效，且不会露出空白边缘。</p>
+          <button type="button" onClick={() => setCrop(isBackground ? { ...DEFAULT_BACKGROUND_CROP } : { ...DEFAULT_COVER_CROP })} className="inline-flex items-center gap-1.5 text-xs text-archive-400 transition-colors hover:text-[#ead7aa]">
             <RotateCcw size={13} /> 恢复默认构图
           </button>
         </div>
