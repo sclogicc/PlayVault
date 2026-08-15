@@ -11,11 +11,10 @@ interface ActiveSessionCandidate {
 export function getPlayVaultLaunchSessionMatch(
   sessions: ActiveSessionCandidate[],
 ): { game_id: number; session_id: number } | null {
-  const launchedSessions = sessions.filter((session) => session.tracking_mode === 'launch_tree')
-  if (launchedSessions.length !== 1) return null
+  if (sessions.length !== 1 || sessions[0].tracking_mode !== 'launch_tree') return null
 
   return {
-    game_id: launchedSessions[0].game_id,
-    session_id: launchedSessions[0].id,
+    game_id: sessions[0].game_id,
+    session_id: sessions[0].id,
   }
 }

@@ -463,6 +463,45 @@ test('new external screenshots are auto-classified only for one PlayVault-launch
     getPlayVaultLaunchSessionMatch([{ id: 12, game_id: 5, tracking_mode: 'external_path' }]),
     null,
   )
+  assert.equal(
+    getPlayVaultLaunchSessionMatch([
+      { id: 12, game_id: 5, tracking_mode: 'launch_tree' },
+      { id: 13, game_id: 8, tracking_mode: 'external_path' },
+    ]),
+    null,
+  )
+})
+
+test('session-period capture stays eligible for a live child process and rejects delayed files after exit', async () => {
+  const { advanceTracker, createIdleTrackerState } = await importTypeScriptModule(
+    'src/main/services/sessionTrackingState.ts',
+    'capture-session-boundary.mjs',
+  )
+  const { getPlayVaultLaunchSessionMatch } = await importTypeScriptModule(
+    'src/main/services/screenshotSessionMatcher.ts',
+    'capture-session-matcher.mjs',
+  )
+
+  let state = createIdleTrackerState()
+  const started = advanceTracker(state, [100, 201], '2026-08-15 20:00:00', 100, 1)
+  state = { ...started.state, sessionId: 44 }
+
+  // The launcher root may exit while the game child remains alive: the session must stay valid.
+  const childStillRunning = advanceTracker(state, [201], '2026-08-15 20:00:01', 100)
+  assert.equal(childStillRunning.state.phase, 'running')
+  assert.equal(childStillRunning.action.type, 'none')
+  assert.deepEqual(
+    getPlayVaultLaunchSessionMatch([{ id: 44, game_id: 7, tracking_mode: 'launch_tree' }]),
+    { game_id: 7, session_id: 44 },
+  )
+
+  // A NVIDIA file that lands after the third missing poll must not inherit the ended session.
+  state = childStillRunning.state
+  state = advanceTracker(state, [], '2026-08-15 20:00:02').state
+  state = advanceTracker(state, [], '2026-08-15 20:00:03').state
+  const ended = advanceTracker(state, [], '2026-08-15 20:00:04')
+  assert.equal(ended.action.type, 'end')
+  assert.equal(getPlayVaultLaunchSessionMatch([]), null)
 })
 
 test('external screenshot watcher ignores historical files and only trusts PlayVault launch sessions', async () => {
