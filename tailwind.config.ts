@@ -5,25 +5,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Warm neutral scale: surfaces should read as paper, charcoal and lacquer—not blue UI chrome.
+        // Cold ink scale: readable blue-gray text and surfaces for the private game journal shell.
         archive: {
-          50: '#f5f1e8',
-          100: '#e8e0d2',
-          200: '#d2c6b5',
-          300: '#b3a590',
-          400: '#8d806e',
-          500: '#6d6254',
-          600: '#514940',
-          700: '#39342f',
-          800: '#26231f',
-          850: '#1b1917',
-          900: '#141210',
-          950: '#0b0a09',
+          50: '#f4f9fb',
+          100: '#deebf0',
+          200: '#c6d7df',
+          300: '#a8bec8',
+          400: '#8fa8b4',
+          500: '#718a96',
+          600: '#58717e',
+          700: '#3d535f',
+          800: '#263844',
+          850: '#1a2731',
+          900: '#111d27',
+          950: '#0a1119',
         },
         accent: {
-          violet: '#a4835d',
-          teal: '#67ad9f',
-          gold: '#c9a35a',
+          violet: '#92b2c4',
+          teal: '#70b7af',
+          gold: '#a9c9da',
           red: '#cf7370',
         },
       },
@@ -38,7 +38,7 @@ export default {
       boxShadow: {
         panel: '0 18px 44px rgba(0, 0, 0, 0.28)',
         float: '0 16px 34px rgba(0, 0, 0, 0.38)',
-        glow: '0 0 0 1px rgba(201, 163, 90, 0.16), 0 14px 30px rgba(45, 32, 16, 0.28)',
+        glow: '0 0 0 1px rgba(169, 201, 218, 0.16), 0 14px 30px rgba(10, 20, 28, 0.28)',
       },
       keyframes: {
         'soft-enter': {

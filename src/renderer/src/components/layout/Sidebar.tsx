@@ -1,3 +1,4 @@
+/* 视觉基线：导航作为低对比冷墨边缘，文字与计数清晰但不抢夺右侧页面内容。 */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -46,8 +47,8 @@ function countByScope(games: GameWithStats[], scope: LibraryScope): number {
 function navItemClass(active: boolean, expanded: boolean): string {
   return `group relative flex h-10 items-center gap-3 rounded-lg border transition-[background-color,color,border-color,transform] duration-200 ${expanded ? 'w-full px-3' : 'w-11 justify-center'} ${
     active
-      ? 'border-white/[0.14] bg-[#cce8f6]/[0.11] text-[#e5f5fb] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]'
-      : 'border-transparent text-archive-500 hover:border-white/[0.10] hover:bg-white/[0.055] hover:text-archive-200'
+      ? 'border-white/[0.12] bg-[#cce8f6]/[0.09] text-[#ecf8fc] shadow-[inset_0_1px_0_rgba(255,255,255,0.09)]'
+      : 'border-transparent text-archive-400 hover:border-white/[0.09] hover:bg-white/[0.045] hover:text-[#e1f0f5]'
   }`
 }
 
@@ -56,8 +57,8 @@ function LibraryLink({ item, expanded }: { item: NavItem; expanded: boolean }): 
     <NavLink to={item.to} className={() => navItemClass(Boolean(item.isActive), expanded)} title={expanded ? undefined : item.label}>
       {item.icon}
       {expanded && <span className="min-w-0 flex-1 truncate text-sm">{item.label}</span>}
-      {expanded && typeof item.count === 'number' && <span className="font-mono text-[11px] text-archive-600">{item.count}</span>}
-      {!expanded && <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap border border-white/[0.10] bg-[#1b1917] px-2.5 py-1.5 text-xs text-archive-200 shadow-lg group-hover:block">{item.label}</span>}
+      {expanded && typeof item.count === 'number' && <span className="font-mono text-[11px] text-archive-500">{item.count}</span>}
+      {!expanded && <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap rounded-md border border-white/[0.10] bg-[#16212b] px-2.5 py-1.5 text-xs text-archive-100 shadow-lg group-hover:block">{item.label}</span>}
     </NavLink>
   )
 }
@@ -67,7 +68,7 @@ function DirectLink({ item, expanded }: { item: NavItem; expanded: boolean }): R
     <NavLink to={item.to} className={({ isActive }) => navItemClass(isActive, expanded)} title={expanded ? undefined : item.label}>
       {item.icon}
       {expanded && <span className="min-w-0 flex-1 truncate text-sm">{item.label}</span>}
-      {!expanded && <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap border border-white/[0.10] bg-[#1b1917] px-2.5 py-1.5 text-xs text-archive-200 shadow-lg group-hover:block">{item.label}</span>}
+      {!expanded && <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap rounded-md border border-white/[0.10] bg-[#16212b] px-2.5 py-1.5 text-xs text-archive-100 shadow-lg group-hover:block">{item.label}</span>}
     </NavLink>
   )
 }
@@ -106,35 +107,35 @@ export default function Sidebar(): React.ReactElement {
   ]
 
   return (
-    <aside className={`pv-sidebar flex h-screen shrink-0 flex-col border-r py-4 transition-[width] duration-200 ${expanded ? 'w-[212px]' : 'w-[72px] items-center'}`}>
+    <aside className={`pv-sidebar flex h-screen shrink-0 flex-col border-r py-4 transition-[width] duration-200 ${expanded ? 'w-[204px]' : 'w-[72px] items-center'}`}>
       <div className={`flex h-11 items-center ${expanded ? 'justify-between px-3' : 'justify-center'}`}>
         <NavLink to="/games" aria-label="PlayVault 游戏库" title="PlayVault" className="pv-sidebar-mark flex h-10 w-10 shrink-0 items-center justify-center transition-colors hover:bg-[#d9f1fb]/[0.15]">
           <Gamepad2 size={18} strokeWidth={1.7} />
         </NavLink>
-        {expanded && <span className="ml-3 flex-1 text-[11px] font-medium tracking-[0.16em] text-archive-300">PLAYVAULT</span>}
-        <button type="button" onClick={() => setExpanded((value) => !value)} className="flex h-8 w-8 shrink-0 items-center justify-center text-archive-600 transition-colors hover:bg-white/[0.04] hover:text-archive-200" title={expanded ? '折叠导航' : '展开导航'} aria-label={expanded ? '折叠导航' : '展开导航'}>
+        {expanded && <span className="ml-3 flex-1 text-[11px] font-medium tracking-[0.16em] text-archive-200">PLAYVAULT</span>}
+        <button type="button" onClick={() => setExpanded((value) => !value)} className="flex h-8 w-8 shrink-0 items-center justify-center text-archive-500 transition-colors hover:bg-white/[0.04] hover:text-archive-100" title={expanded ? '折叠导航' : '展开导航'} aria-label={expanded ? '折叠导航' : '展开导航'}>
           {expanded ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}
         </button>
       </div>
 
       <nav className={`mt-7 flex w-full flex-col gap-1 ${expanded ? 'px-3' : 'items-center'}`} aria-label="游戏资料导航">
-        {expanded && <p className="mb-1 px-1 text-[10px] font-medium tracking-[0.16em] text-archive-700">游戏资料</p>}
+        {expanded && <p className="mb-1 px-1 text-[10px] font-medium tracking-[0.16em] text-archive-500">游戏资料</p>}
         {libraryItems.map((item) => <LibraryLink key={item.to} item={item} expanded={expanded} />)}
       </nav>
 
-      <div className={`my-5 h-px bg-white/[0.08] ${expanded ? 'mx-3' : 'w-7'}`} />
+      <div className={`my-5 h-px bg-white/[0.055] ${expanded ? 'mx-3' : 'w-7'}`} />
 
       <nav className={`flex w-full flex-col gap-1 ${expanded ? 'px-3' : 'items-center'}`} aria-label="日志工具导航">
-        {expanded && <p className="mb-1 px-1 text-[10px] font-medium tracking-[0.16em] text-archive-700">日志工具</p>}
+        {expanded && <p className="mb-1 px-1 text-[10px] font-medium tracking-[0.16em] text-archive-500">日志工具</p>}
         {toolItems.map((item) => <DirectLink key={item.to} item={item} expanded={expanded} />)}
       </nav>
 
       <div className={`mt-auto flex w-full flex-col gap-2 ${expanded ? 'px-3' : 'items-center'}`}>
         <DirectLink item={{ to: '/settings', icon: <Settings size={17} strokeWidth={1.7} />, label: '设置' }} expanded={expanded} />
         {expanded ? (
-          <span className="flex items-center gap-2 px-1 pb-1 text-[10px] text-archive-700"><HardDrive size={12} />仅本地存储</span>
+          <span className="flex items-center gap-2 px-1 pb-1 text-[10px] text-archive-500"><HardDrive size={12} />仅本地存储</span>
         ) : (
-          <span className="flex h-8 w-8 items-center justify-center text-archive-700" title="仅本地存储"><HardDrive size={14} /></span>
+          <span className="flex h-8 w-8 items-center justify-center text-archive-500" title="仅本地存储"><HardDrive size={14} /></span>
         )}
       </div>
     </aside>

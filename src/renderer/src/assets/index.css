@@ -233,7 +233,7 @@
     max-width: 42rem;
     font-size: 0.875rem;
     line-height: 1.75;
-    color: rgba(193, 213, 224, 0.7);
+    color: rgba(207, 225, 233, 0.86);
   }
 
   .pv-panel {
@@ -538,11 +538,24 @@
   }
 
   .pv-sidebar {
-    border-right-color: rgba(223, 236, 246, 0.09);
-    background: rgba(10, 14, 21, 0.9);
-    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.025);
-    backdrop-filter: blur(22px) saturate(1.06);
-    -webkit-backdrop-filter: blur(22px) saturate(1.06);
+    position: relative;
+    z-index: 2;
+    border-right-color: rgba(223, 236, 246, 0.055);
+    background: color-mix(in srgb, var(--pv-surface) 64%, var(--pv-void));
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.022);
+    backdrop-filter: blur(18px) saturate(1.03);
+    -webkit-backdrop-filter: blur(18px) saturate(1.03);
+  }
+
+  .pv-sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -30px;
+    width: 30px;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(18, 29, 41, 0.15), transparent);
   }
 
   .pv-sidebar-mark {
