@@ -355,24 +355,7 @@ export default function GameDetail(): React.ReactElement {
           filePath={archiveBackgroundPath}
           crop={game.background_crop}
           alt={`${game.display_name} 背景图`}
-        >
-          <div className="absolute right-3 top-3 flex flex-wrap justify-end gap-1.5 border border-white/[0.10] bg-black/55 p-1.5 backdrop-blur-sm">
-            <Button variant="secondary" size="sm" onClick={handleSetBackground}>
-              <Image size={14} />
-              {game.background_path ? '更换背景图' : '设置背景图'}
-            </Button>
-            {game.background_path && (
-              <Button variant="secondary" size="sm" onClick={() => handleAdjustMedia('background')}>
-                调整背景图
-              </Button>
-            )}
-            {game.background_path && (
-              <Button variant="ghost" size="sm" onClick={handleRemoveBackground}>
-                移除背景图
-              </Button>
-            )}
-          </div>
-        </BackdropStage>
+        />
 
         <div className="relative -mt-12 bg-gradient-to-b from-[#0f1114]/0 via-[#0f1114]/96 to-[#0f1114] px-5 pb-6 pt-10 sm:px-7">
           <div className="flex flex-wrap items-start justify-between gap-6">
@@ -400,22 +383,6 @@ export default function GameDetail(): React.ReactElement {
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button variant="secondary" size="sm" onClick={handleSetCover}>
-                  <Image size={14} />
-                  {game.cover_path ? '更换封面' : '设置封面'}
-                </Button>
-                {game.cover_path && (
-                  <Button variant="secondary" size="sm" onClick={() => handleAdjustMedia('cover')}>
-                    调整封面
-                  </Button>
-                )}
-                {game.cover_path && (
-                  <Button variant="ghost" size="sm" onClick={handleRemoveCover}>
-                    移除封面
-                  </Button>
-                )}
-              </div>
 
               {game.display_name !== game.name && (
                 <p className="text-sm text-archive-500 font-mono">
@@ -450,92 +417,51 @@ export default function GameDetail(): React.ReactElement {
             </div>
             </div>
 
-            {/* Action buttons */}
-            <div className="flex max-w-full shrink-0 flex-wrap items-center justify-end gap-2 lg:max-w-[470px]">
-              {isArchived && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/15 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
-                  <Archive size={12} />
-                  留档于 {formatDate(game.archived_at)}
-                </span>
-              )}
+            {/* 仅保留日常记录动作；媒体和删除维护收进次级管理区，避免头部变成按钮墙。 */}
+            <div className="flex max-w-full shrink-0 flex-col items-stretch gap-3 lg:w-[360px]">
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {isArchived && (
+                  <span className="inline-flex items-center gap-1.5 border border-amber-300/15 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
+                    <Archive size={12} />
+                    留档于 {formatDate(game.archived_at)}
+                  </span>
+                )}
+                {activeSession && <span className="border border-teal-300/15 bg-teal-400/10 px-3 py-1.5 text-xs text-teal-200">正在自动记录</span>}
+              </div>
               {launchStatus && (
-                <span
-                  className={`rounded-full border px-3 py-1.5 text-xs ${
-                    launchStatus === '游戏已启动'
-                      ? 'border-teal-300/15 bg-teal-400/10 text-teal-200'
-                      : 'border-red-300/15 bg-red-400/10 text-red-200'
-                  }`}
-                >
-                  {launchStatus}
-                </span>
+                <p className={`border px-3 py-2 text-xs ${launchStatus === '游戏已启动' ? 'border-teal-300/15 bg-teal-400/10 text-teal-200' : 'border-red-300/15 bg-red-400/10 text-red-200'}`}>{launchStatus}</p>
               )}
-              {activeSession && (
-                <span className="rounded-full border border-teal-300/15 bg-teal-400/10 px-3 py-1.5 text-xs text-teal-200">
-                  正在自动记录
-                </span>
-              )}
-              <Button
-                variant="primary"
-                onClick={handleLaunch}
-                disabled={!isInstalled}
-                title={!isInstalled ? '游戏未安装或路径失效' : '启动游戏'}
-              >
-                <Play size={16} />
-                启动游戏
-              </Button>
-              {activeSession && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    endManually.mutate({ id: activeSession.id, gameId: game.id })
-                  }
-                  disabled={endManually.isPending}
-                  title="异常兜底：正常退出游戏后，PlayVault 会自动结束计时"
-                >
-                  <Square size={16} />
-                  停止计时
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button variant="primary" onClick={handleLaunch} disabled={!isInstalled} title={!isInstalled ? '游戏未安装或路径失效' : '启动游戏'}>
+                  <Play size={16} />启动游戏
                 </Button>
-              )}
-              {!isInstalled && (
-                <Button variant="secondary" onClick={handleRelink}>
-                  <FolderSearch size={16} />
-                  重新绑定可执行文件
-                </Button>
-              )}
-              {!isCompleted ? (
-                <Button
-                  variant="secondary"
-                  onClick={() => setCompletingGame(true)}
-                >
-                  <CheckCircle size={16} />
-                  确认已通关
-                </Button>
-              ) : (
-                <span className="flex items-center gap-1.5 rounded-full border border-emerald-300/15 bg-emerald-400/10 px-3 py-1.5 text-sm text-emerald-200">
-                  <CheckCircle size={14} />
-                  已通关
-                  {game.completed_at && (
-                    <span className="text-emerald-500 text-xs ml-1">
-                      {formatDate(game.completed_at)}
-                    </span>
-                  )}
-                </span>
-              )}
-              {!activeSession && !isArchived && (
-                <Button variant="secondary" onClick={() => {
-                  setArchiveError(null)
-                  setArchiveHighlightIds([])
-                  setArchivingGame(true)
-                }}>
-                  <Archive size={16} />
-                  生成游玩留档
-                </Button>
-              )}
-              <Button variant="danger" onClick={() => setDeletingGame(true)}>
-                <Trash2 size={16} />
-                删除游戏
-              </Button>
+                {activeSession && (
+                  <Button variant="secondary" size="sm" onClick={() => endManually.mutate({ id: activeSession.id, gameId: game.id })} disabled={endManually.isPending} title="异常兜底：正常退出游戏后，PlayVault 会自动结束计时">
+                    <Square size={16} />停止计时
+                  </Button>
+                )}
+                {!isInstalled && <Button variant="secondary" onClick={handleRelink}><FolderSearch size={16} />重新绑定</Button>}
+                {!isCompleted ? (
+                  <Button variant="secondary" onClick={() => setCompletingGame(true)}><CheckCircle size={16} />确认已通关</Button>
+                ) : (
+                  <span className="flex items-center gap-1.5 border border-emerald-300/15 bg-emerald-400/10 px-3 py-1.5 text-sm text-emerald-200"><CheckCircle size={14} />已通关</span>
+                )}
+                {!activeSession && !isArchived && (
+                  <Button variant="secondary" onClick={() => { setArchiveError(null); setArchiveHighlightIds([]); setArchivingGame(true) }}><Archive size={16} />生成留档</Button>
+                )}
+              </div>
+              <details className="border-t border-white/[0.07] pt-3 text-right">
+                <summary className="cursor-pointer select-none text-xs text-archive-500 transition-colors hover:text-[#ead7aa]">管理媒体与档案</summary>
+                <div className="mt-3 flex flex-wrap justify-end gap-2">
+                  <Button variant="ghost" size="sm" onClick={handleSetCover}><Image size={14} />{game.cover_path ? '更换封面' : '设置封面'}</Button>
+                  {game.cover_path && <Button variant="ghost" size="sm" onClick={() => handleAdjustMedia('cover')}>调整封面</Button>}
+                  {game.cover_path && <Button variant="ghost" size="sm" onClick={handleRemoveCover}>移除封面</Button>}
+                  <Button variant="ghost" size="sm" onClick={handleSetBackground}><Image size={14} />{game.background_path ? '更换背景' : '设置背景'}</Button>
+                  {game.background_path && <Button variant="ghost" size="sm" onClick={() => handleAdjustMedia('background')}>调整背景</Button>}
+                  {game.background_path && <Button variant="ghost" size="sm" onClick={handleRemoveBackground}>移除背景</Button>}
+                  <Button variant="danger" size="sm" onClick={() => setDeletingGame(true)}><Trash2 size={14} />删除游戏</Button>
+                </div>
+              </details>
             </div>
           </div>
 
@@ -606,11 +532,11 @@ export default function GameDetail(): React.ReactElement {
         </section>
       )}
 
-      {/* ========== Content Sections ========== */}
+      {/* ========== Journal Sections ========== */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12 xl:items-start">
-        {/* Recent Sessions */}
+        {/* Play log */}
         <div className="card xl:col-span-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Clock size={15} className="text-amber-100" />最近游玩记录</h3><span className="rounded-full border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{sessions.length} 次</span></div>
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3"><div><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Clock size={15} className="text-amber-100" />游玩轨迹</h3><p className="mt-1 text-xs text-archive-500">每次启动和结束都会安静留在这里。</p></div><span className="border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{sessions.length} 次</span></div>
           {sessionsLoading ? (
             <p className="text-xs text-archive-500">加载中...</p>
           ) : sessions.length === 0 ? (
@@ -685,9 +611,9 @@ export default function GameDetail(): React.ReactElement {
           )}
         </div>
 
-        {/* Screenshot Wall */}
+        {/* Screenshot archive */}
         <div className="card overflow-hidden xl:col-span-7">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Image size={15} className="text-amber-100" />最近截图</h3><span className="rounded-full border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{gameScreenshots.length} 张</span></div>
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3"><div><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Image size={15} className="text-amber-100" />截图留存</h3><p className="mt-1 text-xs text-archive-500">点击任意画面以原图方式回看。</p></div><span className="border border-white/[0.07] bg-white/[0.04] px-2.5 py-1 text-[11px] text-archive-400">{gameScreenshots.length} 张</span></div>
           {gameScreenshots.length === 0 ? (
             <p className="text-xs text-archive-500">暂无截图</p>
           ) : (
@@ -705,11 +631,9 @@ export default function GameDetail(): React.ReactElement {
           )}
         </div>
 
-        {/* Game Info + Notes */}
-        <div className="card xl:col-span-5">
-          <h3 className="mb-4 text-sm font-semibold text-archive-100">
-            游戏信息
-          </h3>
+        {/* Game notes */}
+        <div className="card xl:col-span-6">
+          <div className="mb-4"><h3 className="text-sm font-semibold text-archive-100">游戏资料</h3><p className="mt-1 text-xs text-archive-500">为以后回看留下的私人补充信息。</p></div>
           <div className="space-y-3 text-sm">
             {game.platform && (
               <div className="flex items-center gap-3 rounded-xl border border-white/[0.055] bg-white/[0.025] px-3 py-2.5">
@@ -749,12 +673,9 @@ export default function GameDetail(): React.ReactElement {
           </div>
         </div>
 
-        {/* Bound Executables */}
-        <div className="card xl:col-span-5">
-          <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-archive-100">
-            <Monitor size={14} />
-            可执行文件
-          </h3>
+        {/* Bound executables */}
+        <div className="card xl:col-span-6">
+          <div className="mb-4"><h3 className="flex items-center gap-2 text-sm font-semibold text-archive-100"><Monitor size={14} />可执行文件</h3><p className="mt-1 text-xs text-archive-500">本地启动路径与备用程序都保存在设备上。</p></div>
           {exesLoading ? (
             <p className="text-xs text-archive-500">加载中...</p>
           ) : exes.length === 0 ? (

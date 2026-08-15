@@ -355,6 +355,16 @@ test('game detail uses compact contact-sheet panels without item limits', async 
   assert.doesNotMatch(source, /gameScreenshots\.slice\(0,\s*24\)/)
 })
 
+test('game detail separates daily actions from media maintenance and journal reading', async () => {
+  const source = await readFile('src/renderer/src/pages/GameDetail.tsx', 'utf8')
+
+  assert.match(source, /管理媒体与档案/)
+  assert.match(source, /游玩轨迹/)
+  assert.match(source, /截图留存/)
+  assert.match(source, /xl:col-span-6/)
+  assert.doesNotMatch(source, /调整短横幅背景/)
+})
+
 test('Session timestamps are stored as local Windows time, not stripped UTC', async () => {
   const { toLocalDateTime } = await importTypeScriptModule(
     'src/shared/localDateTime.ts',
