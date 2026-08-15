@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, CheckCircle, FolderOpen, Image, Loader2, Trash2, Undo2 } from 'lucide-react'
+import { CheckCircle, FolderOpen, Image, Loader2, Trash2, Undo2 } from 'lucide-react'
 import type { GameWithStats, Screenshot } from '@shared/types'
 import { SCREENSHOT_STATUS_LABELS } from '@shared/constants'
 import Button from '../components/ui/Button'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import ImageViewer from '../components/ui/ImageViewer'
 import Modal from '../components/ui/Modal'
-import { toFileUrl } from '../lib/fileUrl'
+import ScreenshotFrame from '../components/media/ScreenshotFrame'
 
 type TabKey = 'all' | 'pending' | 'classified' | 'trashed'
 
@@ -342,34 +342,23 @@ function ScreenshotCard({
   onPreview: () => void
   formatDate: (date: string) => string
 }): React.ReactElement {
-  const [imageError, setImageError] = useState(false)
-
   return (
     <div
       className={'group relative overflow-hidden border border-white/[0.085] bg-[#0f1114] shadow-[0_14px_30px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#c9a35a]/60 hover:shadow-[0_20px_40px_rgba(0,0,0,0.38)] ' + (selected ? 'ring-2 ring-[#c9a35a]/75' : '')}
       onClick={onToggle}
     >
       <div
-        className="media-frame media-screenshot-frame flex cursor-zoom-in items-center justify-center bg-archive-850"
+        className="cursor-zoom-in"
         onClick={(event) => {
           event.stopPropagation()
           onPreview()
         }}
       >
-        {imageError ? (
-          <div className="flex flex-col items-center gap-1 text-archive-600">
-            <AlertTriangle size={24} />
-            <span className="text-[10px]">无法预览</span>
-          </div>
-        ) : (
-          <img
-            src={toFileUrl(shot.file_path)}
-            alt={shot.file_name}
-            className="media-image"
-            loading="lazy"
-            onError={() => setImageError(true)}
-          />
-        )}
+        <ScreenshotFrame
+          filePath={shot.file_path}
+          alt={shot.file_name}
+          className="flex items-center justify-center bg-archive-850"
+        />
       </div>
       <div className="flex min-w-0 items-center justify-between gap-2 border-t border-white/[0.055] px-3 py-2">
         <div className="min-w-0">

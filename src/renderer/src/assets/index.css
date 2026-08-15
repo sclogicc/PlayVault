@@ -146,6 +146,15 @@
     height: clamp(220px, 27vw, 360px);
   }
 
+  /* 详情背景独立为受控氛围层，不能再由源图片尺寸或封面裁切规则决定高度。 */
+  .media-backdrop-stage {
+    height: clamp(224px, 20vw, 288px);
+  }
+
+  .media-backdrop-image {
+    will-change: transform;
+  }
+
   .media-screenshot-frame {
     aspect-ratio: 3 / 2;
   }

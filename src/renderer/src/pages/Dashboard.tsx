@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { ArrowUpRight, CalendarDays, Clock3, Gamepad2, Image, PlayCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { GameWithStats, SessionWithGame } from '@shared/types'
-import { getCoverImageStyle, parseCoverCrop } from '@shared/coverCrop'
-import { toFileUrl } from '../lib/fileUrl'
+import BackdropStage from '../components/media/BackdropStage'
+import CoverFrame from '../components/media/CoverFrame'
 
 function toSqliteDate(date: Date): string {
   const year = date.getFullYear()
@@ -69,23 +69,14 @@ export default function Dashboard(): React.ReactElement {
     .slice(0, 7)
   const featuredGame = recentGames[0]
 
-  const featuredImage = featuredGame?.background_path || featuredGame?.cover_path
-  const featuredCrop = featuredGame?.background_path
-    ? parseCoverCrop(featuredGame.background_crop)
-    : parseCoverCrop(featuredGame?.cover_crop ?? '')
-
   return (
     <div className="min-h-full bg-[#090a0c]">
-      <section className="media-frame relative min-h-[720px] border-b border-white/[0.07] bg-[#0e1013]">
-        {featuredImage && (
-          <img
-            src={toFileUrl(featuredImage)}
-            alt=""
-            className="media-image absolute inset-0"
-            style={getCoverImageStyle(featuredCrop)}
-          />
-        )}
-        {!featuredImage && <div className="absolute inset-0 bg-[linear-gradient(135deg,#191611,#0d0e10_48%,#101318)]" />}
+      <BackdropStage
+        filePath={featuredGame?.background_path}
+        crop={featuredGame?.background_crop}
+        alt="最近游玩背景"
+        className="h-[720px] min-h-[720px] border-b border-white/[0.07] bg-[#0e1013]"
+      >
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,10,12,0.96)_0%,rgba(9,10,12,0.83)_31%,rgba(9,10,12,0.23)_70%,rgba(9,10,12,0.28)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-[#090a0c] via-[#090a0c]/78 to-transparent" />
 
@@ -144,7 +135,7 @@ export default function Dashboard(): React.ReactElement {
             )}
           </div>
         </div>
-      </section>
+      </BackdropStage>
 
       <section className="grid grid-cols-1 divide-y divide-white/[0.07] border-b border-white/[0.07] bg-[#0c0e11] md:grid-cols-4 md:divide-x md:divide-y-0">
         <DashboardMetric label="今日游玩" value={formatDuration(sumDuration(todaySessions))} />
@@ -172,18 +163,19 @@ function DashboardMetric({ label, value }: { label: string; value: string }): Re
 function ShelfGameCard({ game, featured }: { game: GameWithStats; featured: boolean }): React.ReactElement {
   return (
     <Link to={`/games/${game.id}`} className={`group relative block w-[118px] shrink-0 overflow-hidden bg-[#14171a] shadow-[0_12px_28px_rgba(0,0,0,0.38)] transition-transform duration-300 hover:-translate-y-2 sm:w-[132px] ${featured ? 'ring-1 ring-[#c9a35a]/80' : 'ring-1 ring-white/[0.08]'}`}>
-      <div className="media-frame relative aspect-[2/3]">
-        {game.cover_path ? (
-          <img src={toFileUrl(game.cover_path)} alt={`${game.display_name} 封面`} className="media-image transition-transform duration-500 group-hover:scale-[1.06]" style={getCoverImageStyle(parseCoverCrop(game.cover_crop))} />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-[#1b1d20]"><Gamepad2 size={28} className="text-archive-600" /></div>
-        )}
+      <CoverFrame
+        filePath={game.cover_path}
+        crop={game.cover_crop}
+        alt={`${game.display_name} 封面`}
+        className="relative"
+        fallback={<div className="flex h-full items-center justify-center bg-[#1b1d20]"><Gamepad2 size={28} className="text-archive-600" /></div>}
+      >
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/88 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 px-3 pb-3">
           <p className="truncate text-xs font-medium text-white">{game.display_name}</p>
           <p className="mt-1 text-[10px] text-archive-300">{formatDuration(game.total_duration)}</p>
         </div>
-      </div>
+      </CoverFrame>
     </Link>
   )
 }

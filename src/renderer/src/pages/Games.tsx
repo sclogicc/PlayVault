@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { Gamepad2, Pencil, Play, Plus, Search, SlidersHorizontal } from 'lucide-react'
 import type { GameLaunchResult, GameWithStats, GameFormData } from '@shared/types'
 import type { GameStatus, InstallStatus } from '@shared/constants'
-import { getCoverImageStyle, parseCoverCrop } from '@shared/coverCrop'
 import Button from '../components/ui/Button'
 import StatusBadge from '../components/ui/StatusBadge'
 import GameForm from '../components/games/GameForm'
-import { toFileUrl } from '../lib/fileUrl'
+import CoverFrame from '../components/media/CoverFrame'
 import { useGames, useGameMutations } from '../hooks/useGames'
 
 const OPEN_DELAY_MS = 220
@@ -189,15 +188,19 @@ function GameCard({
 
   return (
     <article className="group relative cursor-pointer select-none" role="button" tabIndex={0} title="单击查看详情，双击启动游戏" onClick={onOpen} onDoubleClick={onLaunch} onKeyDown={(event) => { if (event.key === 'Enter') onOpen() }}>
-      <div className="media-frame media-cover-frame relative border border-white/[0.085] bg-[#15171a] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#c9a35a]/65">
-        {game.cover_path ? (
-          <img src={toFileUrl(game.cover_path)} alt={`${game.display_name} 封面`} className="media-image transition-transform duration-500 group-hover:scale-[1.035]" style={getCoverImageStyle(parseCoverCrop(game.cover_crop))} />
-        ) : (
+      <CoverFrame
+        filePath={game.cover_path}
+        crop={game.cover_crop}
+        alt={`${game.display_name} 封面`}
+        className="relative border border-white/[0.085] bg-[#15171a] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#c9a35a]/65"
+        imageClassName="transition-transform duration-500"
+        fallback={(
           <div className="flex h-full flex-col items-center justify-center bg-[linear-gradient(145deg,#1a1d20,#101215)] text-center">
             <Gamepad2 size={30} className="text-archive-600" />
             <p className="mt-3 max-w-[78%] break-words text-xs text-archive-500">{game.display_name}</p>
           </div>
         )}
+      >
         <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5">
           <StatusBadge status={game.status as GameStatus} />
           {!isInstalled && <span className="border border-white/[0.15] bg-black/65 px-1.5 py-1 text-[10px] text-archive-300">路径失效</span>}
@@ -205,7 +208,7 @@ function GameCard({
         <button type="button" className="absolute right-2.5 top-2.5 border border-white/[0.12] bg-black/60 p-1.5 text-archive-200 opacity-0 transition-all hover:border-[#c9a35a]/70 hover:text-[#ead7aa] group-hover:opacity-100 focus:opacity-100" title="编辑游戏" aria-label={`编辑${game.display_name}`} onClick={(event) => { event.stopPropagation(); onEdit() }} onDoubleClick={(event) => event.stopPropagation()}>
           <Pencil size={13} />
         </button>
-      </div>
+      </CoverFrame>
       <div className="min-w-0 border-b border-white/[0.065] px-1 pb-3 pt-3">
         <p className="truncate text-sm font-medium text-archive-100">{game.display_name}</p>
         <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-archive-500">

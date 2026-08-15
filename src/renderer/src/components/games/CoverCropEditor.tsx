@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { CoverCrop } from '@shared/coverCrop'
 import {
-  BACKGROUND_CROP_EDITOR_LIMITS,
   COVER_CROP_EDITOR_LIMITS,
-  DEFAULT_BACKGROUND_CROP,
   DEFAULT_COVER_CROP,
   getCoverCropResetKey,
-  getBackgroundImageStyle,
   getCoverImageStyle,
-  normalizeBackgroundCrop,
   normalizeCoverCrop,
 } from '@shared/coverCrop'
 import { RotateCcw } from 'lucide-react'
@@ -22,50 +18,43 @@ interface CoverCropEditorProps {
   initialCrop: CoverCrop
   aspectRatio: string
   title: string
-  cropMode?: 'cover' | 'background'
   onClose: () => void
   onSave: (crop: CoverCrop) => void
 }
 
+/** 封面专用的 2:3 构图编辑器；背景构图由 BackdropEditor 独立处理。 */
 export default function CoverCropEditor({
   open,
   filePath,
   initialCrop,
   aspectRatio,
   title,
-  cropMode = 'cover',
   onClose,
   onSave,
 }: CoverCropEditorProps): React.ReactElement {
   const [crop, setCrop] = useState<CoverCrop>(initialCrop)
-  const isBackground = cropMode === 'background'
-  const limits = isBackground ? BACKGROUND_CROP_EDITOR_LIMITS : COVER_CROP_EDITOR_LIMITS
   const resetKey = getCoverCropResetKey(filePath, aspectRatio, initialCrop)
-  const normalizeCrop = (value: Partial<CoverCrop>): CoverCrop => (
-    isBackground ? normalizeBackgroundCrop(value) : normalizeCoverCrop(value)
-  )
-  const getImageStyle = isBackground ? getBackgroundImageStyle : getCoverImageStyle
 
   useEffect(() => {
-    if (open) setCrop(normalizeCrop(initialCrop))
-  }, [open, resetKey, cropMode])
+    if (open) setCrop(normalizeCoverCrop(initialCrop))
+  }, [open, resetKey])
 
   const updateCrop = (key: keyof CoverCrop, value: number): void => {
-    setCrop((previous) => normalizeCrop({ ...previous, [key]: value }))
+    setCrop((previous) => normalizeCoverCrop({ ...previous, [key]: value }))
   }
 
   return (
     <Modal open={open} onClose={onClose} title={title} width="max-w-3xl">
       <div className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <p className="max-w-xl text-sm leading-6 text-archive-400">拖动下方控制项来调整构图。背景图会保留安全的缩放余量，因此左右、上下移动都会在预览中立即生效，且不会露出空白边缘。</p>
-          <button type="button" onClick={() => setCrop(isBackground ? { ...DEFAULT_BACKGROUND_CROP } : { ...DEFAULT_COVER_CROP })} className="inline-flex items-center gap-1.5 text-xs text-archive-400 transition-colors hover:text-[#ead7aa]">
+          <p className="max-w-xl text-sm leading-6 text-archive-400">拖动下方控制项来调整封面构图。预览框就是最终显示边界，原始文件不会被修改。</p>
+          <button type="button" onClick={() => setCrop({ ...DEFAULT_COVER_CROP })} className="inline-flex items-center gap-1.5 text-xs text-archive-400 transition-colors hover:text-[#ead7aa]">
             <RotateCcw size={13} /> 恢复默认构图
           </button>
         </div>
 
-        <div className="media-frame mx-auto w-full max-w-[720px] border border-white/[0.12] shadow-[0_16px_40px_rgba(0,0,0,0.4)]" style={{ aspectRatio }}>
-          <img src={toFileUrl(filePath)} alt="图片裁切预览" className="media-image transition-transform duration-100" style={getImageStyle(crop)} />
+        <div className="media-frame mx-auto w-full max-w-[480px] border border-white/[0.12] shadow-[0_16px_40px_rgba(0,0,0,0.4)]" style={{ aspectRatio }}>
+          <img src={toFileUrl(filePath)} alt="封面裁切预览" className="media-image transition-transform duration-100" style={getCoverImageStyle(crop)} />
           <div className="pointer-events-none absolute inset-0 border border-white/[0.25]" />
           <div className="pointer-events-none absolute inset-y-0 left-1/3 w-px bg-white/[0.16]" />
           <div className="pointer-events-none absolute inset-y-0 right-1/3 w-px bg-white/[0.16]" />
@@ -76,15 +65,15 @@ export default function CoverCropEditor({
 
         <div className="border-t border-white/[0.07] pt-5">
           <div className="grid gap-4 sm:grid-cols-3">
-            <CropRange label="缩放" value={crop.zoom} min={limits.zoom.min} max={limits.zoom.max} step={limits.zoom.step} display={`${crop.zoom.toFixed(2)} 倍`} onChange={(value) => updateCrop('zoom', value)} />
-            <CropRange label="水平位置" value={crop.x} min={limits.offset.min} max={limits.offset.max} step={limits.offset.step} display={crop.x === 0 ? '居中' : `${crop.x > 0 ? '向右' : '向左'} ${Math.abs(crop.x)}`} onChange={(value) => updateCrop('x', value)} />
-            <CropRange label="垂直位置" value={crop.y} min={limits.offset.min} max={limits.offset.max} step={limits.offset.step} display={crop.y === 0 ? '居中' : `${crop.y > 0 ? '向下' : '向上'} ${Math.abs(crop.y)}`} onChange={(value) => updateCrop('y', value)} />
+            <CropRange label="缩放" value={crop.zoom} min={COVER_CROP_EDITOR_LIMITS.zoom.min} max={COVER_CROP_EDITOR_LIMITS.zoom.max} step={COVER_CROP_EDITOR_LIMITS.zoom.step} display={`${crop.zoom.toFixed(2)} 倍`} onChange={(value) => updateCrop('zoom', value)} />
+            <CropRange label="水平位置" value={crop.x} min={COVER_CROP_EDITOR_LIMITS.offset.min} max={COVER_CROP_EDITOR_LIMITS.offset.max} step={COVER_CROP_EDITOR_LIMITS.offset.step} display={crop.x === 0 ? '居中' : `${crop.x > 0 ? '向右' : '向左'} ${Math.abs(crop.x)}`} onChange={(value) => updateCrop('x', value)} />
+            <CropRange label="垂直位置" value={crop.y} min={COVER_CROP_EDITOR_LIMITS.offset.min} max={COVER_CROP_EDITOR_LIMITS.offset.max} step={COVER_CROP_EDITOR_LIMITS.offset.step} display={crop.y === 0 ? '居中' : `${crop.y > 0 ? '向下' : '向上'} ${Math.abs(crop.y)}`} onChange={(value) => updateCrop('y', value)} />
           </div>
         </div>
 
         <div className="flex justify-end gap-2 border-t border-white/[0.07] pt-4">
           <Button variant="secondary" onClick={onClose}>取消</Button>
-          <Button variant="primary" onClick={() => onSave(normalizeCrop(crop))}>保存构图</Button>
+          <Button variant="primary" onClick={() => onSave(normalizeCoverCrop(crop))}>保存构图</Button>
         </div>
       </div>
     </Modal>

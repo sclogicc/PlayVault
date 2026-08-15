@@ -3,14 +3,9 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Screenshot, GameLaunchResult } from '@shared/types'
 import type { CoverCrop } from '@shared/coverCrop'
-import {
-  getBackgroundImageStyle,
-  getCoverImageStyle,
-  parseBackgroundCrop,
-  parseCoverCrop,
-  serializeBackgroundCrop,
-  serializeCoverCrop,
-} from '@shared/coverCrop'
+import { parseCoverCrop, serializeCoverCrop } from '@shared/coverCrop'
+import type { BackdropCrop } from '@shared/backdropCrop'
+import { parseBackdropCrop, serializeBackdropCrop } from '@shared/backdropCrop'
 import {
   Monitor,
   Clock,
@@ -41,9 +36,12 @@ import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 import ImageViewer from '../components/ui/ImageViewer'
 import CoverCropEditor from '../components/games/CoverCropEditor'
+import BackdropEditor from '../components/media/BackdropEditor'
+import BackdropStage from '../components/media/BackdropStage'
+import CoverFrame from '../components/media/CoverFrame'
+import ScreenshotFrame from '../components/media/ScreenshotFrame'
 import { useGame, useGameExecutables } from '../hooks/useGames'
 import { useSessions, useSessionMutations } from '../hooks/useSessions'
-import { toFileUrl } from '../lib/fileUrl'
 import {
   SCREENSHOT_GRID_CLASS,
   SCREENSHOT_PANEL_SCROLL_CLASS,
@@ -212,13 +210,14 @@ export default function GameDetail(): React.ReactElement {
     setMediaEditorMode(mode)
   }
 
-  const handleSaveMediaCrop = async (crop: CoverCrop): Promise<void> => {
-    if (!mediaEditorMode) return
+  const handleSaveCoverCrop = async (crop: CoverCrop): Promise<void> => {
+    await window.api.game.update(game.id, { cover_crop: serializeCoverCrop(crop) })
+    await qc.invalidateQueries({ queryKey: ['games'] })
+    setMediaEditorMode(null)
+  }
 
-    await window.api.game.update(game.id, {
-      [mediaEditorMode === 'cover' ? 'cover_crop' : 'background_crop']:
-        mediaEditorMode === 'cover' ? serializeCoverCrop(crop) : serializeBackgroundCrop(crop),
-    })
+  const handleSaveBackdropCrop = async (crop: BackdropCrop): Promise<void> => {
+    await window.api.game.update(game.id, { background_crop: serializeBackdropCrop(crop) })
     await qc.invalidateQueries({ queryKey: ['games'] })
     setMediaEditorMode(null)
   }
@@ -351,18 +350,12 @@ export default function GameDetail(): React.ReactElement {
 
       {/* 游戏详情以稳定信息为主，背景采用受控的中等横幅，不让图片决定页面高度。 */}
       <div className="group relative overflow-hidden border border-white/[0.09] bg-[#0f1114]">
-        {/* 背景图独立于游戏封面，用于营造详情页的沉浸式氛围。 */}
-        <div className="media-frame relative flex h-[210px] items-center justify-center bg-[linear-gradient(135deg,#15191e,#0e1115_62%,#12100c)] sm:h-[250px] xl:h-[280px]">
-          {archiveBackgroundPath ? (
-            <CoverImage
-              coverPath={archiveBackgroundPath}
-              coverCrop={parseBackgroundCrop(game.background_crop)}
-              cropMode="background"
-              displayName={`${game.display_name} 背景图`}
-            />
-          ) : (
-            <p className="text-xs tracking-[0.18em] text-archive-700">PLAYVAULT · 游戏记录</p>
-          )}
+        {/* 背景图独立于游戏封面，只提供氛围，不参与详情内容布局。 */}
+        <BackdropStage
+          filePath={archiveBackgroundPath}
+          crop={game.background_crop}
+          alt={`${game.display_name} 背景图`}
+        >
           <div className="absolute right-3 top-3 flex flex-wrap justify-end gap-1.5 border border-white/[0.10] bg-black/55 p-1.5 backdrop-blur-sm">
             <Button variant="secondary" size="sm" onClick={handleSetBackground}>
               <Image size={14} />
@@ -379,24 +372,18 @@ export default function GameDetail(): React.ReactElement {
               </Button>
             )}
           </div>
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(8,14,22,0.42),transparent_48%,rgba(8,14,22,0.26))]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0f1114] via-[#0f1114]/72 to-transparent" />
-        </div>
+        </BackdropStage>
 
         <div className="relative -mt-12 bg-gradient-to-b from-[#0f1114]/0 via-[#0f1114]/96 to-[#0f1114] px-5 pb-6 pt-10 sm:px-7">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="flex min-w-0 flex-1 items-start gap-5 sm:gap-6">
-              <div className="media-frame media-cover-frame flex w-[88px] shrink-0 items-center justify-center border border-white/[0.15] bg-archive-900 shadow-[0_14px_30px_rgba(0,0,0,0.35)] sm:w-[104px]">
-                {archiveCoverPath ? (
-                  <CoverImage
-                    coverPath={archiveCoverPath}
-                    coverCrop={parseCoverCrop(game.cover_crop)}
-                    displayName={`${game.display_name} 封面`}
-                  />
-                ) : (
-                  <Gamepad2 size={30} className="text-archive-700" />
-                )}
-              </div>
+              <CoverFrame
+                filePath={archiveCoverPath}
+                crop={game.cover_crop}
+                alt={`${game.display_name} 封面`}
+                className="flex w-[88px] shrink-0 items-center justify-center border border-white/[0.15] bg-archive-900 shadow-[0_14px_30px_rgba(0,0,0,0.35)] sm:w-[104px]"
+                fallback={<Gamepad2 size={30} className="text-archive-700" />}
+              />
               <div className="min-w-0 flex-1 space-y-3 pt-0.5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-100">个人游戏记录</p>
               {/* 名称与状态 */}
@@ -604,8 +591,13 @@ export default function GameDetail(): React.ReactElement {
               <div className="mb-2 flex items-center justify-between"><p className="text-sm text-archive-200">留档精选</p><span className="text-xs text-archive-500">点击查看原图</span></div>
               <div className="media-contact-sheet">
                 {archiveHighlights.map((shot) => (
-                  <button key={shot.id} type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === shot.id))} className="media-frame media-screenshot-frame group relative border border-white/[0.08] bg-archive-900 text-left hover:border-[#c9a35a]/55">
-                    <img src={toFileUrl(shot.preserved_path || shot.file_path)} alt={shot.file_name} className="media-image transition-transform duration-300 group-hover:scale-[1.03]" />
+                  <button key={shot.id} type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === shot.id))} className="group block w-full text-left">
+                    <ScreenshotFrame
+                      filePath={shot.preserved_path || shot.file_path}
+                      alt={shot.file_name}
+                      className="border border-white/[0.08] bg-archive-900 transition-all hover:border-[#c9a35a]/55"
+                      imageClassName="transition-transform duration-300 group-hover:scale-[1.03]"
+                    />
                   </button>
                 ))}
               </div>
@@ -849,9 +841,14 @@ export default function GameDetail(): React.ReactElement {
                       type="button"
                       onClick={() => toggleArchiveHighlight(shot.id)}
                       disabled={maxed || isArchiving}
-                      className={`media-frame group relative aspect-video rounded-archive border text-left transition-all ${selected ? 'border-amber-300/70 ring-2 ring-amber-300/35' : 'border-white/[0.08] hover:border-white/[0.22]'} ${maxed ? 'cursor-not-allowed opacity-40' : ''}`}
+                      className={`group relative block w-full text-left ${maxed ? 'cursor-not-allowed opacity-40' : ''}`}
                     >
-                      <img src={toFileUrl(shot.file_path)} alt={shot.file_name} className="media-image transition-transform duration-200 group-hover:scale-[1.03]" />
+                      <ScreenshotFrame
+                        filePath={shot.file_path}
+                        alt={shot.file_name}
+                        className={`rounded-archive border transition-all ${selected ? 'border-amber-300/70 ring-2 ring-amber-300/35' : 'border-white/[0.08] group-hover:border-white/[0.22]'}`}
+                        imageClassName="transition-transform duration-200 group-hover:scale-[1.03]"
+                      />
                       <span className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border ${selected ? 'border-violet-200/60 bg-accent-violet text-white' : 'border-white/25 bg-archive-950/70 text-transparent'}`}><Check size={14} strokeWidth={3} /></span>
                       <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 pb-1.5 pt-6 text-[10px] text-archive-200 opacity-0 transition-opacity group-hover:opacity-100">{formatDate(shot.captured_at)}</span>
                     </button>
@@ -924,56 +921,26 @@ export default function GameDetail(): React.ReactElement {
         onClose={() => setPreviewIndex(null)}
       />
       <CoverCropEditor
-        open={mediaEditorMode !== null}
+        open={mediaEditorMode === 'cover'}
         filePath={mediaEditorPath}
-        initialCrop={
-          mediaEditorMode === 'cover'
-            ? parseCoverCrop(game.cover_crop)
-            : parseBackgroundCrop(game.background_crop)
-        }
-        aspectRatio={mediaEditorMode === 'cover' ? '2 / 3' : '5 / 1'}
-        title={mediaEditorMode === 'cover' ? '调整游戏封面' : '调整短横幅背景'}
-        cropMode={mediaEditorMode === 'cover' ? 'cover' : 'background'}
+        initialCrop={parseCoverCrop(game.cover_crop)}
+        aspectRatio="2 / 3"
+        title="调整游戏封面"
         onClose={() => setMediaEditorMode(null)}
-        onSave={handleSaveMediaCrop}
+        onSave={handleSaveCoverCrop}
+      />
+      <BackdropEditor
+        open={mediaEditorMode === 'background'}
+        filePath={mediaEditorPath}
+        initialCrop={parseBackdropCrop(game.background_crop)}
+        onClose={() => setMediaEditorMode(null)}
+        onSave={handleSaveBackdropCrop}
       />
     </div>
   )
 }
 
 // ========== Helper Components ==========
-
-function CoverImage({
-  coverPath,
-  coverCrop,
-  cropMode = 'cover',
-  displayName,
-}: {
-  coverPath: string
-  coverCrop: CoverCrop
-  cropMode?: 'cover' | 'background'
-  displayName: string
-}): React.ReactElement {
-  const [error, setError] = useState(false)
-
-  useEffect(() => {
-    setError(false)
-  }, [coverPath])
-
-  if (error) {
-    return <Gamepad2 size={64} className="text-archive-700" />
-  }
-
-  return (
-    <img
-      src={toFileUrl(coverPath)}
-      alt={displayName}
-      className="media-image"
-      style={cropMode === 'background' ? getBackgroundImageStyle(coverCrop) : getCoverImageStyle(coverCrop)}
-      onError={() => setError(true)}
-    />
-  )
-}
 
 function ScreenshotThumb({
   shot,
@@ -982,33 +949,25 @@ function ScreenshotThumb({
   shot: Screenshot
   onPreview: () => void
 }): React.ReactElement {
-  const [imgError, setImgError] = useState(false)
-
   return (
-    <div
-      className="media-frame media-screenshot-frame group relative cursor-pointer rounded-xl border border-white/[0.06] bg-archive-850 shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300/25 hover:shadow-[0_12px_24px_rgba(0,0,0,0.25)]"
+    <button
+      type="button"
+      className="group block w-full text-left"
       title={shot.file_name}
       onClick={onPreview}
     >
-      {!imgError ? (
-        <img
-          src={toFileUrl(shot.preserved_path || shot.file_path)}
-          alt={shot.file_name}
-          className="media-image"
-          loading="lazy"
-          onError={() => setImgError(true)}
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <AlertTriangle size={16} className="text-archive-600" />
+      <ScreenshotFrame
+        filePath={shot.preserved_path || shot.file_path}
+        alt={shot.file_name}
+        className="relative cursor-pointer rounded-xl border border-white/[0.06] bg-archive-850 shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-all duration-200 group-hover:-translate-y-0.5 group-hover:border-amber-300/25 group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.25)]"
+      >
+        {shot.is_archived_highlight === 1 && (
+          <span className="absolute right-2 top-2 rounded-full border border-white/20 bg-archive-950/75 p-1.5 text-violet-100 shadow-lg"><Star size={11} fill="currentColor" /></span>
+        )}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-archive-950/90 to-transparent px-2 pb-1.5 pt-7 opacity-0 transition-opacity group-hover:opacity-100">
+          <p className="truncate text-[10px] text-archive-200">{shot.file_name}</p>
         </div>
-      )}
-      {shot.is_archived_highlight === 1 && (
-        <span className="absolute right-2 top-2 rounded-full border border-white/20 bg-archive-950/75 p-1.5 text-violet-100 shadow-lg"><Star size={11} fill="currentColor" /></span>
-      )}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-archive-950/90 to-transparent px-2 pb-1.5 pt-7 opacity-0 transition-opacity group-hover:opacity-100">
-        <p className="truncate text-[10px] text-archive-200">{shot.file_name}</p>
-      </div>
-    </div>
+      </ScreenshotFrame>
+    </button>
   )
 }

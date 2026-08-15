@@ -399,25 +399,36 @@ test('cover crop settings fall back safely and clamp invalid values', async () =
   )
 })
 
-test('background crop keeps legacy safety and translates the image within scaled bounds', async () => {
-  const { getBackgroundImageStyle, parseBackgroundCrop, serializeBackgroundCrop } = await importTypeScriptModule(
-    'src/shared/coverCrop.ts',
-    'backgroundCrop.mjs',
+test('backdrop crop migrates legacy settings and translates the image within scaled bounds', async () => {
+  const { getBackdropImageStyle, parseBackdropCrop, serializeBackdropCrop } = await importTypeScriptModule(
+    'src/shared/backdropCrop.ts',
+    'backdropCrop.mjs',
   )
 
-  assert.deepEqual(parseBackgroundCrop('{"zoom":2.4,"x":60,"y":-35}'), { zoom: 1.12, x: 0, y: 0 })
+  assert.deepEqual(parseBackdropCrop('{"zoom":2.4,"x":60,"y":-35}'), { zoom: 1.1, focalX: 0, focalY: 0 })
   assert.deepEqual(
-    parseBackgroundCrop('{"zoom":2.4,"x":60,"y":-35,"backgroundCropVersion":2}'),
-    { zoom: 1.65, x: 60, y: -35 },
+    parseBackdropCrop('{"zoom":2.4,"x":60,"y":-35,"backgroundCropVersion":2}'),
+    { zoom: 1.5, focalX: 0.6, focalY: -0.35 },
   )
   assert.equal(
-    serializeBackgroundCrop({ zoom: 2.4, x: 60, y: -35 }),
-    '{"zoom":1.65,"x":60,"y":-35,"backgroundCropVersion":2}',
+    serializeBackdropCrop({ zoom: 2.4, focalX: 3, focalY: -3 }),
+    '{"zoom":1.5,"focalX":1,"focalY":-1,"backdropCropVersion":1}',
   )
   assert.equal(
-    getBackgroundImageStyle({ zoom: 1.5, x: 100, y: -100 }).transform,
+    getBackdropImageStyle({ zoom: 1.5, focalX: 1, focalY: -1 }).transform,
     'translate3d(25%, -25%, 0) scale(1.5)',
   )
+})
+
+test('media roles are rendered by independent cover, backdrop and screenshot components', async () => {
+  const gameDetail = await readFile(resolve('src/renderer/src/pages/GameDetail.tsx'), 'utf8')
+  const coverEditor = await readFile(resolve('src/renderer/src/components/games/CoverCropEditor.tsx'), 'utf8')
+
+  assert.match(gameDetail, /BackdropStage/)
+  assert.match(gameDetail, /BackdropEditor/)
+  assert.match(gameDetail, /CoverFrame/)
+  assert.match(gameDetail, /ScreenshotFrame/)
+  assert.doesNotMatch(coverEditor, /cropMode/)
 })
 
 test('new screenshots are auto-classified only when one Session is active', async () => {

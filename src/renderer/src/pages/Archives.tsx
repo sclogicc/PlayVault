@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Archive, Loader2, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { GameWithStats } from '@shared/types'
-import { toFileUrl } from '../lib/fileUrl'
+import CoverFrame from '../components/media/CoverFrame'
 
 type ArchiveSortOrder = 'desc' | 'asc'
 
@@ -64,19 +64,20 @@ export default function Archives(): React.ReactElement {
 }
 
 function ArchiveCard({ game }: { game: GameWithStats }): React.ReactElement {
-  const [imageError, setImageError] = useState(false)
-  const posterPath = game.archive_cover_path || game.cover_path || game.archive_background_path || game.background_path
+  const posterPath = game.archive_cover_path || game.cover_path
 
   return (
     <Link to={`/games/${game.id}`} className="group block min-w-0">
-      <article className="media-frame media-cover-frame relative border border-white/[0.085] bg-[#15171a] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#c9a35a]/65">
-        {posterPath && !imageError ? (
-          <img src={toFileUrl(posterPath)} alt={`${game.display_name} 封面`} className="media-image transition-transform duration-500 group-hover:scale-[1.055]" onError={() => setImageError(true)} />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-[#1a1c1f]"><Archive size={34} className="text-archive-600" /></div>
-        )}
+      <CoverFrame
+        filePath={posterPath}
+        crop={game.cover_crop}
+        alt={`${game.display_name} 封面`}
+        className="relative border border-white/[0.085] bg-[#15171a] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#c9a35a]/65"
+        imageClassName="transition-transform duration-500"
+        fallback={<div className="flex h-full items-center justify-center bg-[#1a1c1f]"><Archive size={34} className="text-archive-600" /></div>}
+      >
         <div className="absolute left-2.5 top-2.5 border border-[#c9a35a]/35 bg-black/65 px-1.5 py-1 text-[10px] text-[#ead7aa]">已留档</div>
-      </article>
+      </CoverFrame>
       <div className="border-b border-white/[0.065] px-1 pb-3 pt-3">
         <p className="truncate text-sm font-medium text-archive-100">{game.display_name}</p>
         <p className="mt-1.5 text-[11px] text-archive-500">留档于 {formatDate(game.archived_at)} · {formatDuration(game.total_duration)}</p>
