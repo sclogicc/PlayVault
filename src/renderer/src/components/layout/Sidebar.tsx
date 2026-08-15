@@ -46,7 +46,7 @@ function countByScope(games: GameWithStats[], scope: LibraryScope): number {
 function navItemClass(active: boolean, expanded: boolean): string {
   return `group relative flex h-10 items-center gap-3 border transition-colors ${expanded ? 'w-full px-3' : 'w-11 justify-center'} ${
     active
-      ? 'border-[#c9a35a]/40 bg-[#17140f] text-[#ead7aa]'
+      ? 'border-[#c9a35a]/38 bg-[#211b12] text-[#ead7aa]'
       : 'border-transparent text-archive-500 hover:border-white/[0.10] hover:bg-white/[0.035] hover:text-archive-200'
   }`
 }
@@ -57,7 +57,7 @@ function LibraryLink({ item, expanded }: { item: NavItem; expanded: boolean }): 
       {item.icon}
       {expanded && <span className="min-w-0 flex-1 truncate text-sm">{item.label}</span>}
       {expanded && typeof item.count === 'number' && <span className="font-mono text-[11px] text-archive-600">{item.count}</span>}
-      {!expanded && <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap border border-white/[0.10] bg-[#15171a] px-2.5 py-1.5 text-xs text-archive-200 shadow-lg group-hover:block">{item.label}</span>}
+      {!expanded && <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap border border-white/[0.10] bg-[#1b1917] px-2.5 py-1.5 text-xs text-archive-200 shadow-lg group-hover:block">{item.label}</span>}
     </NavLink>
   )
 }
@@ -67,7 +67,7 @@ function DirectLink({ item, expanded }: { item: NavItem; expanded: boolean }): R
     <NavLink to={item.to} className={({ isActive }) => navItemClass(isActive, expanded)} title={expanded ? undefined : item.label}>
       {item.icon}
       {expanded && <span className="min-w-0 flex-1 truncate text-sm">{item.label}</span>}
-      {!expanded && <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap border border-white/[0.10] bg-[#15171a] px-2.5 py-1.5 text-xs text-archive-200 shadow-lg group-hover:block">{item.label}</span>}
+      {!expanded && <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 hidden whitespace-nowrap border border-white/[0.10] bg-[#1b1917] px-2.5 py-1.5 text-xs text-archive-200 shadow-lg group-hover:block">{item.label}</span>}
     </NavLink>
   )
 }
@@ -106,9 +106,9 @@ export default function Sidebar(): React.ReactElement {
   ]
 
   return (
-    <aside className={`flex h-screen shrink-0 flex-col border-r border-white/[0.075] bg-[#0a0c0f] py-4 transition-[width] duration-200 ${expanded ? 'w-[196px]' : 'w-[72px] items-center'}`}>
+    <aside className={`flex h-screen shrink-0 flex-col border-r border-white/[0.075] bg-[#100e0d] py-4 transition-[width] duration-200 ${expanded ? 'w-[196px]' : 'w-[72px] items-center'}`}>
       <div className={`flex h-11 items-center ${expanded ? 'justify-between px-3' : 'justify-center'}`}>
-        <NavLink to="/games" aria-label="PlayVault 游戏库" title="PlayVault" className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#c9a35a]/55 text-[#d6b36a] transition-colors hover:bg-[#17140f]">
+        <NavLink to="/games" aria-label="PlayVault 游戏库" title="PlayVault" className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#c9a35a]/55 text-[#d6b36a] transition-colors hover:bg-[#211b12]">
           <Gamepad2 size={18} strokeWidth={1.7} />
         </NavLink>
         {expanded && <span className="ml-3 flex-1 text-[11px] font-medium tracking-[0.16em] text-archive-400">PLAYVAULT</span>}

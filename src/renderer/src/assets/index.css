@@ -5,6 +5,12 @@
 @layer base {
   :root {
     color-scheme: dark;
+    --pv-void: #0b0a09;
+    --pv-surface: #141210;
+    --pv-raised: #1b1917;
+    --pv-edge: rgba(232, 224, 210, 0.075);
+    --pv-edge-strong: rgba(232, 224, 210, 0.14);
+    --pv-gold: #c9a35a;
   }
 
   * {
@@ -19,7 +25,7 @@
 
   body {
     @apply bg-archive-950 text-archive-100 antialiased;
-    background: #090a0c;
+    background: var(--pv-void);
   }
 
   img {
@@ -66,11 +72,11 @@
 
 @layer components {
   .card {
-    @apply border border-white/[0.075] bg-[#0f1114] p-5 shadow-[0_16px_34px_rgba(0,0,0,0.22)];
+    @apply border border-white/[0.075] bg-[#141210] p-5 shadow-[0_18px_44px_rgba(0,0,0,0.28)];
   }
 
   .card-interactive {
-    @apply card transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.14] hover:bg-[#121419] hover:shadow-[0_20px_40px_rgba(0,0,0,0.34)];
+    @apply card transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.14] hover:bg-[#1b1917] hover:shadow-[0_20px_42px_rgba(0,0,0,0.34)];
   }
 
   .section-title {
@@ -82,7 +88,7 @@
   }
 
   .btn-primary {
-    @apply border border-[#c9a35a]/75 bg-[#c9a35a] px-4 py-2 text-sm font-semibold text-[#17120a] transition-colors duration-200 hover:bg-[#dec280] active:bg-[#b9914b];
+    @apply border border-[#c9a35a]/70 bg-[#c9a35a] px-4 py-2 text-sm font-semibold text-[#17120a] transition-colors duration-200 hover:bg-[#d7b56e] active:bg-[#ad8745];
   }
 
   .btn-danger {
@@ -90,11 +96,11 @@
   }
 
   .btn-secondary {
-    @apply border border-white/[0.11] bg-transparent px-4 py-2 text-sm font-medium text-archive-200 transition-colors duration-200 hover:border-[#c9a35a]/55 hover:text-[#ead7aa];
+    @apply border border-white/[0.11] bg-transparent px-4 py-2 text-sm font-medium text-archive-200 transition-colors duration-200 hover:border-[#c9a35a]/55 hover:bg-[#c9a35a]/[0.055] hover:text-[#ead7aa];
   }
 
   .input-field {
-    @apply border border-white/[0.11] bg-black/20 px-3.5 py-2.5 text-sm text-archive-100 placeholder:text-archive-500 transition-colors duration-200 hover:border-white/[0.18] focus:border-[#c9a35a]/75 focus:bg-[#0d0f12] focus:ring-0;
+    @apply border border-white/[0.11] bg-black/20 px-3.5 py-2.5 text-sm text-archive-100 placeholder:text-archive-500 transition-colors duration-200 hover:border-white/[0.18] focus:border-[#c9a35a]/75 focus:bg-[#100e0d] focus:ring-0;
   }
 
   .table-header {
@@ -106,11 +112,11 @@
   }
 
   .surface-toolbar {
-    @apply border-y border-white/[0.075] bg-[#0c0e11] p-3;
+    @apply border-y border-white/[0.075] bg-[#100e0d] p-3;
   }
 
   .empty-state {
-    @apply border border-dashed border-white/[0.11] bg-[#0d0f12] px-6 py-14 text-center;
+    @apply border border-dashed border-white/[0.11] bg-[#100e0d] px-6 py-14 text-center;
   }
 
   /* A shared visual grammar: original files are never resized; only their display frames are normalized. */
@@ -124,7 +130,7 @@
     isolation: isolate;
     overflow: hidden;
     contain: paint;
-    background: #111317;
+    background: #181614;
   }
 
   .media-frame > img,
