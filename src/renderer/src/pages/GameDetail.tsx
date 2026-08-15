@@ -342,6 +342,8 @@ export default function GameDetail(): React.ReactElement {
   const archiveCoverPath = game.archive_cover_path || game.cover_path
   const archiveBackgroundPath = game.archive_background_path || game.background_path
   const archiveHighlights = gameScreenshots.filter((shot) => shot.is_archived_highlight === 1)
+  const archivePrimaryHighlight = archiveHighlights.find((shot) => shot.id === game.archive_primary_screenshot_id) ?? archiveHighlights[0]
+  const archiveSecondaryHighlights = archiveHighlights.filter((shot) => shot.id !== archivePrimaryHighlight?.id)
   const firstPlayedAt = sessions.length > 0
     ? sessions.reduce((earliest, session) => session.started_at < earliest ? session.started_at : earliest, sessions[0].started_at)
     : null
@@ -544,25 +546,16 @@ export default function GameDetail(): React.ReactElement {
             <div className="bg-[#11120f] px-4 py-3"><p className="text-[11px] text-archive-500">保留画面</p><p className="mt-1 text-sm text-archive-200">{archiveHighlights.length} 张</p></div>
           </div>
 
-          {game.archive_note && <blockquote className="mt-5 border-l-2 border-[#c9a35a]/60 bg-black/[0.12] px-4 py-3 text-sm leading-6 text-archive-300">“{game.archive_note}”</blockquote>}
-
-          {archiveHighlights.length > 0 && (
-            <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between"><p className="text-sm text-archive-200">留档精选</p><span className="text-xs text-archive-500">点击查看原图</span></div>
-              <div className="media-contact-sheet">
-                {archiveHighlights.map((shot) => (
-                  <button key={shot.id} type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === shot.id))} className="group block w-full text-left">
-                    <ScreenshotFrame
-                      filePath={shot.preserved_path || shot.file_path}
-                      alt={shot.file_name}
-                      className="border border-white/[0.08] bg-archive-900 transition-all hover:border-[#c9a35a]/55"
-                      imageClassName="transition-transform duration-300 group-hover:scale-[1.03]"
-                    />
-                  </button>
-                ))}
-              </div>
+          {archivePrimaryHighlight && (
+            <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1.65fr)_minmax(220px,0.75fr)]">
+              <button type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === archivePrimaryHighlight.id))} className="group relative block overflow-hidden border border-[#c9a35a]/28 bg-black text-left transition-colors hover:border-[#c9a35a]/70">
+                <ScreenshotFrame filePath={archivePrimaryHighlight.preserved_path || archivePrimaryHighlight.file_path} alt={archivePrimaryHighlight.file_name} className="aspect-[16/9]" imageClassName="transition-transform duration-500 group-hover:scale-[1.025]" />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent px-4 pb-4 pt-16"><span className="border border-[#c9a35a]/45 bg-black/55 px-2 py-1 text-[10px] text-[#ead7aa]">回忆主画面</span>{game.archive_note && <p className="mt-2 max-w-xl text-sm leading-6 text-archive-100">“{game.archive_note}”</p>}</div>
+              </button>
+              <div className="flex min-h-0 flex-col gap-3 border border-white/[0.07] bg-black/[0.12] p-3"><div className="flex items-center justify-between"><p className="text-xs font-medium text-archive-300">补充画面</p><span className="text-[10px] text-archive-600">点击查看原图</span></div>{archiveSecondaryHighlights.length > 0 ? <div className="grid flex-1 grid-cols-2 gap-2 lg:grid-cols-1">{archiveSecondaryHighlights.map((shot) => <button key={shot.id} type="button" onClick={() => setPreviewIndex(gameScreenshots.findIndex((candidate) => candidate.id === shot.id))} className="group relative block overflow-hidden border border-white/[0.08] bg-archive-900 text-left transition-colors hover:border-white/[0.24]"><ScreenshotFrame filePath={shot.preserved_path || shot.file_path} alt={shot.file_name} className="aspect-[3/2]" imageClassName="transition-transform duration-300 group-hover:scale-[1.04]" /></button>)}</div> : <p className="py-6 text-xs leading-5 text-archive-600">没有补充画面。主画面会独立保留这段经历。</p>}</div>
             </div>
           )}
+          {!archivePrimaryHighlight && game.archive_note && <blockquote className="mt-5 border-l-2 border-[#c9a35a]/60 bg-black/[0.12] px-4 py-3 text-sm leading-6 text-archive-300">“{game.archive_note}”</blockquote>}
         </section>
       )}
 
