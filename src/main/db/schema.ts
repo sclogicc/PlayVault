@@ -220,6 +220,14 @@ const MIGRATIONS: Record<number, string[]> = {
   14: [
     "UPDATE games SET is_enabled = 1 WHERE archive_status = 'archived'",
   ],
+
+  // v15: private library organization flags. Hidden games stay in the database and remain directly accessible.
+  15: [
+    "ALTER TABLE games ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE games ADD COLUMN is_hidden INTEGER NOT NULL DEFAULT 0",
+    "CREATE INDEX IF NOT EXISTS idx_games_favorite ON games(is_favorite)",
+    "CREATE INDEX IF NOT EXISTS idx_games_hidden ON games(is_hidden)",
+  ],
 }
 
 /**

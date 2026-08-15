@@ -4,7 +4,7 @@ import type { ArchiveStatus, GameStatus, InstallStatus } from '../../../shared/c
 
 export function getAllGames(
   db: Database,
-  filters?: { search?: string; status?: string; archiveStatus?: ArchiveStatus; archiveSort?: 'asc' | 'desc' },
+  filters?: { search?: string; status?: string; archiveStatus?: ArchiveStatus; archiveSort?: 'asc' | 'desc'; includeHidden?: boolean },
 ): GameWithStats[] {
   let sql = `
     SELECT
@@ -19,7 +19,11 @@ export function getAllGames(
   const params: unknown[] = []
 
   // A play-log is a historical marker, not a separate or locked game state.
-  // The main library therefore includes every game unless a caller explicitly asks for logged games.
+  // Hidden records remain available through the explicit private-hidden view only.
+  if (!filters?.includeHidden) {
+    sql += ' AND g.is_hidden = 0'
+  }
+
   if (filters?.archiveStatus) {
     sql += ' AND g.archive_status = ?'
     params.push(filters.archiveStatus)
@@ -76,14 +80,16 @@ export function createGame(
     background_path?: string
     background_crop?: string
     is_enabled?: number
+    is_favorite?: number
+    is_hidden?: number
   },
 ): { lastInsertRowid: number } {
   const result = db
     .prepare(
       `INSERT INTO games (name, display_name, aliases, status, platform, tags,
         cover_path, cover_crop, banner_crop, background_path, background_crop,
-        screenshot_folder_name, notes, is_enabled)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        screenshot_folder_name, notes, is_enabled, is_favorite, is_hidden)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       data.name,
@@ -100,6 +106,8 @@ export function createGame(
       data.screenshot_folder_name ?? '',
       data.notes ?? '',
       data.is_enabled ?? 1,
+      data.is_favorite ?? 0,
+      data.is_hidden ?? 0,
     )
 
   return { lastInsertRowid: result.lastInsertRowid }
@@ -123,6 +131,8 @@ export function updateGame(
     background_path?: string
     background_crop?: string
     is_enabled?: number
+    is_favorite?: number
+    is_hidden?: number
   },
 ): void {
   const fields: string[] = ["updated_at = datetime('now','localtime')"]
@@ -142,6 +152,8 @@ export function updateGame(
     'background_path',
     'background_crop',
     'is_enabled',
+    'is_favorite',
+    'is_hidden',
   ]
 
   for (const key of allowed) {

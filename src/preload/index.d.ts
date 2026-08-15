@@ -20,7 +20,7 @@ declare global {
     api: {
       game: {
         getAll: (
-          filters?: { search?: string; status?: string },
+          filters?: { search?: string; status?: string; includeHidden?: boolean },
         ) => Promise<GameWithStats[]>
         getById: (id: number) => Promise<Game | undefined>
         create: (data: {
@@ -54,6 +54,8 @@ declare global {
             banner_crop?: string
             background_path?: string
             background_crop?: string
+            is_favorite?: number
+            is_hidden?: number
           },
         ) => Promise<void>
         delete: (id: number) => Promise<void>

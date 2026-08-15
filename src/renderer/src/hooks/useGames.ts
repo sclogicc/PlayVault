@@ -12,6 +12,7 @@ export function useGames() {
       window.api.game.getAll({
         search: search || undefined,
         status: statusFilter !== '全部' ? statusFilter : undefined,
+        includeHidden: true,
       }),
   })
 
@@ -81,6 +82,8 @@ export function useGameMutations() {
         banner_crop?: string
         background_path?: string
         background_crop?: string
+        is_favorite?: number
+        is_hidden?: number
       }
     }) => window.api.game.update(id, data),
     onSuccess: invalidate,

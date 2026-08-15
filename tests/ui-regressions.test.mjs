@@ -358,7 +358,7 @@ test('game detail uses compact contact-sheet panels without item limits', async 
 test('game detail separates daily actions from media maintenance and journal reading', async () => {
   const source = await readFile('src/renderer/src/pages/GameDetail.tsx', 'utf8')
 
-  assert.match(source, /管理媒体与档案/)
+  assert.match(source, /整理、媒体与档案/)
   assert.match(source, /游玩轨迹/)
   assert.match(source, /截图留存/)
   assert.match(source, /xl:col-span-6/)
@@ -489,13 +489,17 @@ test('library view filters personal record scopes and normalizes persistent pref
   } = await importTypeScriptModule('src/renderer/src/lib/libraryView.ts', 'libraryView.mjs')
 
   const games = [
-    { id: 1, display_name: 'Gamma', status: 'in_progress', install_status: 'installed', archive_status: 'active', last_played_at: '2026-08-12 10:00:00', archived_at: null, total_duration: 3600, created_at: '2026-08-01 10:00:00' },
-    { id: 2, display_name: 'Alpha', status: 'completed', install_status: 'missing', archive_status: 'archived', last_played_at: null, archived_at: '2026-08-10 10:00:00', total_duration: 7200, created_at: '2026-08-02 10:00:00' },
-    { id: 3, display_name: 'Beta', status: 'not_started', install_status: 'installed', archive_status: 'active', last_played_at: null, archived_at: null, total_duration: 0, created_at: '2026-08-03 10:00:00' },
+    { id: 1, display_name: 'Gamma', status: 'in_progress', install_status: 'installed', archive_status: 'active', is_favorite: 1, is_hidden: 0, last_played_at: '2026-08-12 10:00:00', archived_at: null, total_duration: 3600, created_at: '2026-08-01 10:00:00' },
+    { id: 2, display_name: 'Alpha', status: 'completed', install_status: 'missing', archive_status: 'archived', is_favorite: 0, is_hidden: 0, last_played_at: null, archived_at: '2026-08-10 10:00:00', total_duration: 7200, created_at: '2026-08-02 10:00:00' },
+    { id: 3, display_name: 'Beta', status: 'not_started', install_status: 'installed', archive_status: 'active', is_favorite: 1, is_hidden: 1, last_played_at: null, archived_at: null, total_duration: 0, created_at: '2026-08-03 10:00:00' },
   ]
 
   assert.equal(parseLibraryScope('archived'), 'archived')
+  assert.equal(parseLibraryScope('hidden'), 'hidden')
   assert.equal(parseLibraryScope('unknown'), 'all')
+  assert.deepEqual(filterGamesByScope(games, 'all').map((game) => game.id), [1, 2])
+  assert.deepEqual(filterGamesByScope(games, 'favorite').map((game) => game.id), [1])
+  assert.deepEqual(filterGamesByScope(games, 'hidden').map((game) => game.id), [3])
   assert.deepEqual(filterGamesByScope(games, 'in_progress').map((game) => game.id), [1])
   assert.deepEqual(filterGamesByScope(games, 'recent').map((game) => game.id), [1])
   assert.deepEqual(filterGamesByScope(games, 'archived').map((game) => game.id), [2])
@@ -520,9 +524,13 @@ test('library shell exposes expandable personal navigation and dual views', asyn
 
   assert.match(sidebar, /playvault\.sidebar\.expanded/)
   assert.match(sidebar, /已留档/)
+  assert.match(sidebar, /收藏游戏/)
+  assert.match(sidebar, /已隐藏/)
   assert.match(sidebar, /路径失效/)
   assert.match(games, /GameGrid/)
   assert.match(games, /GameList/)
+  assert.match(games, /onToggleFavorite/)
+  assert.match(games, /onToggleHidden/)
   assert.match(preferences, /library_view_preferences_v1/)
 })
 

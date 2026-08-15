@@ -24,6 +24,8 @@ import {
   FolderSearch,
   Archive,
   Check,
+  Heart,
+  EyeOff,
 } from 'lucide-react'
 import type { GameStatus } from '@shared/constants'
 import {
@@ -157,6 +159,16 @@ export default function GameDetail(): React.ReactElement {
     await window.api.game.complete(game.id)
     qc.invalidateQueries({ queryKey: ['games'] })
     setCompletingGame(false)
+  }
+
+  const handleToggleFavorite = async (): Promise<void> => {
+    await window.api.game.update(game.id, { is_favorite: game.is_favorite === 1 ? 0 : 1 })
+    await qc.invalidateQueries({ queryKey: ['games'] })
+  }
+
+  const handleToggleHidden = async (): Promise<void> => {
+    await window.api.game.update(game.id, { is_hidden: game.is_hidden === 1 ? 0 : 1 })
+    await qc.invalidateQueries({ queryKey: ['games'] })
   }
 
   const handleOpenFileLocation = (filePath: string): void => {
@@ -451,8 +463,10 @@ export default function GameDetail(): React.ReactElement {
                 )}
               </div>
               <details className="border-t border-white/[0.07] pt-3 text-right">
-                <summary className="cursor-pointer select-none text-xs text-archive-500 transition-colors hover:text-[#ead7aa]">管理媒体与档案</summary>
+                <summary className="cursor-pointer select-none text-xs text-archive-500 transition-colors hover:text-[#ead7aa]">整理、媒体与档案</summary>
                 <div className="mt-3 flex flex-wrap justify-end gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => void handleToggleFavorite()}><Heart size={14} fill={game.is_favorite === 1 ? 'currentColor' : 'none'} />{game.is_favorite === 1 ? '取消收藏' : '收藏游戏'}</Button>
+                  <Button variant="ghost" size="sm" onClick={() => void handleToggleHidden()}><EyeOff size={14} />{game.is_hidden === 1 ? '取消隐藏' : '隐藏游戏'}</Button>
                   <Button variant="ghost" size="sm" onClick={handleSetCover}><Image size={14} />{game.cover_path ? '更换封面' : '设置封面'}</Button>
                   {game.cover_path && <Button variant="ghost" size="sm" onClick={() => handleAdjustMedia('cover')}>调整封面</Button>}
                   {game.cover_path && <Button variant="ghost" size="sm" onClick={handleRemoveCover}>移除封面</Button>}

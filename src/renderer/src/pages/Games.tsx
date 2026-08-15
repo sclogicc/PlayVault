@@ -11,6 +11,8 @@ import {
   Plus,
   Search,
   SlidersHorizontal,
+  Heart,
+  EyeOff,
 } from 'lucide-react'
 import type { GameLaunchResult, GameWithStats, GameFormData } from '@shared/types'
 import type { GameStatus, InstallStatus } from '@shared/constants'
@@ -87,6 +89,14 @@ export default function Games(): React.ReactElement {
       navigate(`/games/${gameId}`)
       openTimer.current = null
     }, OPEN_DELAY_MS)
+  }
+
+  const handleToggleFavorite = (game: GameWithStats): void => {
+    updateGame.mutate({ id: game.id, data: { is_favorite: game.is_favorite === 1 ? 0 : 1 } })
+  }
+
+  const handleToggleHidden = (game: GameWithStats): void => {
+    updateGame.mutate({ id: game.id, data: { is_hidden: game.is_hidden === 1 ? 0 : 1 } })
   }
 
   const handleLaunch = async (game: GameWithStats): Promise<void> => {
@@ -188,6 +198,8 @@ export default function Games(): React.ReactElement {
           onOpen={handleOpenDetail}
           onLaunch={handleLaunch}
           onEdit={(game) => { setEditingGame(game); setFormOpen(true) }}
+          onToggleFavorite={handleToggleFavorite}
+          onToggleHidden={handleToggleHidden}
         />
       ) : (
         <GameList
@@ -197,6 +209,8 @@ export default function Games(): React.ReactElement {
           onOpen={handleOpenDetail}
           onLaunch={handleLaunch}
           onEdit={(game) => { setEditingGame(game); setFormOpen(true) }}
+          onToggleFavorite={handleToggleFavorite}
+          onToggleHidden={handleToggleHidden}
         />
       )}
 
@@ -227,6 +241,8 @@ interface GamePresentationProps {
   onOpen: (gameId: number) => void
   onLaunch: (game: GameWithStats) => void
   onEdit: (game: GameWithStats) => void
+  onToggleFavorite: (game: GameWithStats) => void
+  onToggleHidden: (game: GameWithStats) => void
 }
 
 function GameGrid({ games, density, ...props }: GamePresentationProps & { density: 'comfortable' | 'compact' }): React.ReactElement {
@@ -241,7 +257,7 @@ function GameList(props: GamePresentationProps): React.ReactElement {
   return <section aria-label="游戏记录列表" className="divide-y divide-white/[0.065] border-b border-white/[0.065] py-4">{props.games.map((game) => <GameListRow key={game.id} game={game} {...props} />)}</section>
 }
 
-function GameCard({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, onEdit }: Omit<GamePresentationProps, 'games'> & { game: GameWithStats }): React.ReactElement {
+function GameCard({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, onEdit, onToggleFavorite, onToggleHidden }: Omit<GamePresentationProps, 'games'> & { game: GameWithStats }): React.ReactElement {
   const isInstalled = (game.install_status as InstallStatus) === 'installed'
 
   return (
@@ -255,8 +271,10 @@ function GameCard({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, on
         fallback={<div className="flex h-full flex-col items-center justify-center bg-[linear-gradient(145deg,#1a1d20,#101215)] text-center"><Gamepad2 size={30} className="text-archive-600" /><p className="mt-3 max-w-[78%] break-words text-xs text-archive-500">{game.display_name}</p></div>}
       >
         <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5"><StatusBadge status={game.status as GameStatus} />{!isInstalled && <span className="border border-white/[0.15] bg-black/65 px-1.5 py-1 text-[10px] text-archive-300">路径失效</span>}</div>
-        {game.archive_status === 'archived' && <span className="absolute bottom-2.5 left-2.5 border border-[#c9a35a]/35 bg-black/65 px-1.5 py-1 text-[10px] text-[#ead7aa]">已留档</span>}
+        <div className="absolute bottom-2.5 left-2.5 flex gap-1.5">{game.archive_status === 'archived' && <span className="border border-[#c9a35a]/35 bg-black/65 px-1.5 py-1 text-[10px] text-[#ead7aa]">已留档</span>}{game.is_hidden === 1 && <span className="border border-white/[0.14] bg-black/65 px-1.5 py-1 text-[10px] text-archive-300">已隐藏</span>}</div>
         <div className="absolute right-2.5 top-2.5 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+          <button type="button" className={`border bg-black/60 p-1.5 transition-colors ${game.is_favorite === 1 ? 'border-[#c9a35a]/70 text-[#ead7aa]' : 'border-white/[0.12] text-archive-200 hover:border-[#c9a35a]/70 hover:text-[#ead7aa]'}`} title={game.is_favorite === 1 ? '取消收藏' : '收藏游戏'} aria-label={`${game.is_favorite === 1 ? '取消收藏' : '收藏'}${game.display_name}`} onClick={(event) => { event.stopPropagation(); onToggleFavorite(game) }}><Heart size={13} fill={game.is_favorite === 1 ? 'currentColor' : 'none'} /></button>
+          <button type="button" className="border border-white/[0.12] bg-black/60 p-1.5 text-archive-200 transition-colors hover:border-white/[0.28] hover:text-archive-50" title={game.is_hidden === 1 ? '取消隐藏' : '隐藏游戏'} aria-label={`${game.is_hidden === 1 ? '取消隐藏' : '隐藏'}${game.display_name}`} onClick={(event) => { event.stopPropagation(); onToggleHidden(game) }}><EyeOff size={13} /></button>
           <button type="button" className="border border-white/[0.12] bg-black/60 p-1.5 text-archive-200 transition-colors hover:border-[#c9a35a]/70 hover:text-[#ead7aa]" title="启动游戏" aria-label={`启动${game.display_name}`} onClick={(event) => { event.stopPropagation(); void onLaunch(game) }}><Play size={13} fill="currentColor" /></button>
           <button type="button" className="border border-white/[0.12] bg-black/60 p-1.5 text-archive-200 transition-colors hover:border-[#c9a35a]/70 hover:text-[#ead7aa]" title="编辑游戏" aria-label={`编辑${game.display_name}`} onClick={(event) => { event.stopPropagation(); onEdit(game) }}><Pencil size={13} /></button>
         </div>
@@ -266,14 +284,14 @@ function GameCard({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, on
   )
 }
 
-function GameListRow({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, onEdit }: Omit<GamePresentationProps, 'games'> & { game: GameWithStats }): React.ReactElement {
+function GameListRow({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, onEdit, onToggleFavorite, onToggleHidden }: Omit<GamePresentationProps, 'games'> & { game: GameWithStats }): React.ReactElement {
   return (
     <article className="group grid cursor-pointer grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-4 px-2 py-3 transition-colors hover:bg-white/[0.025] sm:grid-cols-[52px_minmax(0,1.5fr)_minmax(120px,0.7fr)_minmax(110px,0.6fr)_auto]" role="button" tabIndex={0} onClick={() => onOpen(game.id)} onKeyDown={(event) => { if (event.key === 'Enter') onOpen(game.id) }}>
       <CoverFrame filePath={game.cover_path} crop={game.cover_crop} alt={`${game.display_name} 封面`} className="w-11 border border-white/[0.09] bg-[#15171a] sm:w-[52px]" fallback={<div className="flex h-full items-center justify-center"><Gamepad2 size={14} className="text-archive-600" /></div>} />
-      <div className="min-w-0"><div className="flex items-center gap-2"><p className="truncate text-sm font-medium text-archive-100">{game.display_name}</p><StatusBadge status={game.status as GameStatus} /></div><p className="mt-1 truncate text-[11px] text-archive-500 sm:hidden">{formatDuration(game.total_duration)} · {formatLastPlayed(game.last_played_at)}</p></div>
+      <div className="min-w-0"><div className="flex items-center gap-2"><p className="truncate text-sm font-medium text-archive-100">{game.display_name}</p><StatusBadge status={game.status as GameStatus} />{game.is_favorite === 1 && <Heart size={12} className="shrink-0 text-[#d8ba77]" fill="currentColor" />}{game.is_hidden === 1 && <span className="text-[10px] text-archive-500">已隐藏</span>}</div><p className="mt-1 truncate text-[11px] text-archive-500 sm:hidden">{formatDuration(game.total_duration)} · {formatLastPlayed(game.last_played_at)}</p></div>
       <p className="hidden text-xs text-archive-500 sm:block">{formatLastPlayed(game.last_played_at)}</p>
       <p className="hidden text-xs text-archive-500 sm:block">{formatDuration(game.total_duration)}</p>
-      <div className="flex items-center gap-1"><button type="button" className="flex h-8 w-8 items-center justify-center border border-transparent text-archive-500 transition-colors hover:border-[#c9a35a]/45 hover:text-[#ead7aa]" title="启动游戏" aria-label={`启动${game.display_name}`} onClick={(event) => { event.stopPropagation(); void onLaunch(game) }}><Play size={14} fill="currentColor" /></button><button type="button" className="flex h-8 w-8 items-center justify-center border border-transparent text-archive-500 transition-colors hover:border-white/[0.14] hover:text-archive-100" title="编辑游戏" aria-label={`编辑${game.display_name}`} onClick={(event) => { event.stopPropagation(); onEdit(game) }}><Pencil size={14} /></button></div>
+      <div className="flex items-center gap-1"><button type="button" className={`flex h-8 w-8 items-center justify-center border border-transparent transition-colors hover:border-[#c9a35a]/45 hover:text-[#ead7aa] ${game.is_favorite === 1 ? 'text-[#d8ba77]' : 'text-archive-500'}`} title={game.is_favorite === 1 ? '取消收藏' : '收藏游戏'} aria-label={`${game.is_favorite === 1 ? '取消收藏' : '收藏'}${game.display_name}`} onClick={(event) => { event.stopPropagation(); onToggleFavorite(game) }}><Heart size={14} fill={game.is_favorite === 1 ? 'currentColor' : 'none'} /></button><button type="button" className="flex h-8 w-8 items-center justify-center border border-transparent text-archive-500 transition-colors hover:border-white/[0.14] hover:text-archive-100" title={game.is_hidden === 1 ? '取消隐藏' : '隐藏游戏'} aria-label={`${game.is_hidden === 1 ? '取消隐藏' : '隐藏'}${game.display_name}`} onClick={(event) => { event.stopPropagation(); onToggleHidden(game) }}><EyeOff size={14} /></button><button type="button" className="flex h-8 w-8 items-center justify-center border border-transparent text-archive-500 transition-colors hover:border-[#c9a35a]/45 hover:text-[#ead7aa]" title="启动游戏" aria-label={`启动${game.display_name}`} onClick={(event) => { event.stopPropagation(); void onLaunch(game) }}><Play size={14} fill="currentColor" /></button><button type="button" className="flex h-8 w-8 items-center justify-center border border-transparent text-archive-500 transition-colors hover:border-white/[0.14] hover:text-archive-100" title="编辑游戏" aria-label={`编辑${game.display_name}`} onClick={(event) => { event.stopPropagation(); onEdit(game) }}><Pencil size={14} /></button></div>
     </article>
   )
 }

@@ -26,6 +26,8 @@ export interface Game {
   screenshot_folder_name: string
   notes: string
   is_enabled: 0 | 1
+  is_favorite: 0 | 1
+  is_hidden: 0 | 1
   install_status: InstallStatus
   completed_at: string | null
   archive_status: ArchiveStatus

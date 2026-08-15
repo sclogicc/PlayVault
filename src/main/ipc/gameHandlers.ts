@@ -9,7 +9,7 @@ import { IPC_CHANNELS } from '../../shared/ipc'
 export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
   ipcMain.handle(
     IPC_CHANNELS.GAME_GET_ALL,
-    (_event, filters?: { search?: string; status?: string }) => {
+    (_event, filters?: { search?: string; status?: string; includeHidden?: boolean }) => {
       return gameRepo.getAllGames(db, filters)
     },
   )
@@ -41,6 +41,8 @@ export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
         banner_crop?: string
         background_path?: string
         background_crop?: string
+        is_favorite?: number
+        is_hidden?: number
       },
     ) => {
       return gameRepo.createGame(db, data)
@@ -66,6 +68,8 @@ export function registerGameHandlers(ipcMain: IpcMain, db: Database): void {
         banner_crop?: string
         background_path?: string
         background_crop?: string
+        is_favorite?: number
+        is_hidden?: number
       },
     ) => {
       gameRepo.updateGame(db, id, data)

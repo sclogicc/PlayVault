@@ -7,7 +7,7 @@ import type { GameCaptureStatus } from '../shared/capture'
 
 const api = {
   game: {
-    getAll: (filters?: { search?: string; status?: string }) =>
+    getAll: (filters?: { search?: string; status?: string; includeHidden?: boolean }) =>
       ipcRenderer.invoke(IPC_CHANNELS.GAME_GET_ALL, filters),
     getById: (id: number) =>
       ipcRenderer.invoke(IPC_CHANNELS.GAME_GET_BY_ID, id),
@@ -42,6 +42,8 @@ const api = {
         banner_crop?: string
         background_path?: string
         background_crop?: string
+        is_favorite?: number
+        is_hidden?: number
       },
     ) => ipcRenderer.invoke(IPC_CHANNELS.GAME_UPDATE, id, data),
     delete: (id: number) =>

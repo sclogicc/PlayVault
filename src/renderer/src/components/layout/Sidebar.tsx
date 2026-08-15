@@ -13,6 +13,8 @@ import {
   Search,
   Settings,
   TriangleAlert,
+  Heart,
+  EyeOff,
 } from 'lucide-react'
 import type { GameWithStats } from '@shared/types'
 import { parseLibraryScope, type LibraryScope } from '../../lib/libraryView'
@@ -32,11 +34,13 @@ function getInitialExpandedState(): boolean {
 }
 
 function countByScope(games: GameWithStats[], scope: LibraryScope): number {
-  if (scope === 'in_progress') return games.filter((game) => game.status === 'in_progress').length
-  if (scope === 'recent') return games.filter((game) => Boolean(game.last_played_at)).length
-  if (scope === 'archived') return games.filter((game) => game.archive_status === 'archived').length
-  if (scope === 'missing') return games.filter((game) => game.install_status === 'missing').length
-  return games.length
+  if (scope === 'favorite') return games.filter((game) => game.is_favorite === 1 && game.is_hidden !== 1).length
+  if (scope === 'in_progress') return games.filter((game) => game.status === 'in_progress' && game.is_hidden !== 1).length
+  if (scope === 'recent') return games.filter((game) => Boolean(game.last_played_at) && game.is_hidden !== 1).length
+  if (scope === 'archived') return games.filter((game) => game.archive_status === 'archived' && game.is_hidden !== 1).length
+  if (scope === 'missing') return games.filter((game) => game.install_status === 'missing' && game.is_hidden !== 1).length
+  if (scope === 'hidden') return games.filter((game) => game.is_hidden === 1).length
+  return games.filter((game) => game.is_hidden !== 1).length
 }
 
 function navItemClass(active: boolean, expanded: boolean): string {
@@ -73,7 +77,7 @@ export default function Sidebar(): React.ReactElement {
   const [expanded, setExpanded] = useState(getInitialExpandedState)
   const { data: games = [] } = useQuery<GameWithStats[]>({
     queryKey: ['games', 'sidebar-navigation'],
-    queryFn: () => window.api.game.getAll(),
+    queryFn: () => window.api.game.getAll({ includeHidden: true }),
   })
 
   useEffect(() => {
@@ -86,10 +90,12 @@ export default function Sidebar(): React.ReactElement {
 
   const libraryItems = useMemo<NavItem[]>(() => [
     { to: '/games', icon: <Gamepad2 size={17} strokeWidth={1.7} />, label: '全部游戏', count: countByScope(games, 'all'), isActive: activeScope === 'all' },
+    { to: '/games?scope=favorite', icon: <Heart size={17} strokeWidth={1.7} />, label: '收藏游戏', count: countByScope(games, 'favorite'), isActive: activeScope === 'favorite' },
     { to: '/games?scope=in_progress', icon: <Clock3 size={17} strokeWidth={1.7} />, label: '进行中', count: countByScope(games, 'in_progress'), isActive: activeScope === 'in_progress' },
     { to: '/games?scope=recent', icon: <Archive size={17} strokeWidth={1.7} />, label: '最近游玩', count: countByScope(games, 'recent'), isActive: activeScope === 'recent' },
     { to: '/games?scope=archived', icon: <FolderArchive size={17} strokeWidth={1.7} />, label: '已留档', count: countByScope(games, 'archived'), isActive: activeScope === 'archived' },
     { to: '/games?scope=missing', icon: <TriangleAlert size={17} strokeWidth={1.7} />, label: '路径失效', count: countByScope(games, 'missing'), isActive: activeScope === 'missing' },
+    { to: '/games?scope=hidden', icon: <EyeOff size={17} strokeWidth={1.7} />, label: '已隐藏', count: countByScope(games, 'hidden'), isActive: activeScope === 'hidden' },
   ], [activeScope, games])
 
   const toolItems: NavItem[] = [
