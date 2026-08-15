@@ -18,8 +18,6 @@ import {
   Image,
   Gamepad2,
   CheckCircle,
-  HardDrive,
-  AlertTriangle,
   ExternalLink,
   FolderSearch,
   Archive,
@@ -27,12 +25,9 @@ import {
   Heart,
   EyeOff,
 } from 'lucide-react'
-import type { GameStatus } from '@shared/constants'
 import {
-  INSTALL_STATUS_LABELS,
   SESSION_END_REASON_LABELS,
 } from '@shared/constants'
-import StatusBadge from '../components/ui/StatusBadge'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
@@ -336,7 +331,6 @@ export default function GameDetail(): React.ReactElement {
   const installStatus = (game as unknown as Record<string, unknown>).install_status as string ?? 'installed'
   const isInstalled = installStatus === 'installed'
   const isCompleted = game.status === 'completed'
-  const primaryExe = exes.find((e) => e.is_primary === 1)
   const lastPlayedAt = sessions.length > 0 ? sessions[0].ended_at : null
   const isArchived = game.archive_status === 'archived'
   const archiveCoverPath = game.archive_cover_path || game.cover_path
@@ -361,6 +355,13 @@ export default function GameDetail(): React.ReactElement {
     exe_count: exes.length,
   })
   const missingRecordLabels = recordCompleteness.missing.map((field) => RECORD_FIELD_LABELS[field])
+  const gameType = (() => {
+    try {
+      const tags = JSON.parse(game.tags || '[]')
+      if (Array.isArray(tags) && typeof tags[0] === 'string' && tags[0].trim()) return tags[0]
+    } catch { /* ignore invalid tag data */ }
+    return game.platform || '本地单机'
+  })()
 
   return (
     <div className="content-canvas min-h-full space-y-8 bg-[var(--pv-void)] px-7 py-8 pb-14 transition-colors duration-300 sm:px-10 sm:py-9 lg:px-12">
@@ -373,16 +374,17 @@ export default function GameDetail(): React.ReactElement {
 返回游戏库
       </Link>
 
-      {/* 游戏详情以稳定信息为主，背景采用受控的中等横幅，不让图片决定页面高度。 */}
+      {/* 已确认的详情舞台：以 NVIDIA 1920×1080 对应的 16:9 为背景基线，信息叠在同一场景中。 */}
       <div className="group relative overflow-hidden border border-white/[0.09] bg-[var(--pv-surface)] transition-colors duration-300">
-        {/* 背景图独立于游戏封面，只提供氛围，不参与详情内容布局。 */}
+        {/* 背景图独立于封面；组件内部会在更换图片时淡入，原图尺寸不再影响舞台比例。 */}
         <BackdropStage
           filePath={archiveBackgroundPath}
           crop={game.background_crop}
           alt={`${game.display_name} 背景图`}
+          className="detail-stage-backdrop"
         />
 
-        <div className="relative -mt-12 bg-gradient-to-b from-transparent via-[var(--pv-surface)] to-[var(--pv-surface)] px-5 pb-7 pt-11 sm:px-7 sm:pb-8">
+        <div className="relative -mt-[28%] bg-gradient-to-b from-transparent via-[var(--pv-surface)]/90 to-[var(--pv-surface)] px-5 pb-7 pt-11 sm:px-7 sm:pb-8">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="flex min-w-0 flex-1 items-start gap-5 sm:gap-7">
               <CoverFrame
@@ -392,54 +394,17 @@ export default function GameDetail(): React.ReactElement {
                 className="flex w-[92px] shrink-0 items-center justify-center border border-white/[0.15] bg-archive-900 shadow-[0_16px_34px_rgba(0,0,0,0.34)] sm:w-[112px]"
                 fallback={<Gamepad2 size={30} className="text-archive-700" />}
               />
-              <div className="min-w-0 flex-1 space-y-3.5 pt-0.5">
-              <p className="eyebrow">个人游戏记录</p>
-              {/* 名称与状态 */}
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="min-w-0 flex-1 pt-2">
                 <h2 className="font-serif text-[2rem] font-medium leading-none tracking-[-0.04em] text-archive-50 sm:text-[2.65rem]">
                   {game.display_name}
                 </h2>
-                <StatusBadge status={game.status as GameStatus} />
-                {isArchived && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/20 bg-amber-400/10 px-2.5 py-1 text-xs font-medium text-amber-100">
-                    <Archive size={12} />
-                    已留档
-                  </span>
-                )}
+                <p className="mt-2 text-[13px] text-archive-300">{gameType}</p>
+                <div className="detail-stage-duration">
+                  <Clock size={12} />
+                  <span>游玩时长</span>
+                  <strong>{formatDuration(totalDuration)}</strong>
+                </div>
               </div>
-
-
-              {game.display_name !== game.name && (
-                <p className="text-[13px] text-archive-500 font-mono">
-                  系统名: {game.name}
-                </p>
-              )}
-
-              {/* Install + Path */}
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px]">
-                <span className="flex items-center gap-1.5">
-                  <HardDrive size={13} className="text-archive-500" />
-                  <span className={isInstalled ? 'text-accent-teal font-medium' : 'text-accent-red font-medium'}>
-                    {INSTALL_STATUS_LABELS[installStatus as keyof typeof INSTALL_STATUS_LABELS] ?? installStatus}
-                  </span>
-                </span>
-                {primaryExe?.file_path && (
-                  <span
-                    className="text-archive-500 truncate max-w-[300px] cursor-pointer hover:text-archive-300 underline decoration-archive-700 underline-offset-4"
-                    title={primaryExe.file_path}
-                    onClick={() => handleOpenFileLocation(primaryExe.file_path)}
-                  >
-                    {primaryExe.file_path}
-                  </span>
-                )}
-                {!isInstalled && (
-                  <span className="flex items-center gap-1 text-accent-red text-xs bg-accent-red/10 px-2 py-0.5 rounded border border-accent-red/20">
-                    <AlertTriangle size={12} />
-                    路径失效
-                  </span>
-                )}
-              </div>
-            </div>
             </div>
 
             {/* 仅保留日常记录动作；媒体和删除维护收进次级管理区，避免头部变成按钮墙。 */}
@@ -457,7 +422,7 @@ export default function GameDetail(): React.ReactElement {
                 <p className={`border px-3 py-2 text-xs ${launchStatus === '游戏已启动' ? 'border-teal-300/15 bg-teal-400/10 text-teal-200' : 'border-red-300/15 bg-red-400/10 text-red-200'}`}>{launchStatus}</p>
               )}
               <div className="flex flex-wrap justify-end gap-2">
-                <Button variant="primary" onClick={handleLaunch} disabled={!isInstalled} title={!isInstalled ? '游戏未安装或路径失效' : '启动游戏'}>
+                <Button className="detail-stage-action-primary" variant="primary" onClick={handleLaunch} disabled={!isInstalled} title={!isInstalled ? '游戏未安装或路径失效' : '启动游戏'}>
                   <Play size={16} />启动游戏
                 </Button>
                 {activeSession && (
@@ -467,7 +432,7 @@ export default function GameDetail(): React.ReactElement {
                 )}
                 {!isInstalled && <Button variant="secondary" onClick={handleRelink}><FolderSearch size={16} />重新绑定</Button>}
                 {!isCompleted ? (
-                  <Button variant="secondary" onClick={() => setCompletingGame(true)}><CheckCircle size={16} />确认已通关</Button>
+                  <Button className="detail-stage-action-secondary" variant="secondary" onClick={() => setCompletingGame(true)}><CheckCircle size={16} />确认已通关</Button>
                 ) : (
                   <span className="flex items-center gap-1.5 border border-emerald-300/15 bg-emerald-400/10 px-3 py-1.5 text-sm text-emerald-200"><CheckCircle size={14} />已通关</span>
                 )}
@@ -492,14 +457,8 @@ export default function GameDetail(): React.ReactElement {
             </div>
           </div>
 
-          {/* Stats bar */}
-          <div className="mt-7 grid grid-cols-2 gap-px border-t border-white/[0.07] bg-white/[0.07] pt-5 text-sm sm:grid-cols-4">
-            <div className="bg-[var(--pv-raised)] px-4 py-3.5 transition-colors duration-300">
-              <span className="text-[10px] font-semibold tracking-[0.12em] text-archive-500">总时长</span>
-              <p className="mt-1 font-mono text-archive-100">
-                {formatDuration(totalDuration)}
-              </p>
-            </div>
+          {/* 时间已归属于标题下方；底部只保留回看维度。 */}
+          <div className="mt-7 grid grid-cols-3 gap-px border-t border-white/[0.07] bg-white/[0.07] pt-5 text-sm">
             <div className="bg-[var(--pv-raised)] px-4 py-3.5 transition-colors duration-300">
               <span className="text-[10px] font-semibold tracking-[0.12em] text-archive-500">最近游玩</span>
               <p className="mt-1 text-archive-100">

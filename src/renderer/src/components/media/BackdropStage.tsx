@@ -40,7 +40,8 @@ export default function BackdropStage({
         <img
           src={toFileUrl(filePath)}
           alt={alt}
-          className={`media-image media-backdrop-image ${imageClassName}`}
+          key={filePath}
+          className={`media-image media-backdrop-image pv-backdrop-image-fade ${imageClassName}`}
           style={getBackdropImageStyle(backdropCrop)}
           onError={() => setImageError(true)}
         />
