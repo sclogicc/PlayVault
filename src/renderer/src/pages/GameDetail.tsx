@@ -365,7 +365,7 @@ export default function GameDetail(): React.ReactElement {
   })()
 
   return (
-    <div className="content-canvas min-h-full space-y-8 bg-[var(--pv-void)] px-7 py-8 pb-14 transition-colors duration-300 sm:px-10 sm:py-9 lg:px-12">
+    <div className="content-canvas scene-archive-detail min-h-full space-y-8 bg-[var(--pv-void)] px-7 py-8 pb-14 transition-colors duration-300 sm:px-10 sm:py-9 lg:px-12">
       {/* Back link */}
       <Link
         to="/games"
@@ -376,7 +376,7 @@ export default function GameDetail(): React.ReactElement {
       </Link>
 
       {/* 已确认的详情舞台：以 NVIDIA 1920×1080 对应的 16:9 为背景基线，信息叠在同一场景中。 */}
-      <div className="group relative overflow-hidden border border-white/[0.09] bg-[var(--pv-surface)] transition-colors duration-300">
+      <div className="scene-archive-detail-stage group relative overflow-hidden border border-white/[0.09] bg-[var(--pv-surface)] transition-colors duration-300">
         {/* 背景图独立于封面；组件内部会在更换图片时淡入，原图尺寸不再影响舞台比例。 */}
         <BackdropStage
           filePath={archiveBackgroundPath}

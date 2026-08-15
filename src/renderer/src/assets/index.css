@@ -537,6 +537,51 @@
     background: rgba(217, 236, 247, 0.15);
   }
 
+  /* A01 场景档案：背景是页面组织方式，资料只在画面边缘成为可读的身份锚点。 */
+  .scene-archive-library {
+    max-width: 1640px;
+    margin-inline: auto;
+    padding-top: clamp(1rem, 2vw, 2.25rem);
+  }
+
+  .scene-archive-library .library-hero-stage {
+    height: clamp(340px, 40vw, 540px);
+    border-color: rgba(225, 242, 250, 0.1);
+    border-radius: 0.5rem;
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
+  }
+
+  .scene-archive-library .library-hero-stage::after { box-shadow: inset 0 0 0 1px rgba(4, 8, 15, 0.12); }
+  .scene-archive-wash { background: linear-gradient(90deg, rgba(7, 12, 18, 0.88) 0%, rgba(7, 12, 18, 0.61) 38%, rgba(7, 12, 18, 0.12) 78%), linear-gradient(0deg, rgba(7, 12, 18, 0.9) 0%, rgba(7, 12, 18, 0.05) 58%); }
+  .scene-archive-field-label { text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7); }
+  .scene-archive-edge-action { border: 1px solid rgba(237, 248, 253, 0.18); border-radius: 0.375rem; color: #f3f9fb; background: rgba(217, 236, 247, 0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.17), 0 8px 22px rgba(0,0,0,0.14); backdrop-filter: blur(20px) saturate(1.08); -webkit-backdrop-filter: blur(20px) saturate(1.08); transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background 180ms ease, border-color 180ms ease; }
+  .scene-archive-edge-action:hover { transform: translateY(-1px); border-color: rgba(238, 249, 253, 0.38); background: rgba(217, 236, 247, 0.16); }
+  .scene-archive-edge-action:active { transform: scale(0.97); }
+  .scene-archive-identity { text-shadow: 0 2px 15px rgba(0,0,0,0.68); }
+  .scene-archive-identity-cover { border-radius: 0.375rem; }
+  .scene-archive-evidence { padding-left: 0.25rem; text-shadow: 0 1px 12px rgba(0,0,0,0.75); }
+  .scene-archive-evidence .library-hero-panel { min-width: 0; border: 0; border-radius: 0; padding: 0.25rem 0.75rem 0.25rem 0 !important; background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .scene-archive-evidence .library-hero-panel + .library-hero-panel { border-left: 1px solid rgba(235,244,250,0.24); padding-left: 0.9rem !important; }
+  .scene-archive-tools { position: relative; z-index: 3; width: min(94%, 1180px); margin: -1.15rem auto 0; border-color: rgba(227, 243, 250, 0.12); border-radius: 0.5rem; background: rgba(10, 17, 25, 0.75); box-shadow: 0 14px 30px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08); }
+  .scene-archive-grid { grid-auto-flow: dense; }
+  .scene-archive-card { border-radius: 0.5rem; background: #0f1720; }
+  .scene-archive-card .scene-archive-card-stage { height: clamp(188px, 16.2vw, 244px); }
+  .scene-archive-card .scene-archive-card-meta { position: absolute; right: 0; bottom: 0; left: 0; z-index: 2; border-top-color: rgba(237, 246, 250, 0.12); background: linear-gradient(0deg, rgba(7, 12, 18, 0.95), rgba(7, 12, 18, 0.68)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .scene-archive-card.is-lead { grid-column: span 2; grid-row: span 2; }
+  .scene-archive-card.is-lead .scene-archive-card-stage { height: clamp(400px, 33vw, 520px); }
+  .scene-archive-card.is-lead .scene-archive-card-meta { padding: 1rem 1.25rem; }
+  .scene-archive-card.is-lead .scene-archive-card-meta span:last-child { font-size: 0.875rem; }
+  .scene-archive-card.is-lead .scene-archive-card-stage .absolute.bottom-3 { bottom: 4.6rem; left: 1.25rem; right: 1.25rem; }
+  .scene-archive-card.is-lead .scene-archive-card-stage .absolute.bottom-3 p { font-size: 1.25rem; }
+  .scene-archive-card:hover { transform: translateY(-3px); }
+
+  @media (max-width: 720px) {
+    .scene-archive-library .library-hero-stage { height: 370px; }
+    .scene-archive-card.is-lead { grid-column: span 1; grid-row: span 1; }
+    .scene-archive-card.is-lead .scene-archive-card-stage { height: 260px; }
+    .scene-archive-card.is-lead .scene-archive-card-stage .absolute.bottom-3 { bottom: 3.9rem; left: 1rem; right: 1rem; }
+  }
+
   .pv-sidebar {
     position: relative;
     z-index: 2;
@@ -565,6 +610,23 @@
     background: rgba(207, 229, 241, 0.09);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
   }
+
+  .scene-archive-memory-header { border-bottom-color: rgba(224, 241, 248, 0.11); }
+  .scene-archive-memory-stage { border: 1px solid rgba(224, 241, 248, 0.12); border-radius: 0.5rem; box-shadow: 0 22px 54px rgba(0,0,0,0.22); transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1), border-color 220ms ease, box-shadow 220ms ease; }
+  .scene-archive-memory-stage:hover { transform: translateY(-2px); border-color: rgba(220, 240, 249, 0.28); box-shadow: 0 30px 64px rgba(0,0,0,0.31); }
+  .scene-archive-memory-backdrop { height: clamp(280px, 32vw, 430px); aspect-ratio: auto; }
+  .scene-archive-memory-wash { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(7,12,18,0.84) 0%, rgba(7,12,18,0.42) 54%, rgba(7,12,18,0.12) 100%), linear-gradient(0deg, rgba(7,12,18,0.9) 0%, transparent 55%); }
+  .scene-archive-memory-label { align-self: flex-start; border-left: 2px solid var(--pv-accent); padding-left: 0.5rem; color: #d9ebf1; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.12em; text-shadow: 0 1px 10px rgba(0,0,0,0.75); }
+  .scene-archive-memory-cover { border-radius: 0.3125rem; box-shadow: 0 14px 28px rgba(0,0,0,0.34); }
+  .scene-archive-media-header { border-bottom-color: rgba(224, 241, 248, 0.11); }
+  .scene-archive-media-page .media-contact-sheet { grid-auto-flow: dense; }
+  .scene-archive-shot.is-lead { grid-column: span 2; grid-row: span 2; border-radius: 0.5rem; }
+  .scene-archive-shot.is-lead .media-screenshot-frame { aspect-ratio: 16 / 9; }
+  .scene-archive-shot.is-lead > div:last-child { position: absolute; right: 0; bottom: 0; left: 0; z-index: 2; border-top-color: rgba(234,245,250,0.12); background: linear-gradient(0deg, rgba(6,11,17,0.94), rgba(6,11,17,0.55)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .scene-archive-detail { max-width: 1640px; }
+  .scene-archive-detail-stage { border-radius: 0.5rem; box-shadow: 0 24px 60px rgba(0,0,0,0.23); }
+  .scene-archive-detail-stage > div:nth-child(2) { background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--pv-surface) 91%, transparent)) !important; }
+  @media (max-width: 720px) { .scene-archive-shot.is-lead { grid-column: span 1; grid-row: span 1; } }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

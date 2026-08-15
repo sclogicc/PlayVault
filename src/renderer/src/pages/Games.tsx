@@ -139,42 +139,42 @@ export default function Games(): React.ReactElement {
   }
 
   return (
-    <div className="library-shell">
+    <div className="library-shell scene-archive-library">
       <BackdropStage
         filePath={featuredGame?.background_path}
         crop={featuredGame?.background_crop}
         alt={featuredGame ? `${featuredGame.display_name} 游戏库背景` : '游戏库背景'}
         className="library-hero-stage"
       >
-        <div className="library-hero-wash" />
+        <div className="library-hero-wash scene-archive-wash" />
         <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-7 lg:p-9">
           <div className="flex items-start justify-between gap-4">
-            <div className="library-hero-panel inline-flex items-center gap-2 px-3 py-2 text-[10px] font-semibold tracking-[0.16em] text-[#dbeef6]">
+            <div className="scene-archive-field-label inline-flex items-center gap-2 px-1 py-2 text-[10px] font-semibold tracking-[0.16em] text-[#dbeef6]">
               <Gamepad2 size={14} strokeWidth={1.8} /> PLAYVAULT · 私人游戏日志
             </div>
-            <button type="button" className="library-glass-button inline-flex min-h-10 items-center gap-2 rounded-lg px-3.5 text-sm font-medium" onClick={handleCreate}>
+            <button type="button" className="scene-archive-edge-action inline-flex min-h-9 items-center gap-2 px-3 text-sm font-medium" onClick={handleCreate}>
               <Plus size={16} /> 添加游戏
             </button>
           </div>
 
-          <div className="max-w-2xl">
-            <div className="library-hero-panel inline-flex max-w-full items-center gap-4 p-3.5 sm:p-4">
+          <div className="scene-archive-identity max-w-2xl">
+            <div className="inline-flex max-w-full items-center gap-4 sm:gap-5">
               <CoverFrame
                 filePath={featuredGame?.cover_path}
                 crop={featuredGame?.cover_crop}
                 alt={featuredGame ? `${featuredGame.display_name} 封面` : '游戏库封面'}
-                className="w-12 shrink-0 overflow-hidden rounded-md border border-white/[0.18] bg-[#0a1019] shadow-[0_8px_18px_rgba(0,0,0,0.22)] sm:w-14"
+                className="scene-archive-identity-cover w-12 shrink-0 overflow-hidden border border-white/[0.18] bg-[#0a1019] shadow-[0_8px_18px_rgba(0,0,0,0.22)] sm:w-14"
                 fallback={<div className="flex h-full items-center justify-center"><Gamepad2 size={17} className="text-[#bcd9e6]" /></div>}
               />
-              <div className="min-w-0">
-                <p className="text-[10px] font-medium tracking-[0.16em] text-[#b7d3df]">你的本地收藏</p>
+              <div className="min-w-0 pb-0.5">
+                <p className="text-[10px] font-medium tracking-[0.16em] text-[#c7e3ed]">你的本地收藏</p>
                 <h1 className="mt-1 truncate text-3xl font-semibold tracking-[-0.04em] text-[#f5fbff] sm:text-[2.75rem]">{scopeLabel}</h1>
-                <p className="mt-1.5 max-w-lg text-sm leading-6 text-[#d2e0e8]/72">背景、游玩时间与截图都只属于你的本地记录。</p>
+                <p className="mt-1.5 max-w-lg text-sm leading-6 text-[#e1edf2]/82">背景、游玩时间与截图都只属于你的本地记录。</p>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2.5 text-xs text-[#d6e4eb]/75">
+          <div className="scene-archive-evidence flex flex-wrap gap-5 text-xs text-[#d6e4eb]/75">
             <HeroStat label="游戏记录" value={`${scopedGames.length} 款`} />
             <HeroStat label="进行中" value={`${inProgressCount} 款`} />
             <HeroStat label="累计时长" value={formatDuration(totalDuration)} />
@@ -182,7 +182,7 @@ export default function Games(): React.ReactElement {
         </div>
       </BackdropStage>
 
-      <section className="library-control-deck flex flex-wrap items-center gap-3 p-3 sm:p-3.5" aria-label="游戏库工具条">
+      <section className="library-control-deck scene-archive-tools flex flex-wrap items-center gap-3 p-3 sm:p-3.5" aria-label="游戏库工具条">
         <label className="relative min-w-[200px] flex-1">
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#a9c6d3]/56" />
           <input
@@ -276,7 +276,7 @@ function GameGrid({ games, density, ...props }: GamePresentationProps & { densit
     ? 'grid-cols-[repeat(auto-fill,minmax(232px,1fr))] gap-4 sm:grid-cols-[repeat(auto-fill,minmax(248px,1fr))] lg:gap-5'
     : 'grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(208px,1fr))]'
 
-  return <section aria-label="游戏记录" className={`grid py-5 ${gridClass}`}>{games.map((game) => <GameCard key={game.id} game={game} {...props} />)}</section>
+  return <section aria-label="游戏记录" className={`scene-archive-grid grid py-5 ${gridClass}`}>{games.map((game, index) => <GameCard key={game.id} game={game} lead={index === 0 && Boolean(game.background_path)} {...props} />)}</section>
 }
 
 function GameList(props: GamePresentationProps): React.ReactElement {
@@ -294,12 +294,12 @@ function CardActions({ game, onLaunch, onEdit, onToggleFavorite, onToggleHidden 
   )
 }
 
-function GameCard({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, onEdit, onToggleFavorite, onToggleHidden }: Omit<GamePresentationProps, 'games'> & { game: GameWithStats }): React.ReactElement {
+function GameCard({ game, lead = false, formatDuration, formatLastPlayed, onOpen, onLaunch, onEdit, onToggleFavorite, onToggleHidden }: Omit<GamePresentationProps, 'games'> & { game: GameWithStats; lead?: boolean }): React.ReactElement {
   const isInstalled = (game.install_status as InstallStatus) === 'installed'
 
   return (
-    <article className="library-game-card group relative cursor-pointer select-none" role="button" tabIndex={0} title="打开游戏档案" onClick={() => onOpen(game.id)} onKeyDown={(event) => { if (event.key === 'Enter') onOpen(game.id) }}>
-      <BackdropStage filePath={game.background_path} crop={game.background_crop} alt={`${game.display_name} 背景图`} className="library-card-stage">
+    <article className={`scene-archive-card library-game-card group relative cursor-pointer select-none ${lead ? 'is-lead' : ''}`} role="button" tabIndex={0} title="打开游戏档案" onClick={() => onOpen(game.id)} onKeyDown={(event) => { if (event.key === 'Enter') onOpen(game.id) }}>
+      <BackdropStage filePath={game.background_path} crop={game.background_crop} alt={`${game.display_name} 背景图`} className="scene-archive-card-stage library-card-stage">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,11,17,0.12)_10%,rgba(7,11,17,0.22)_42%,rgba(7,11,17,0.88)_100%)]" />
         <div className="absolute left-3 top-3 flex items-center gap-1.5"><StatusBadge status={game.status as GameStatus} />{!isInstalled && <span className="rounded-md border border-white/[0.16] bg-[#0b121c]/55 px-1.5 py-1 text-[10px] text-[#d2e5ed]/72 backdrop-blur">路径失效</span>}</div>
         <div className="absolute right-3 top-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"><CardActions game={game} onLaunch={onLaunch} onEdit={onEdit} onToggleFavorite={onToggleFavorite} onToggleHidden={onToggleHidden} /></div>
@@ -308,7 +308,7 @@ function GameCard({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, on
           <div className="min-w-0 pb-0.5"><p className="truncate text-base font-semibold tracking-[-0.02em] text-[#f2f9fc]">{game.display_name}</p><p className="mt-1 truncate text-xs text-[#cae0e9]/70">{getGameType(game)}</p></div>
         </div>
       </BackdropStage>
-      <div className="library-card-meta flex items-center justify-between gap-3 px-3.5 py-3"><span className="truncate text-xs text-[#c0d4dd]/68">{formatLastPlayed(game.last_played_at)}</span><span className="shrink-0 text-xs font-medium text-[#e2f0f5]/82">{formatDuration(game.total_duration)}</span></div>
+      <div className="scene-archive-card-meta library-card-meta flex items-center justify-between gap-3 px-3.5 py-3"><span className="truncate text-xs text-[#d3e4ea]/76">{formatLastPlayed(game.last_played_at)}</span><span className="shrink-0 text-xs font-medium text-[#f0f7fa]">{formatDuration(game.total_duration)}</span></div>
     </article>
   )
 }

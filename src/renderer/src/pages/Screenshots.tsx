@@ -142,8 +142,8 @@ export default function Screenshots(): React.ReactElement {
   const isTrash = activeTab === 'trashed'
 
   return (
-    <div className="pv-page space-y-5">
-      <header className="pv-page-header">
+    <div className="pv-page scene-archive-media-page space-y-5">
+      <header className="pv-page-header scene-archive-media-header">
         <div>
           <p className="eyebrow">图片资产</p>
           <h1 className="pv-page-title">截图箱</h1>
@@ -216,6 +216,7 @@ export default function Screenshots(): React.ReactElement {
               <ScreenshotCard
                 key={shot.id}
                 shot={shot}
+                lead={index === 0}
                 selected={selectedIds.has(shot.id)}
                 isTrash={isTrash}
                 gameName={games.find((game) => game.id === shot.game_id)?.display_name}
@@ -326,6 +327,7 @@ function EmptyState({ isTrash }: { isTrash: boolean }): React.ReactElement {
 
 function ScreenshotCard({
   shot,
+  lead,
   selected,
   isTrash,
   gameName,
@@ -339,6 +341,7 @@ function ScreenshotCard({
   formatDate,
 }: {
   shot: Screenshot
+  lead: boolean
   selected: boolean
   isTrash: boolean
   gameName?: string
@@ -353,7 +356,7 @@ function ScreenshotCard({
 }): React.ReactElement {
   return (
     <div
-      className={'group relative overflow-hidden rounded-xl border border-white/[0.1] bg-[#101923] shadow-[0_14px_30px_rgba(0,0,0,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#c7e5ef]/46 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] ' + (selected ? 'ring-2 ring-[#c7e5ef]/58' : '')}
+      className={'scene-archive-shot group relative overflow-hidden rounded-xl border border-white/[0.1] bg-[#101923] shadow-[0_14px_30px_rgba(0,0,0,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#c7e5ef]/46 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] ' + (lead ? 'is-lead ' : '') + (selected ? 'ring-2 ring-[#c7e5ef]/58' : '')}
       onClick={onToggle}
     >
       <div

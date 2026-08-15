@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Archive, Loader2, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { GameWithStats } from '@shared/types'
+import BackdropStage from '../components/media/BackdropStage'
 import CoverFrame from '../components/media/CoverFrame'
 
 type ArchiveSortOrder = 'desc' | 'asc'
@@ -29,8 +30,8 @@ export default function Archives(): React.ReactElement {
   })
 
   return (
-    <div className="pv-page">
-      <header className="pv-page-header">
+    <div className="pv-page scene-archive-memory-page">
+      <header className="pv-page-header scene-archive-memory-header">
         <div>
           <p className="eyebrow">游戏库筛选</p>
           <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -56,11 +57,33 @@ export default function Archives(): React.ReactElement {
       ) : archives.length === 0 ? (
         <div className="py-28 text-center"><Archive size={30} className="mx-auto text-archive-600" /><h2 className="mt-5 font-serif text-2xl text-archive-200">这里会显示已生成留档的游戏</h2><p className="mt-2 text-sm text-archive-500">在游戏详情页选择“生成游玩留档”后，它会同时保留在游戏库与这里。</p></div>
       ) : (
-        <section aria-label="游玩回顾列表" className="grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-x-4 gap-y-7 py-7 sm:grid-cols-[repeat(auto-fill,minmax(166px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(184px,1fr))]">
-          {archives.map((game) => <ArchiveCard key={game.id} game={game} />)}
-        </section>
+        <>
+          <ArchiveMemoryStage game={archives[0]} />
+          {archives.length > 1 && <section aria-label="补充游玩回顾" className="scene-archive-memory-grid grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-x-4 gap-y-7 py-7 sm:grid-cols-[repeat(auto-fill,minmax(166px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(184px,1fr))]">
+            {archives.slice(1).map((game) => <ArchiveCard key={game.id} game={game} />)}
+          </section>}
+        </>
       )}
     </div>
+  )
+}
+
+function ArchiveMemoryStage({ game }: { game: GameWithStats }): React.ReactElement {
+  const backdropPath = game.archive_background_path || game.background_path
+  const posterPath = game.archive_cover_path || game.cover_path
+  return (
+    <Link to={`/games/${game.id}`} className="scene-archive-memory-stage group mt-6 block overflow-hidden">
+      <BackdropStage filePath={backdropPath} crop={game.background_crop} alt={`${game.display_name} 留档背景`} className="scene-archive-memory-backdrop">
+        <div className="scene-archive-memory-wash" />
+        <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-7">
+          <span className="scene-archive-memory-label">最近留档 · {formatDate(game.archived_at)}</span>
+          <div className="flex items-end gap-4 sm:gap-5">
+            <CoverFrame filePath={posterPath} crop={game.cover_crop} alt={`${game.display_name} 封面`} className="scene-archive-memory-cover w-14 shrink-0 overflow-hidden border border-white/[0.2] bg-[#0a111a] sm:w-20" fallback={<div className="flex h-full items-center justify-center"><Archive size={20} className="text-[#dceff6]" /></div>} />
+            <div className="min-w-0 pb-0.5"><p className="text-[10px] font-semibold tracking-[0.17em] text-[#cce8f3]">游玩回顾</p><h2 className="mt-1 truncate text-2xl font-semibold tracking-[-0.045em] text-white sm:text-4xl">{game.display_name}</h2>{game.archive_note && <p className="mt-2 max-w-xl line-clamp-2 text-sm leading-6 text-[#e1edf2]/84">“{game.archive_note}”</p>}<span className="mt-3 inline-block text-xs text-[#d3e5eb]/78">{formatDuration(game.total_duration)} · 点击进入完整档案</span></div>
+          </div>
+        </div>
+      </BackdropStage>
+    </Link>
   )
 }
 
