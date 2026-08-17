@@ -662,3 +662,17 @@ test('scene archive only promotes real media and falls back gracefully for empty
   assert.match(archivesSource, /scene-archive-memory-fallback/)
   assert.doesNotMatch(screenshotsSource, /lead=\{index === 0\}/)
 })
+
+test('game library keeps controls inside the real stage and renders missing-background games as readable record cards', async () => {
+  const [gamesSource, stylesSource] = await Promise.all([
+    readFile('src/renderer/src/pages/Games.tsx', 'utf8'),
+    readFile('src/renderer/src/assets/index.css', 'utf8'),
+  ])
+
+  assert.match(gamesSource, /<LibraryControls integrated/)
+  assert.match(gamesSource, /if \(!game\.background_path\)/)
+  assert.match(gamesSource, /library-record-card/)
+  assert.match(gamesSource, /line-clamp-2 text-\[15px\]/)
+  assert.match(stylesSource, /\.scene-archive-tools\.is-integrated/)
+  assert.match(stylesSource, /\.library-record-card/)
+})

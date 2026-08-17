@@ -78,8 +78,6 @@ export default function Games(): React.ReactElement {
   const hasSceneStage = Boolean(featuredGame?.background_path) && sortedGames.length > 0
   const isEmptyScope = !isLoading && sortedGames.length === 0
   const showLibraryTools = !isEmptyScope || Boolean(search.trim())
-  const inProgressCount = scopedGames.filter((game) => game.status === 'in_progress').length
-  const totalDuration = scopedGames.reduce((sum, game) => sum + game.total_duration, 0)
 
   const formatDuration = (seconds: number): string => {
     if (seconds <= 0) return '尚未游玩'
@@ -161,6 +159,7 @@ export default function Games(): React.ReactElement {
             </button>
           </div>
 
+          <div className="scene-archive-hero-bottom flex min-w-0 flex-col justify-end gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="scene-archive-identity max-w-2xl">
             <div className="inline-flex max-w-full items-center gap-4 sm:gap-5">
               <CoverFrame
@@ -171,57 +170,18 @@ export default function Games(): React.ReactElement {
                 fallback={<div className="flex h-full items-center justify-center"><Gamepad2 size={17} className="text-[#bcd9e6]" /></div>}
               />
               <div className="min-w-0 pb-0.5">
-                <p className="text-[10px] font-medium tracking-[0.16em] text-[#c7e3ed]">你的本地收藏</p>
-                <h1 className="mt-1 truncate text-3xl font-semibold tracking-[-0.04em] text-[#f5fbff] sm:text-[2.75rem]">{scopeLabel}</h1>
-                <p className="mt-1.5 max-w-lg text-sm leading-6 text-[#e1edf2]/82">背景、游玩时间与截图都只属于你的本地记录。</p>
+                <p className="text-[10px] font-medium tracking-[0.16em] text-[#c7e3ed]">当前场景 · {scopeLabel}</p>
+                <h1 className="mt-1 line-clamp-2 text-3xl font-semibold tracking-[-0.04em] text-[#f5fbff] sm:text-[2.75rem]">{featuredGame?.display_name}</h1>
+                <p className="mt-1.5 max-w-lg text-sm leading-6 text-[#e1edf2]/82">{featuredGame ? `${getGameType(featuredGame)} · ${formatDuration(featuredGame.total_duration)}` : '背景、游玩时间与截图都只属于你的本地记录。'}</p>
               </div>
             </div>
           </div>
-
-          <div className="scene-archive-evidence flex flex-wrap gap-5 text-xs text-[#d6e4eb]/75">
-            <HeroStat label="游戏记录" value={`${scopedGames.length} 款`} />
-            <HeroStat label="进行中" value={`${inProgressCount} 款`} />
-            <HeroStat label="累计时长" value={formatDuration(totalDuration)} />
+          {showLibraryTools && <LibraryControls integrated search={search} setSearch={setSearch} isEmptyScope={isEmptyScope} preferences={preferences} updatePreferences={updatePreferences} />}
           </div>
         </div>
       </BackdropStage> : <CompactLibraryHeader scope={scope} scopeLabel={scopeLabel} gameCount={sortedGames.length} searchTerm={search} onCreate={handleCreate} />}
 
-      {showLibraryTools && <section className="library-control-deck scene-archive-tools flex flex-wrap items-center gap-3 p-3 sm:p-3.5" aria-label="游戏库工具条">
-        <label className="relative min-w-[200px] flex-1">
-          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#a9c6d3]/56" />
-          <input
-            type="text"
-            className="h-10 w-full rounded-lg border border-white/[0.09] bg-[#09101a]/55 py-2 pl-9 pr-3 text-sm text-[#e9f4f9] outline-none transition-colors placeholder:text-[#a9c6d3]/43 focus:border-[#cce8f6]/35 focus:bg-[#0b131f]/82"
-            placeholder="搜索游戏名称或别名"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </label>
-
-        {!isEmptyScope && <div className="flex items-center gap-1 rounded-lg border border-white/[0.09] bg-white/[0.035] p-1" aria-label="显示方式">
-          <ViewButton label="封面陈列" selected={preferences.layout === 'grid'} onClick={() => updatePreferences({ layout: 'grid' })}><Grid2X2 size={15} /></ViewButton>
-          <ViewButton label="横向浏览" selected={preferences.layout === 'list'} onClick={() => updatePreferences({ layout: 'list' })}><List size={16} /></ViewButton>
-        </div>}
-
-        {!isEmptyScope && <div className="flex items-center gap-1.5 rounded-lg px-1 text-sm text-[#c4d7e0]/70">
-          <SlidersHorizontal size={15} />
-          <select
-            className="h-9 cursor-pointer border-0 bg-transparent pr-1 text-sm text-[#dceaf0] outline-none"
-            value={preferences.sortBy}
-            onChange={(event) => updatePreferences({ sortBy: event.target.value as LibrarySort })}
-            aria-label="游戏排序方式"
-          >
-            <option value="recent">最近游玩</option>
-            <option value="duration">总游玩时长</option>
-            <option value="name">游戏名称</option>
-            <option value="added">添加时间</option>
-            <option value="archived">留档时间</option>
-          </select>
-          <button type="button" onClick={() => updatePreferences({ sortDescending: !preferences.sortDescending })} className="library-quiet-action flex h-8 w-8 items-center justify-center rounded-md" title={preferences.sortDescending ? '切换为正序' : '切换为倒序'} aria-label={preferences.sortDescending ? '切换为正序' : '切换为倒序'}>
-            {preferences.sortDescending ? <ArrowDownAZ size={15} /> : <ArrowUpDown size={15} />}
-          </button>
-        </div>}
-      </section>}
+      {!hasSceneStage && showLibraryTools && <LibraryControls search={search} setSearch={setSearch} isEmptyScope={isEmptyScope} preferences={preferences} updatePreferences={updatePreferences} />}
 
       {!preferencesReady && <div className="h-0" aria-hidden="true" />}
 
@@ -238,7 +198,7 @@ export default function Games(): React.ReactElement {
       ) : sortedGames.length === 0 ? (
         <LibraryScopeEmpty scope={scope} scopeLabel={scopeLabel} searchTerm={search} onCreate={handleCreate} />
       ) : preferences.layout === 'grid' ? (
-        <GameGrid games={sortedGames} density={preferences.density} formatDuration={formatDuration} formatLastPlayed={formatLastPlayed} onOpen={handleOpenDetail} onLaunch={handleLaunch} onEdit={(game) => { setEditingGame(game); setFormOpen(true) }} onToggleFavorite={handleToggleFavorite} onToggleHidden={handleToggleHidden} />
+        <GameGrid games={sortedGames} leadGameId={featuredGame?.id ?? null} density={preferences.density} formatDuration={formatDuration} formatLastPlayed={formatLastPlayed} onOpen={handleOpenDetail} onLaunch={handleLaunch} onEdit={(game) => { setEditingGame(game); setFormOpen(true) }} onToggleFavorite={handleToggleFavorite} onToggleHidden={handleToggleHidden} />
       ) : (
         <GameList games={sortedGames} formatDuration={formatDuration} formatLastPlayed={formatLastPlayed} onOpen={handleOpenDetail} onLaunch={handleLaunch} onEdit={(game) => { setEditingGame(game); setFormOpen(true) }} onToggleFavorite={handleToggleFavorite} onToggleHidden={handleToggleHidden} />
       )}
@@ -270,13 +230,19 @@ function LibraryScopeEmpty({ scope, scopeLabel, searchTerm, onCreate }: { scope:
   return <section className="library-scope-empty mt-5" aria-label={`${scopeLabel} 空状态`}><div className="library-scope-empty-mark"><Gamepad2 size={19} /></div><div><h2>{context}</h2><p>{searchTerm.trim() ? '可以清空搜索词，或调整左侧资料视角继续浏览。' : canCreate ? '添加本地游戏后，可以继续补充封面、背景、游玩时间与截图。' : '左侧其他资料视角中的游戏不会受到影响。'}</p></div>{canCreate && <button type="button" className="library-quiet-action inline-flex h-9 items-center gap-2 px-3 text-sm" onClick={onCreate}><Plus size={15} /> 添加游戏</button>}</section>
 }
 
-function HeroStat({ label, value }: { label: string; value: string }): React.ReactElement {
-  return (
-    <div className="library-hero-panel px-3 py-2">
-      <span className="block text-[10px] tracking-[0.13em] text-[#bad3de]/64">{label}</span>
-      <strong className="mt-0.5 block text-sm font-medium text-[#f1f8fb]">{value}</strong>
-    </div>
-  )
+function LibraryControls({ integrated = false, search, setSearch, isEmptyScope, preferences, updatePreferences }: {
+  integrated?: boolean
+  search: string
+  setSearch: (value: string) => void
+  isEmptyScope: boolean
+  preferences: { layout: 'grid' | 'list'; sortBy: LibrarySort; sortDescending: boolean }
+  updatePreferences: (patch: Partial<{ layout: 'grid' | 'list'; sortBy: LibrarySort; sortDescending: boolean }>) => void
+}): React.ReactElement {
+  return <section className={`library-control-deck scene-archive-tools flex flex-wrap items-center gap-3 p-2.5 ${integrated ? 'is-integrated' : ''}`} aria-label="游戏库工具条">
+    <label className="relative min-w-[200px] flex-1"><Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#a9c6d3]/56" /><input type="text" className="h-9 w-full rounded-md border border-white/[0.09] bg-[#09101a]/55 py-2 pl-9 pr-3 text-sm text-[#e9f4f9] outline-none transition-colors placeholder:text-[#a9c6d3]/43 focus:border-[#cce8f6]/35 focus:bg-[#0b131f]/82" placeholder="搜索游戏名称或别名" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
+    {!isEmptyScope && <div className="flex items-center gap-1 rounded-md border border-white/[0.09] bg-white/[0.035] p-1" aria-label="显示方式"><ViewButton label="封面陈列" selected={preferences.layout === 'grid'} onClick={() => updatePreferences({ layout: 'grid' })}><Grid2X2 size={15} /></ViewButton><ViewButton label="横向浏览" selected={preferences.layout === 'list'} onClick={() => updatePreferences({ layout: 'list' })}><List size={16} /></ViewButton></div>}
+    {!isEmptyScope && <div className="flex items-center gap-1.5 px-1 text-sm text-[#c4d7e0]/70"><SlidersHorizontal size={15} /><select className="h-9 cursor-pointer border-0 bg-transparent pr-1 text-sm text-[#dceaf0] outline-none" value={preferences.sortBy} onChange={(event) => updatePreferences({ sortBy: event.target.value as LibrarySort })} aria-label="游戏排序方式"><option value="recent">最近游玩</option><option value="duration">总游玩时长</option><option value="name">游戏名称</option><option value="added">添加时间</option><option value="archived">留档时间</option></select><button type="button" onClick={() => updatePreferences({ sortDescending: !preferences.sortDescending })} className="library-quiet-action flex h-8 w-8 items-center justify-center rounded-md" title={preferences.sortDescending ? '切换为正序' : '切换为倒序'} aria-label={preferences.sortDescending ? '切换为正序' : '切换为倒序'}>{preferences.sortDescending ? <ArrowDownAZ size={15} /> : <ArrowUpDown size={15} />}</button></div>}
+  </section>
 }
 
 function EmptyLibrary({ onCreate }: { onCreate: () => void }): React.ReactElement {
@@ -294,12 +260,12 @@ function ViewButton({ label, selected, onClick, children }: { label: string; sel
   return <button type="button" onClick={onClick} title={label} aria-label={label} className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${selected ? 'bg-[#d8eef8]/[0.16] text-[#effaff] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]' : 'text-[#aac4cf]/60 hover:bg-white/[0.07] hover:text-[#e9f5fa]'}`}>{children}</button>
 }
 
-function GameGrid({ games, density, ...props }: GamePresentationProps & { density: 'comfortable' | 'compact' }): React.ReactElement {
+function GameGrid({ games, density, leadGameId, ...props }: GamePresentationProps & { density: 'comfortable' | 'compact'; leadGameId: number | null }): React.ReactElement {
   const gridClass = density === 'comfortable'
     ? 'grid-cols-[repeat(auto-fill,minmax(232px,1fr))] gap-4 sm:grid-cols-[repeat(auto-fill,minmax(248px,1fr))] lg:gap-5'
     : 'grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(208px,1fr))]'
 
-  return <section aria-label="游戏记录" className={`scene-archive-grid grid py-5 ${gridClass}`}>{games.map((game, index) => <GameCard key={game.id} game={game} lead={index === 0 && Boolean(game.background_path)} {...props} />)}</section>
+  return <section aria-label="游戏记录" className={`scene-archive-grid grid py-5 ${gridClass}`}>{games.map((game) => <GameCard key={game.id} game={game} lead={game.id === leadGameId && Boolean(game.background_path)} {...props} />)}</section>
 }
 
 function GameList(props: GamePresentationProps): React.ReactElement {
@@ -320,6 +286,14 @@ function CardActions({ game, onLaunch, onEdit, onToggleFavorite, onToggleHidden 
 function GameCard({ game, lead = false, formatDuration, formatLastPlayed, onOpen, onLaunch, onEdit, onToggleFavorite, onToggleHidden }: Omit<GamePresentationProps, 'games'> & { game: GameWithStats; lead?: boolean }): React.ReactElement {
   const isInstalled = (game.install_status as InstallStatus) === 'installed'
 
+  if (!game.background_path) {
+    return <article className="library-record-card group relative flex min-h-32 cursor-pointer items-center gap-3 p-3" role="button" tabIndex={0} title="打开游戏档案" onClick={() => onOpen(game.id)} onKeyDown={(event) => { if (event.key === 'Enter') onOpen(game.id) }}>
+      <CoverFrame filePath={game.cover_path} crop={game.cover_crop} alt={`${game.display_name} 封面`} className="library-record-cover w-16 shrink-0 overflow-hidden border border-white/[0.16] bg-[#0a111a]" fallback={<div className="flex h-full items-center justify-center"><Gamepad2 size={18} className="text-[#c1dce7]" /></div>} />
+      <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><StatusBadge status={game.status as GameStatus} />{!isInstalled && <span className="shrink-0 rounded-md border border-white/[0.14] px-1.5 py-1 text-[10px] text-[#c5dce5]/70">路径失效</span>}</div><p className="mt-2 line-clamp-2 text-[15px] font-semibold leading-5 tracking-[-0.02em] text-[#eef7fa]" title={game.display_name}>{game.display_name}</p><p className="mt-1 truncate text-xs text-[#aec4cd]/72">{getGameType(game)}</p><div className="mt-2 flex items-center justify-between gap-2 text-[11px]"><span className="truncate text-[#b9ced6]/68">{formatLastPlayed(game.last_played_at)}</span><span className="shrink-0 font-medium text-[#dbeaf0]">{formatDuration(game.total_duration)}</span></div></div>
+      <div className="absolute right-2 top-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"><CardActions game={game} onLaunch={onLaunch} onEdit={onEdit} onToggleFavorite={onToggleFavorite} onToggleHidden={onToggleHidden} /></div>
+    </article>
+  }
+
   return (
     <article className={`scene-archive-card library-game-card group relative cursor-pointer select-none ${lead ? 'is-lead' : ''}`} role="button" tabIndex={0} title="打开游戏档案" onClick={() => onOpen(game.id)} onKeyDown={(event) => { if (event.key === 'Enter') onOpen(game.id) }}>
       <BackdropStage filePath={game.background_path} crop={game.background_crop} alt={`${game.display_name} 背景图`} className="scene-archive-card-stage library-card-stage">
@@ -337,6 +311,13 @@ function GameCard({ game, lead = false, formatDuration, formatLastPlayed, onOpen
 }
 
 function GameListRow({ game, formatDuration, formatLastPlayed, onOpen, onLaunch, onEdit, onToggleFavorite, onToggleHidden }: Omit<GamePresentationProps, 'games'> & { game: GameWithStats }): React.ReactElement {
+  if (!game.background_path) {
+    return <article className="library-record-row group flex cursor-pointer items-center gap-4 p-3" role="button" tabIndex={0} onClick={() => onOpen(game.id)} onKeyDown={(event) => { if (event.key === 'Enter') onOpen(game.id) }}>
+      <CoverFrame filePath={game.cover_path} crop={game.cover_crop} alt={`${game.display_name} 封面`} className="library-record-row-cover w-11 shrink-0 overflow-hidden border border-white/[0.16] bg-[#0a111a]" fallback={<div className="flex h-full items-center justify-center"><Gamepad2 size={15} className="text-[#c1dce7]" /></div>} />
+      <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="line-clamp-1 text-base font-semibold text-[#f0f8fb]" title={game.display_name}>{game.display_name}</p><StatusBadge status={game.status as GameStatus} /></div><p className="mt-1 truncate text-xs text-[#c3d8e1]/66">{getGameType(game)} · {formatLastPlayed(game.last_played_at)}</p></div>
+      <span className="hidden shrink-0 text-xs text-[#c2d6df]/68 sm:block">{formatDuration(game.total_duration)}</span><CardActions game={game} onLaunch={onLaunch} onEdit={onEdit} onToggleFavorite={onToggleFavorite} onToggleHidden={onToggleHidden} />
+    </article>
+  }
   return (
     <article className="library-game-card group grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center" role="button" tabIndex={0} onClick={() => onOpen(game.id)} onKeyDown={(event) => { if (event.key === 'Enter') onOpen(game.id) }}>
       <BackdropStage filePath={game.background_path} crop={game.background_crop} alt={`${game.display_name} 背景图`} className="library-list-stage">
