@@ -54,7 +54,7 @@ export default function Discover(): React.ReactElement {
   ]
 
   return (
-    <div className="pv-page space-y-5">
+    <div className="pv-page discover-tool-page space-y-5">
       <header className="pv-page-header">
         <div>
           <p className="eyebrow">本地扫描</p>
@@ -76,7 +76,7 @@ export default function Discover(): React.ReactElement {
       ) : candidates.length === 0 ? (
         <div className="empty-state"><Search size={38} className="mx-auto mb-4 text-[#aacbd8]/52" /><h2 className="text-lg font-medium text-[#dcebf1]">暂时没有候选</h2><p className="mt-2 text-sm text-archive-500">前往“设置”配置游戏扫描目录后，再执行扫描即可。</p></div>
       ) : (
-        <section className="grid gap-3 xl:grid-cols-2" aria-label="候选可执行文件">
+        <section className="discover-candidate-grid grid gap-3 lg:grid-cols-2" aria-label="候选可执行文件">
           {candidates.map((candidate) => (
             <CandidateCard key={candidate.id} candidate={candidate} onAccept={() => { setAcceptingId(candidate.id); setDisplayName(candidate.folder_name || candidate.file_name.replace(/\.exe$/i, '')) }} onIgnore={() => ignoreMutation.mutate(candidate.id)} />
           ))}
@@ -98,7 +98,7 @@ function CandidateCard({ candidate, onAccept, onIgnore }: { candidate: Discovere
   const reasons = parseReasons(candidate.match_reasons)
   const scoreTone = candidate.score >= 70 ? 'text-emerald-300' : candidate.score >= 40 ? 'text-[#d1e5ed]' : 'text-archive-500'
   return (
-    <article className="pv-panel p-4 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-white/[0.2] hover:shadow-[0_18px_36px_rgba(0,0,0,0.2)]">
+    <article className="discover-candidate-card pv-panel p-4 transition-[border-color,background-color] duration-200 hover:border-white/[0.2] hover:bg-white/[0.025]">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0"><p className="truncate text-[15px] font-medium text-[#edf7fb]">{candidate.file_name}</p><p className="mt-1 flex items-center gap-1.5 truncate text-xs text-archive-500"><FolderOpen size={12} />{candidate.folder_name}</p></div>
         <div className="shrink-0 text-right"><span className={`inline-flex items-center gap-1 text-xs font-medium ${scoreTone}`}><Star size={12} />{candidate.score}</span><p className="mt-1 flex items-center justify-end gap-1 text-[11px] text-archive-600"><HardDrive size={11} />{formatFileSize(candidate.file_size)}</p></div>

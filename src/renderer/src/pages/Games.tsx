@@ -28,6 +28,7 @@ import {
   LIBRARY_SCOPE_LABELS,
   parseLibraryScope,
   sortLibraryGames,
+  type LibraryScope,
   type LibrarySort,
 } from '../lib/libraryView'
 
@@ -74,6 +75,9 @@ export default function Games(): React.ReactElement {
   const sortedGames = sortLibraryGames(scopedGames, preferences.sortBy, preferences.sortDescending)
   const scopeLabel = LIBRARY_SCOPE_LABELS[scope]
   const featuredGame = sortedGames.find((game) => Boolean(game.background_path)) ?? sortedGames[0]
+  const hasSceneStage = Boolean(featuredGame?.background_path) && sortedGames.length > 0
+  const isEmptyScope = !isLoading && sortedGames.length === 0
+  const showLibraryTools = !isEmptyScope || Boolean(search.trim())
   const inProgressCount = scopedGames.filter((game) => game.status === 'in_progress').length
   const totalDuration = scopedGames.reduce((sum, game) => sum + game.total_duration, 0)
 
@@ -140,7 +144,7 @@ export default function Games(): React.ReactElement {
 
   return (
     <div className="library-shell scene-archive-library">
-      <BackdropStage
+      {hasSceneStage ? <BackdropStage
         filePath={featuredGame?.background_path}
         crop={featuredGame?.background_crop}
         alt={featuredGame ? `${featuredGame.display_name} 游戏库背景` : '游戏库背景'}
@@ -180,9 +184,9 @@ export default function Games(): React.ReactElement {
             <HeroStat label="累计时长" value={formatDuration(totalDuration)} />
           </div>
         </div>
-      </BackdropStage>
+      </BackdropStage> : <CompactLibraryHeader scope={scope} scopeLabel={scopeLabel} gameCount={sortedGames.length} searchTerm={search} onCreate={handleCreate} />}
 
-      <section className="library-control-deck scene-archive-tools flex flex-wrap items-center gap-3 p-3 sm:p-3.5" aria-label="游戏库工具条">
+      {showLibraryTools && <section className="library-control-deck scene-archive-tools flex flex-wrap items-center gap-3 p-3 sm:p-3.5" aria-label="游戏库工具条">
         <label className="relative min-w-[200px] flex-1">
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#a9c6d3]/56" />
           <input
@@ -194,12 +198,12 @@ export default function Games(): React.ReactElement {
           />
         </label>
 
-        <div className="flex items-center gap-1 rounded-lg border border-white/[0.09] bg-white/[0.035] p-1" aria-label="显示方式">
+        {!isEmptyScope && <div className="flex items-center gap-1 rounded-lg border border-white/[0.09] bg-white/[0.035] p-1" aria-label="显示方式">
           <ViewButton label="封面陈列" selected={preferences.layout === 'grid'} onClick={() => updatePreferences({ layout: 'grid' })}><Grid2X2 size={15} /></ViewButton>
           <ViewButton label="横向浏览" selected={preferences.layout === 'list'} onClick={() => updatePreferences({ layout: 'list' })}><List size={16} /></ViewButton>
-        </div>
+        </div>}
 
-        <div className="flex items-center gap-1.5 rounded-lg px-1 text-sm text-[#c4d7e0]/70">
+        {!isEmptyScope && <div className="flex items-center gap-1.5 rounded-lg px-1 text-sm text-[#c4d7e0]/70">
           <SlidersHorizontal size={15} />
           <select
             className="h-9 cursor-pointer border-0 bg-transparent pr-1 text-sm text-[#dceaf0] outline-none"
@@ -216,8 +220,8 @@ export default function Games(): React.ReactElement {
           <button type="button" onClick={() => updatePreferences({ sortDescending: !preferences.sortDescending })} className="library-quiet-action flex h-8 w-8 items-center justify-center rounded-md" title={preferences.sortDescending ? '切换为正序' : '切换为倒序'} aria-label={preferences.sortDescending ? '切换为正序' : '切换为倒序'}>
             {preferences.sortDescending ? <ArrowDownAZ size={15} /> : <ArrowUpDown size={15} />}
           </button>
-        </div>
-      </section>
+        </div>}
+      </section>}
 
       {!preferencesReady && <div className="h-0" aria-hidden="true" />}
 
@@ -232,10 +236,7 @@ export default function Games(): React.ReactElement {
       ) : games.length === 0 ? (
         <EmptyLibrary onCreate={handleCreate} />
       ) : sortedGames.length === 0 ? (
-        <div className="library-hero-panel mt-4 px-6 py-16 text-center">
-          <p className="text-sm text-[#d4e5ec]">这个资料视角中还没有游戏。</p>
-          <p className="mt-2 text-xs text-[#a7c1cc]/60">可在左侧切换记录视角，或使用搜索继续查找。</p>
-        </div>
+        <LibraryScopeEmpty scope={scope} scopeLabel={scopeLabel} searchTerm={search} onCreate={handleCreate} />
       ) : preferences.layout === 'grid' ? (
         <GameGrid games={sortedGames} density={preferences.density} formatDuration={formatDuration} formatLastPlayed={formatLastPlayed} onOpen={handleOpenDetail} onLaunch={handleLaunch} onEdit={(game) => { setEditingGame(game); setFormOpen(true) }} onToggleFavorite={handleToggleFavorite} onToggleHidden={handleToggleHidden} />
       ) : (
@@ -245,6 +246,28 @@ export default function Games(): React.ReactElement {
       <GameForm open={formOpen} onClose={() => setFormOpen(false)} onSave={handleSave} game={editingGame} isSaving={createGame.isPending || updateGame.isPending} />
     </div>
   )
+}
+
+function CompactLibraryHeader({ scope, scopeLabel, gameCount, searchTerm, onCreate }: { scope: LibraryScope; scopeLabel: string; gameCount: number; searchTerm: string; onCreate: () => void }): React.ReactElement {
+  const description = searchTerm.trim()
+    ? `没有与“${searchTerm.trim()}”匹配的游戏。`
+    : scope === 'all'
+      ? '先从一款本地游戏开始，之后背景、游玩时间与截图会在这里沉淀。'
+      : '这里会只显示符合当前资料视角的游戏记录。'
+
+  return <header className="library-compact-header"><div><p className="eyebrow">私人游戏日志</p><h1>{scopeLabel}</h1><p>{description}</p></div><div className="library-compact-header-actions"><span>{gameCount} 条记录</span>{scope === 'all' && <button type="button" className="scene-archive-edge-action inline-flex min-h-9 items-center gap-2 px-3 text-sm font-medium" onClick={onCreate}><Plus size={16} /> 添加游戏</button>}</div></header>
+}
+
+function LibraryScopeEmpty({ scope, scopeLabel, searchTerm, onCreate }: { scope: LibraryScope; scopeLabel: string; searchTerm: string; onCreate: () => void }): React.ReactElement {
+  const context = searchTerm.trim()
+    ? `没有找到与“${searchTerm.trim()}”匹配的游戏。`
+    : scope === 'missing'
+      ? '当前没有路径失效的游戏，已经清理完毕。'
+      : scope === 'hidden'
+        ? '你还没有隐藏任何游戏。'
+        : `当前没有“${scopeLabel}”的游戏记录。`
+  const canCreate = scope === 'all'
+  return <section className="library-scope-empty mt-5" aria-label={`${scopeLabel} 空状态`}><div className="library-scope-empty-mark"><Gamepad2 size={19} /></div><div><h2>{context}</h2><p>{searchTerm.trim() ? '可以清空搜索词，或调整左侧资料视角继续浏览。' : canCreate ? '添加本地游戏后，可以继续补充封面、背景、游玩时间与截图。' : '左侧其他资料视角中的游戏不会受到影响。'}</p></div>{canCreate && <button type="button" className="library-quiet-action inline-flex h-9 items-center gap-2 px-3 text-sm" onClick={onCreate}><Plus size={15} /> 添加游戏</button>}</section>
 }
 
 function HeroStat({ label, value }: { label: string; value: string }): React.ReactElement {

@@ -647,3 +647,18 @@ test('window presentation defaults to maximize, persists stable preference, and 
   assert.match(layoutSource, /onImmersiveChange/)
   assert.match(layoutSource, /!immersive && <Sidebar/)
 })
+
+test('scene archive only promotes real media and falls back gracefully for empty scopes and missing archive backdrops', async () => {
+  const [gamesSource, archivesSource, screenshotsSource] = await Promise.all([
+    readFile('src/renderer/src/pages/Games.tsx', 'utf8'),
+    readFile('src/renderer/src/pages/Archives.tsx', 'utf8'),
+    readFile('src/renderer/src/pages/Screenshots.tsx', 'utf8'),
+  ])
+
+  assert.match(gamesSource, /const hasSceneStage = Boolean\(featuredGame\?\.background_path\)/)
+  assert.match(gamesSource, /CompactLibraryHeader/)
+  assert.match(gamesSource, /LibraryScopeEmpty/)
+  assert.match(archivesSource, /if \(!backdropPath\)/)
+  assert.match(archivesSource, /scene-archive-memory-fallback/)
+  assert.doesNotMatch(screenshotsSource, /lead=\{index === 0\}/)
+})

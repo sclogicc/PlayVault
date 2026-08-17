@@ -220,7 +220,7 @@ export default function Settings(): React.ReactElement {
   }
 
   return (
-    <div className="pv-page space-y-5 transition-colors duration-300">
+    <div className="pv-page settings-tool-page space-y-5 transition-colors duration-300">
       <header className="pv-page-header"><div><p className="eyebrow">私人资料设置</p><h1 className="pv-page-title">设置</h1><p className="pv-page-copy">调整资料库的浏览方式，并管理本地扫描、截图和留档位置。所有记录与偏好都只保留在这台设备上。</p></div></header>
 
       <section className="card space-y-5">

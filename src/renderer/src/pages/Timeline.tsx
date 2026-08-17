@@ -67,7 +67,7 @@ export default function Timeline(): React.ReactElement {
   const activeGameCount = new Set(sessions.map((session) => session.game_id)).size
 
   return (
-    <div className="pv-page space-y-6">
+    <div className="pv-page timeline-tool-page space-y-6">
       <header className="pv-page-header">
         <div>
           <p className="eyebrow">私人游戏日志</p>
@@ -79,7 +79,7 @@ export default function Timeline(): React.ReactElement {
         </div>
       </header>
 
-      <section className="pv-panel grid grid-cols-1 gap-px overflow-hidden bg-white/[0.065] sm:grid-cols-3" aria-label="时间范围汇总">
+      <section className="timeline-summary-strip grid grid-cols-1 sm:grid-cols-3" aria-label="时间范围汇总">
         <TimelineStat icon={<History size={15} />} label="游玩记录" value={`${sessions.length} 次`} />
         <TimelineStat icon={<Clock3 size={15} />} label="累计游玩" value={formatDuration(totalDuration)} accent />
         <TimelineStat icon={<Gamepad2 size={15} />} label="涉及游戏" value={`${activeGameCount} 款`} />
@@ -110,13 +110,13 @@ export default function Timeline(): React.ReactElement {
 }
 
 function TimelineStat({ icon, label, value, accent = false }: { icon: React.ReactNode; label: string; value: string; accent?: boolean }): React.ReactElement {
-  return <div className="bg-[var(--pv-surface)]/72 px-5 py-4 transition-colors duration-300"><div className="flex items-center gap-2 text-archive-500">{icon}<span className="text-[10px] font-semibold tracking-[0.12em]">{label}</span></div><p className={`mt-3 font-serif text-[1.65rem] font-medium leading-none tracking-[-0.02em] ${accent ? 'text-[var(--pv-accent-strong)]' : 'text-archive-50'}`}>{value}</p></div>
+  return <div className="timeline-stat px-5 py-4 transition-colors duration-300"><div className="flex items-center gap-2 text-archive-500">{icon}<span className="text-[10px] font-semibold tracking-[0.12em]">{label}</span></div><p className={`mt-3 font-serif text-[1.65rem] font-medium leading-none tracking-[-0.02em] ${accent ? 'text-[var(--pv-accent-strong)]' : 'text-archive-50'}`}>{value}</p></div>
 }
 
 function DayLog({ date, sessions, gameById }: { date: string; sessions: SessionWithGame[]; gameById: Map<number, GameWithStats> }): React.ReactElement {
   const dayDuration = sessions.reduce((sum, session) => sum + session.duration_seconds, 0)
   return (
-    <article className="pv-panel overflow-hidden transition-[border-color,background-color] duration-300 hover:border-white/[0.16] hover:bg-white/[0.027]">
+    <article className="timeline-day-log overflow-hidden transition-[border-color,background-color] duration-300 hover:border-white/[0.16] hover:bg-white/[0.027]">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.065] px-4 py-3.5"><div className="flex items-center gap-2"><CalendarDays size={14} className="text-[var(--pv-accent-strong)]" /><h3 className="text-[15px] font-medium tracking-[-0.01em] text-archive-200">{new Date(`${date}T00:00:00`).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}</h3></div><span className="text-[11px] tracking-[0.01em] text-archive-500">{sessions.length} 次 · {formatDuration(dayDuration)}</span></header>
       <div className="divide-y divide-white/[0.055]">
         {sessions.map((session) => {

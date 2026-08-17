@@ -45,10 +45,10 @@ function countByScope(games: GameWithStats[], scope: LibraryScope): number {
 }
 
 function navItemClass(active: boolean, expanded: boolean): string {
-  return `group relative flex h-10 items-center gap-3 rounded-lg border transition-[background-color,color,border-color,transform] duration-200 ${expanded ? 'w-full px-3' : 'w-11 justify-center'} ${
+  return `group relative flex h-10 items-center gap-3 rounded-md border border-transparent transition-[background-color,color,border-color,transform] duration-200 ${expanded ? 'w-full px-3' : 'w-11 justify-center'} ${
     active
-      ? 'border-white/[0.12] bg-[#cce8f6]/[0.09] text-[#ecf8fc] shadow-[inset_0_1px_0_rgba(255,255,255,0.09)]'
-      : 'border-transparent text-archive-400 hover:border-white/[0.09] hover:bg-white/[0.045] hover:text-[#e1f0f5]'
+      ? 'border-l-2 border-l-[#cce8f6]/70 bg-[#cce8f6]/[0.055] text-[#ecf8fc]'
+      : 'text-archive-400 hover:bg-white/[0.035] hover:text-[#e1f0f5]'
   }`
 }
 
@@ -107,7 +107,7 @@ export default function Sidebar(): React.ReactElement {
   ]
 
   return (
-    <aside className={`pv-sidebar flex h-screen shrink-0 flex-col border-r py-4 transition-[width] duration-200 ${expanded ? 'w-[204px]' : 'w-[72px] items-center'}`}>
+    <aside className={`pv-sidebar flex h-screen shrink-0 flex-col border-r py-4 transition-[width] duration-200 ${expanded ? 'w-[196px]' : 'w-[68px] items-center'}`}>
       <div className={`flex h-11 items-center ${expanded ? 'justify-between px-3' : 'justify-center'}`}>
         <NavLink to="/games" aria-label="PlayVault 游戏库" title="PlayVault" className="pv-sidebar-mark flex h-10 w-10 shrink-0 items-center justify-center transition-colors hover:bg-[#d9f1fb]/[0.15]">
           <Gamepad2 size={18} strokeWidth={1.7} />
@@ -118,7 +118,7 @@ export default function Sidebar(): React.ReactElement {
         </button>
       </div>
 
-      <nav className={`mt-7 flex w-full flex-col gap-1 ${expanded ? 'px-3' : 'items-center'}`} aria-label="游戏资料导航">
+      <nav className={`mt-6 flex w-full flex-col gap-1 ${expanded ? 'px-3' : 'items-center'}`} aria-label="游戏资料导航">
         {expanded && <p className="mb-1 px-1 text-[10px] font-medium tracking-[0.16em] text-archive-500">游戏资料</p>}
         {libraryItems.map((item) => <LibraryLink key={item.to} item={item} expanded={expanded} />)}
       </nav>

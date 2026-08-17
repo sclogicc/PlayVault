@@ -71,6 +71,14 @@ export default function Archives(): React.ReactElement {
 function ArchiveMemoryStage({ game }: { game: GameWithStats }): React.ReactElement {
   const backdropPath = game.archive_background_path || game.background_path
   const posterPath = game.archive_cover_path || game.cover_path
+  if (!backdropPath) {
+    return (
+      <Link to={`/games/${game.id}`} className="scene-archive-memory-fallback group mt-6 flex min-h-52 items-end gap-5 overflow-hidden p-5 sm:min-h-60 sm:p-7">
+        <CoverFrame filePath={posterPath} crop={game.cover_crop} alt={`${game.display_name} 封面`} className="scene-archive-memory-fallback-cover w-20 shrink-0 overflow-hidden border border-white/[0.16] bg-[#0a111a] sm:w-28" fallback={<div className="flex h-full items-center justify-center"><Archive size={26} className="text-[#dceff6]" /></div>} />
+        <div className="min-w-0 pb-1"><span className="scene-archive-memory-label">最近留档 · {formatDate(game.archived_at)}</span><p className="mt-5 text-[10px] font-semibold tracking-[0.17em] text-[#cce8f3]">游玩回顾</p><h2 className="mt-1 truncate text-2xl font-semibold tracking-[-0.045em] text-white sm:text-4xl">{game.display_name}</h2>{game.archive_note && <p className="mt-2 max-w-xl line-clamp-2 text-sm leading-6 text-[#d5e5ea]/76">“{game.archive_note}”</p>}<span className="mt-3 inline-block text-xs text-[#c9dce4]/72">{formatDuration(game.total_duration)} · 点击进入完整档案</span></div>
+      </Link>
+    )
+  }
   return (
     <Link to={`/games/${game.id}`} className="scene-archive-memory-stage group mt-6 block overflow-hidden">
       <BackdropStage filePath={backdropPath} crop={game.background_crop} alt={`${game.display_name} 留档背景`} className="scene-archive-memory-backdrop">
