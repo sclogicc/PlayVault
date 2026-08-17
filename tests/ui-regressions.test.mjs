@@ -631,3 +631,19 @@ test('image viewer is portalled to the viewport and locks background scrolling',
   assert.match(source, /fixed inset-0 z-\[9999\] h-\[100dvh\] w-\[100dvw\] overflow-hidden/)
   assert.match(source, /max-h-full max-w-full/)
 })
+
+test('window presentation defaults to maximize, persists stable preference, and exposes F11 immersive browsing', async () => {
+  const [mainSource, preloadSource, layoutSource] = await Promise.all([
+    readFile('src/main/index.ts', 'utf8'),
+    readFile('src/preload/index.ts', 'utf8'),
+    readFile('src/renderer/src/components/layout/AppLayout.tsx', 'utf8'),
+  ])
+
+  assert.match(mainSource, /WINDOW_STATE_KEY/)
+  assert.match(mainSource, /if \(!savedState \|\| savedState\.isMaximized\) mainWindow\.maximize\(\)/)
+  assert.match(mainSource, /input\.key === 'F11'/)
+  assert.match(mainSource, /input\.key === 'Escape'/)
+  assert.match(preloadSource, /WINDOW_TOGGLE_IMMERSIVE/)
+  assert.match(layoutSource, /onImmersiveChange/)
+  assert.match(layoutSource, /!immersive && <Sidebar/)
+})

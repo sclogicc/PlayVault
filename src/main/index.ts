@@ -12,7 +12,20 @@ import { resolveRegisteredMediaPath } from './services/mediaRegistry'
 import { initializeVault } from './services/vaultManager'
 import { startGameCapture, stopGameCapture } from './services/gameCapture'
 import { LOCAL_MEDIA_PROTOCOL, parseLocalMediaUrl } from '../shared/localMedia'
+import { IPC_CHANNELS } from '../shared/ipc'
 import type { Database } from './db/sqljs-wrapper'
+
+const WINDOW_STATE_KEY = 'window_presentation_v1'
+const DEFAULT_WINDOW_BOUNDS = { width: 1280, height: 820 }
+const MIN_WINDOW_BOUNDS = { width: 960, height: 640 }
+
+interface WindowPresentationState {
+  x?: number
+  y?: number
+  width: number
+  height: number
+  isMaximized: boolean
+}
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -45,12 +58,39 @@ function registerLocalMediaProtocol(db: Database): void {
   })
 }
 
-function createWindow(): void {
+function readWindowPresentation(db: Database): WindowPresentationState | null {
+  const row = db.prepare('SELECT value FROM app_settings WHERE key = ?').get(WINDOW_STATE_KEY) as { value?: string } | undefined
+  if (!row?.value) return null
+  try {
+    const parsed = JSON.parse(row.value) as WindowPresentationState
+    if (!Number.isFinite(parsed.width) || !Number.isFinite(parsed.height)) return null
+    if (parsed.width < MIN_WINDOW_BOUNDS.width || parsed.height < MIN_WINDOW_BOUNDS.height) return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+function persistWindowPresentation(db: Database, mainWindow: BrowserWindow): void {
+  if (is.dev || mainWindow.isDestroyed()) return
+  const bounds = mainWindow.getNormalBounds()
+  const state: WindowPresentationState = {
+    ...bounds,
+    isMaximized: mainWindow.isMaximized(),
+  }
+  db.prepare(`INSERT INTO app_settings (key, value) VALUES (?, ?)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value`).run(WINDOW_STATE_KEY, JSON.stringify(state))
+}
+
+function createWindow(db: Database): void {
+  const savedState = readWindowPresentation(db)
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 820,
-    minWidth: 960,
-    minHeight: 640,
+    width: savedState?.width ?? DEFAULT_WINDOW_BOUNDS.width,
+    height: savedState?.height ?? DEFAULT_WINDOW_BOUNDS.height,
+    x: savedState?.x,
+    y: savedState?.y,
+    minWidth: MIN_WINDOW_BOUNDS.width,
+    minHeight: MIN_WINDOW_BOUNDS.height,
     show: false,
     autoHideMenuBar: true,
     title: 'PlayVault',
@@ -64,7 +104,34 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
+    if (!savedState || savedState.isMaximized) mainWindow.maximize()
     mainWindow.show()
+  })
+
+  // The user controls the persisted size in stable mode; dev windows stay isolated from that preference.
+  mainWindow.on('close', () => persistWindowPresentation(db, mainWindow))
+
+  const publishImmersiveState = (immersive: boolean): void => {
+    if (!mainWindow.isDestroyed()) mainWindow.webContents.send(IPC_CHANNELS.WINDOW_IMMERSIVE_CHANGED, immersive)
+  }
+  mainWindow.on('enter-full-screen', () => publishImmersiveState(true))
+  mainWindow.on('leave-full-screen', () => publishImmersiveState(false))
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    const isF11 = input.type === 'keyDown' && input.key === 'F11'
+    const exitsImmersive = input.type === 'keyDown' && input.key === 'Escape' && mainWindow.isFullScreen()
+    if (isF11 || exitsImmersive) {
+      event.preventDefault()
+      mainWindow.setFullScreen(!mainWindow.isFullScreen())
+    }
+  })
+
+  ipcMain.removeHandler(IPC_CHANNELS.WINDOW_GET_IMMERSIVE)
+  ipcMain.removeHandler(IPC_CHANNELS.WINDOW_TOGGLE_IMMERSIVE)
+  ipcMain.handle(IPC_CHANNELS.WINDOW_GET_IMMERSIVE, () => mainWindow.isFullScreen())
+  ipcMain.handle(IPC_CHANNELS.WINDOW_TOGGLE_IMMERSIVE, () => {
+    const next = !mainWindow.isFullScreen()
+    mainWindow.setFullScreen(next)
+    return next
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -115,10 +182,10 @@ app.whenReady().then(async () => {
     startScreenshotWatcher(db, screenshotDirRow.value)
   }
 
-  createWindow()
+  createWindow(db)
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createWindow(db)
   })
 }).catch((err) => {
   console.error('[Main] Fatal error during startup:', err)

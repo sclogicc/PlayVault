@@ -236,6 +236,17 @@ const api = {
     openLocation: (filePath: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.FILE_OPEN_LOCATION, filePath),
   },
+  window: {
+    getImmersive: (): Promise<boolean> =>
+      ipcRenderer.invoke(IPC_CHANNELS.WINDOW_GET_IMMERSIVE),
+    toggleImmersive: (): Promise<boolean> =>
+      ipcRenderer.invoke(IPC_CHANNELS.WINDOW_TOGGLE_IMMERSIVE),
+    onImmersiveChange: (callback: (immersive: boolean) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, immersive: boolean): void => callback(immersive)
+      ipcRenderer.on(IPC_CHANNELS.WINDOW_IMMERSIVE_CHANGED, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.WINDOW_IMMERSIVE_CHANGED, listener)
+    },
+  },
 }
 
 contextBridge.exposeInMainWorld('api', api)

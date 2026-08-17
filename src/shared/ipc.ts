@@ -89,4 +89,9 @@ export const IPC_CHANNELS = {
   FILE_OPEN_LOCATION: 'file:openLocation',
   DIALOG_OPEN_EXECUTABLE: 'dialog:openExecutable',
   DIALOG_OPEN_IMAGE: 'dialog:openImage',
+
+  // Window presentation
+  WINDOW_GET_IMMERSIVE: 'window:getImmersive',
+  WINDOW_TOGGLE_IMMERSIVE: 'window:toggleImmersive',
+  WINDOW_IMMERSIVE_CHANGED: 'window:immersiveChanged',
 } as const

@@ -196,6 +196,11 @@ declare global {
       file: {
         openLocation: (filePath: string) => Promise<void>
       }
+      window: {
+        getImmersive: () => Promise<boolean>
+        toggleImmersive: () => Promise<boolean>
+        onImmersiveChange: (callback: (immersive: boolean) => void) => () => void
+      }
     }
   }
 }
