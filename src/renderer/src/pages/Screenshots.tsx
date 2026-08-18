@@ -237,6 +237,7 @@ export default function Screenshots(): React.ReactElement {
         open={classifyIds.length > 0}
         onClose={() => setClassifyIds([])}
         title="归类截图"
+        footer={<div className="flex items-center justify-end gap-2.5"><Button variant="secondary" onClick={() => setClassifyIds([])}>取消</Button><Button variant="primary" disabled={!targetGameId || classifyMutation.isPending} onClick={submitClassification}>{classifyMutation.isPending ? '归类中...' : '确认归类'}</Button></div>}
       >
         <div className="space-y-4">
           <p className="text-sm text-archive-400">
@@ -254,16 +255,6 @@ export default function Screenshots(): React.ReactElement {
               </option>
             ))}
           </select>
-          <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={() => setClassifyIds([])}>取消</Button>
-            <Button
-              variant="primary"
-              disabled={!targetGameId || classifyMutation.isPending}
-              onClick={submitClassification}
-            >
-              {classifyMutation.isPending ? '归类中...' : '确认归类'}
-            </Button>
-          </div>
         </div>
       </Modal>
 

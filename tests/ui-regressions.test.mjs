@@ -676,3 +676,30 @@ test('game library keeps controls inside the real stage and renders missing-back
   assert.match(stylesSource, /\.scene-archive-tools\.is-integrated/)
   assert.match(stylesSource, /\.library-record-card/)
 })
+
+test('all user-facing overlays lock the real app scroller and keep modal actions outside the scrollable body', async () => {
+  const [layoutSource, modalSource, confirmSource, viewerSource, gameFormSource, discoverSource, screenshotsSource, detailSource] = await Promise.all([
+    readFile('src/renderer/src/components/layout/AppLayout.tsx', 'utf8'),
+    readFile('src/renderer/src/components/ui/Modal.tsx', 'utf8'),
+    readFile('src/renderer/src/components/ui/ConfirmDialog.tsx', 'utf8'),
+    readFile('src/renderer/src/components/ui/ImageViewer.tsx', 'utf8'),
+    readFile('src/renderer/src/components/games/GameForm.tsx', 'utf8'),
+    readFile('src/renderer/src/pages/Discover.tsx', 'utf8'),
+    readFile('src/renderer/src/pages/Screenshots.tsx', 'utf8'),
+    readFile('src/renderer/src/pages/GameDetail.tsx', 'utf8'),
+  ])
+
+  assert.match(layoutSource, /app-scroll-region/)
+  assert.match(modalSource, /grid-rows-\[auto_minmax\(0,1fr\)_auto\]/)
+  assert.match(modalSource, /createPortal\(/)
+  assert.match(modalSource, /document\.body/)
+  assert.match(modalSource, /contentRef\.current\.scrollTop = 0/)
+  assert.match(modalSource, /pv-overlay-open/)
+  assert.match(modalSource, /pv-modal-footer/)
+  assert.match(confirmSource, /<Modal/)
+  assert.match(viewerSource, /pv-overlay-open/)
+  assert.match(gameFormSource, /form="game-editor-form"/)
+  assert.match(discoverSource, /footer=\{/)
+  assert.match(screenshotsSource, /footer=\{/)
+  assert.match(detailSource, /title="生成游玩留档"[\s\S]*footer=\{/)
+})

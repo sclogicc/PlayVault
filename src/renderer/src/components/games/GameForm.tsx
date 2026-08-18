@@ -115,8 +115,9 @@ export default function GameForm({
       onClose={onClose}
       title={isEdit ? '编辑游戏' : '添加游戏'}
       width="max-w-2xl"
+      footer={<div className="flex items-center justify-end gap-2.5"><Button type="button" variant="secondary" onClick={onClose}>取消</Button><Button type="submit" form="game-editor-form" variant="primary" disabled={isSaving}>{isSaving ? '保存中...' : isEdit ? '保存修改' : '添加游戏'}</Button></div>}
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form id="game-editor-form" onSubmit={handleSubmit} className="space-y-5">
         {/* Basic info */}
         <div className="grid grid-cols-2 gap-4">
           <Input
@@ -244,15 +245,6 @@ export default function GameForm({
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-archive-700/50">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            取消
-          </Button>
-          <Button type="submit" variant="primary" disabled={isSaving}>
-            {isSaving ? '保存中...' : isEdit ? '保存修改' : '添加游戏'}
-          </Button>
-        </div>
       </form>
     </Modal>
   )

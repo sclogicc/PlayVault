@@ -19,39 +19,16 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps): React.ReactElement | null {
   if (!open) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/60"
-        onClick={onClose}
-      />
-      <div className="relative w-full max-w-sm mx-4 bg-archive-800 border border-archive-700 rounded-lg shadow-2xl p-6">
-        <h3 className="text-lg font-semibold text-archive-100 mb-2">
-          {title}
-        </h3>
-        <p className="text-sm text-archive-300 mb-6">{message}</p>
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="btn-secondary px-4 py-2 text-sm"
-          >
-            取消
-          </button>
-          <button
-            onClick={() => {
-              onConfirm()
-              onClose()
-            }}
-            className={
-              variant === 'danger'
-                ? 'btn-danger px-4 py-2 text-sm'
-                : 'btn-primary px-4 py-2 text-sm'
-            }
-          >
-            {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+  return <Modal
+    open={open}
+    onClose={onClose}
+    title={title}
+    width="max-w-md"
+    contentClassName="py-5"
+    footer={<div className="flex items-center justify-end gap-2.5"><Button variant="secondary" onClick={onClose}>取消</Button><Button variant={variant} onClick={() => { onConfirm(); onClose() }}>{confirmLabel}</Button></div>}
+  >
+    <p className="text-sm leading-6 text-archive-300">{message}</p>
+  </Modal>
 }
+import Modal from './Modal'
+import Button from './Button'

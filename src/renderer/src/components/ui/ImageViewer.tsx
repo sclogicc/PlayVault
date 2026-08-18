@@ -36,8 +36,11 @@ export default function ImageViewer({
 
     const previousBodyOverflow = document.body.style.overflow
     const previousRootOverflow = document.documentElement.style.overflow
+    const overlayLockCount = Number(document.body.dataset.pvOverlayLocks ?? '0')
     document.body.style.overflow = 'hidden'
     document.documentElement.style.overflow = 'hidden'
+    document.body.dataset.pvOverlayLocks = String(overlayLockCount + 1)
+    document.body.classList.add('pv-overlay-open')
 
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
@@ -56,6 +59,13 @@ export default function ImageViewer({
     return () => {
       document.body.style.overflow = previousBodyOverflow
       document.documentElement.style.overflow = previousRootOverflow
+      const remainingLocks = Math.max(0, Number(document.body.dataset.pvOverlayLocks ?? '1') - 1)
+      if (remainingLocks === 0) {
+        delete document.body.dataset.pvOverlayLocks
+        document.body.classList.remove('pv-overlay-open')
+      } else {
+        document.body.dataset.pvOverlayLocks = String(remainingLocks)
+      }
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [activeIndex, items.length, onClose, open])

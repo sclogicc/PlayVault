@@ -718,6 +718,7 @@ export default function GameDetail(): React.ReactElement {
         }}
         title="生成游玩留档"
         width="max-w-3xl"
+        footer={<div className="flex flex-wrap justify-end gap-2.5"><Button variant="secondary" onClick={() => setArchivingGame(false)} disabled={isArchiving}>暂不留档</Button><Button variant="primary" onClick={handleArchiveGame} disabled={isArchiving}>{isArchiving ? <Loader2 size={15} className="animate-spin" /> : <Archive size={15} />}生成留档</Button></div>}
       >
         <div className="space-y-5">
           <div className="rounded-archive border border-[#c7e4ee]/18 bg-[#c7e4ee]/[0.07] px-4 py-3.5">
@@ -771,13 +772,6 @@ export default function GameDetail(): React.ReactElement {
 
           {archiveError && <p className="rounded-archive border border-red-300/15 bg-red-400/10 px-3 py-2 text-xs text-red-200">{archiveError}</p>}
 
-          <div className="flex flex-wrap justify-end gap-3 border-t border-white/[0.07] pt-4">
-            <Button variant="secondary" onClick={() => setArchivingGame(false)} disabled={isArchiving}>暂不留档</Button>
-            <Button variant="primary" onClick={handleArchiveGame} disabled={isArchiving}>
-              {isArchiving ? <Loader2 size={15} className="animate-spin" /> : <Archive size={15} />}
-              生成留档
-            </Button>
-          </div>
         </div>
       </Modal>
 

@@ -83,11 +83,15 @@ export default function Discover(): React.ReactElement {
         </section>
       )}
 
-      <Modal open={acceptingId !== null} onClose={() => { setAcceptingId(null); setDisplayName('') }} title="加入游戏库">
+      <Modal
+        open={acceptingId !== null}
+        onClose={() => { setAcceptingId(null); setDisplayName('') }}
+        title="加入游戏库"
+        footer={<div className="flex items-center justify-end gap-2.5"><Button variant="secondary" size="sm" onClick={() => { setAcceptingId(null); setDisplayName('') }}>取消</Button><Button variant="primary" size="sm" onClick={() => acceptingId !== null && acceptMutation.mutate({ candidateId: acceptingId, displayName: displayName.trim() || undefined })} disabled={acceptMutation.isPending}>{acceptMutation.isPending && <Loader2 size={14} className="animate-spin" />}加入游戏库</Button></div>}
+      >
         <div className="space-y-4">
           <p className="text-sm leading-6 text-archive-400">将以此信息创建游戏；加入后可继续设置背景、封面和游玩记录。</p>
           <Input label="游戏名称" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="输入游戏名称" />
-          <div className="flex justify-end gap-3 border-t border-white/[0.08] pt-4"><Button variant="secondary" size="sm" onClick={() => { setAcceptingId(null); setDisplayName('') }}>取消</Button><Button variant="primary" size="sm" onClick={() => acceptingId !== null && acceptMutation.mutate({ candidateId: acceptingId, displayName: displayName.trim() || undefined })} disabled={acceptMutation.isPending}>{acceptMutation.isPending && <Loader2 size={14} className="animate-spin" />}加入游戏库</Button></div>
         </div>
       </Modal>
     </div>

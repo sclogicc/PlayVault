@@ -15,7 +15,7 @@ export default function AppLayout(): React.ReactElement {
     <div className={`flex h-screen overflow-hidden bg-[var(--pv-void)] text-archive-100 transition-colors duration-300 ${immersive ? 'is-immersive' : ''}`}>
       {!immersive && <Sidebar />}
       <main className="relative min-w-0 flex-1 overflow-hidden bg-[var(--pv-void)] transition-colors duration-300">
-        <div className="h-full overflow-x-hidden overflow-y-auto">
+        <div className="app-scroll-region h-full overflow-x-hidden overflow-y-auto">
           <div className="animate-soft-enter">
             <Outlet />
           </div>
